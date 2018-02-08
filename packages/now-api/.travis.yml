@@ -6,9 +6,7 @@ cache:
     - node_modules
 deploy:
   - provider: script
-    script:
-      - npm install -g serverless
-      - sls deploy
+    script: bin/deploy.sh
     skip_cleanup: true
     on:
       branch: master
