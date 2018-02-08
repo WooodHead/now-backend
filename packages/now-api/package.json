@@ -29,6 +29,7 @@
     "flow-bin": "0.64.0",
     "jest": "22.1.4",
     "prettier": "1.10.2",
-    "prettier-eslint": "8.8.1"
+    "prettier-eslint": "8.8.1",
+    "serverless-sam": "0.0.4"
   }
 }

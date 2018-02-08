@@ -1,0 +1,21 @@
+service: now-api
+
+functions:
+  GraphQLInspector:
+    handler: graphql.graphqlHandler
+    events:
+      - http:
+          path: graphql
+          method: get
+      - http:
+          path: graphql
+          method: post
+  GraphQL:
+    handler: graphql.graphiqlHandler
+    events:
+      - http:
+          path: graphiql
+          method: get
+
+plugins:
+  - serverless-sam
