@@ -33,7 +33,8 @@ const scan = table =>
     )
   ).then(response => response.Items);
 
-const parseDate = date => (date === null ? null : new Date(parseInt(date, 10)));
+export const parseDate = date =>
+  date === null ? null : new Date(parseInt(date, 10));
 
 const transformEvent = event => ({
   id: event.id,

@@ -1,12 +1,17 @@
 language: node_js
 node_js:
-- lts/6
+- "6.10"
 cache:
   directories:
     - node_modules
-script: 
-    - npm install -g serverless
-    - sls deploy
+deploy:
+  - provider: script
+    script:
+      - npm install -g serverless
+      - sls deploy
+    skip_cleanup: true
+    on:
+      branch: master
 cache:
   directories:
     - node_modules
