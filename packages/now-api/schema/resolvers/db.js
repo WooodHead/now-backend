@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+import AWS from 'aws-sdk';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -63,13 +63,19 @@ const transformActivity = activity => ({
 
 const transformActivities = events => events.map(transformActivity);
 
-exports.events = () => scan('now').then(transformEvents);
+const events = () => scan('now').then(transformEvents);
 
-exports.rawEvent = id => get('now', { id });
-exports.event = id => exports.rawEvent(id).then(transformEvent);
+const rawEvent = id => get('now', { id });
+const event = id => rawEvent(id).then(transformEvent);
 
-exports.activities = () => scan('now_table').then(transformActivities);
-exports.activity = slug =>
-  exports
-    .activities()
-    .then(activities => activities.find(activity => slug === activity.slug));
+const activities = () => scan('now_table').then(transformActivities);
+const activity = slug =>
+  activities().then(all => all.find(a => slug === a.slug));
+
+export default {
+  events,
+  rawEvent,
+  event,
+  activities,
+  activity,
+};

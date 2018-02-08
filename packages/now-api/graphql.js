@@ -1,7 +1,7 @@
-const server = require('apollo-server-lambda');
-const schema = require('./schema');
+import { graphqlLambda, graphiqlLambda } from 'apollo-server-lambda';
+import schema from './schema';
 
-exports.graphqlHandler = server.graphqlLambda((event, context) => ({
+export const graphqlHandler = graphqlLambda((event, context) => ({
   schema,
   context: {
     headers: event.headers,
@@ -11,6 +11,6 @@ exports.graphqlHandler = server.graphqlLambda((event, context) => ({
   },
 }));
 
-exports.graphiqlHandler = server.graphiqlLambda({
+export const graphiqlHandler = graphiqlLambda({
   endpointURL: '/graphql',
 });

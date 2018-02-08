@@ -18,4 +18,14 @@ functions:
           method: get
 
 plugins:
-  - serverless-sam
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  webpackIncludeModules: true
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: prod
+  region: us-east-1

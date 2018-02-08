@@ -1,15 +1,11 @@
-const Query = require('./Query');
-const Event = require('./Event');
-const {
-  GraphQLDate,
-  GraphQLTime,
-  GraphQLDateTime,
-} = require('graphql-iso-date');
+import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
+import * as Query from './Query';
+import * as Event from './Event';
 
-module.exports = {
-  GraphQLDate,
-  GraphQLTime,
-  GraphQLDateTime,
+export default {
   Query,
   Event,
+  GraphQLDate,
+  GraphQLTime,
+  GraphQLDateTime,
 };

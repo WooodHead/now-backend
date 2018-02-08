@@ -7,3 +7,4 @@ yarn-error.log
 .serverless/
 template.yaml
 template.yml
+.webpack/

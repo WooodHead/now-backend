@@ -1,6 +1,4 @@
-const db = require('./db');
+import db from './db';
 
-module.exports = {
-  allEvents: () => db.events(),
-  event: (root, { id }) => db.event(id),
-};
+export const allEvents = () => db.events();
+export const event = (root, { id }) => db.event(id);
