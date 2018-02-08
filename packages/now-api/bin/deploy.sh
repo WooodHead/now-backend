@@ -1,2 +1,2 @@
 npm install -g serverless
-sls deploy
+sls deploy --verbose
