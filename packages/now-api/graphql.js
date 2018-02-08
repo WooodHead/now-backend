@@ -12,5 +12,5 @@ exports.graphqlHandler = server.graphqlLambda((event, context) => ({
 }));
 
 exports.graphiqlHandler = server.graphiqlLambda({
-  endpointURL: '/Prod/graphql',
+  endpointURL: '/graphql',
 });
