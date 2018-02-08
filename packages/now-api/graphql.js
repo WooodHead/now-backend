@@ -12,5 +12,5 @@ export const graphqlHandler = graphqlLambda((event, context) => ({
 }));
 
 export const graphiqlHandler = graphiqlLambda({
-  endpointURL: '/graphql',
+  endpointURL: '/prod/graphql',
 });
