@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`allEvents return allEvents 1`] = `
+Object {
+  "allEvents": Array [
+    Object {
+      "__typename": "Event",
+      "activity": Object {
+        "__typename": "Activity",
+        "createdAt": "2018-02-13T14:11:17.115Z",
+        "description": "The workday can get hectic, so take a few minutes to recenter yourself with a short (guided?) meditation. It's only 30 mins long, but the effects will last all day. Namaste.",
+        "duration": "30",
+        "id": "meditation",
+        "limit": "10",
+        "slug": "med",
+        "title": "Take a Meditation Break",
+        "updatedAt": "2018-02-13T14:11:17.115Z",
+        Symbol(id): "Activity:meditation",
+      },
+      "attendeeCount": 0,
+      "attendees": Array [],
+      "chatChannel": "y",
+      "createdAt": "2018-02-12T22:27:58.805Z",
+      "creator": null,
+      "description": "The workday can get hectic, so take a few minutes to recenter yourself with a short (guided?) meditation. It's only 30 mins long, but the effects will last all day. Namaste.",
+      "duration": 30,
+      "id": "fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+      "limit": 10,
+      "postChannel": "x",
+      "reminders": Array [
+        Object {
+          "__typename": "Reminder",
+          "sent": false,
+          "type": "oneHour",
+          Symbol(id): "Event:fa8a48e0-1043-11e8-b919-8f03cfc03e44.reminders.0",
+        },
+        Object {
+          "__typename": "Reminder",
+          "sent": false,
+          "type": "tenMinutes",
+          Symbol(id): "Event:fa8a48e0-1043-11e8-b919-8f03cfc03e44.reminders.1",
+        },
+      ],
+      "slug": "med",
+      "time": "2019-01-31T07:00:00.000Z",
+      "title": "Take a Meditation Break",
+      "updatedAt": "2018-02-13T14:11:17.115Z",
+      Symbol(id): "Event:fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+    },
+  ],
+  Symbol(id): "ROOT_QUERY",
+}
+`;

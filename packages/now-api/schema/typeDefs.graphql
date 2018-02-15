@@ -1,10 +1,38 @@
 scalar GraphQLDate
+
 scalar GraphQLTime
+
 scalar GraphQLDateTime
 
 type Query {
   allEvents: [Event]
   event(id: String): Event
+}
+
+type Mutation {
+  createEvent(input: CreateEventInput): CreateEventPayload
+  addUserToEvent(input: AddUserToEventInput): AddUserToEventPayload
+}
+
+input CreateEventInput {
+  activitySlug: String!
+  postChannel: String!
+  chatChannel: String!
+  creatorId: String!
+  time: GraphQLDateTime!
+}
+
+type CreateEventPayload {
+  event: Event
+}
+
+input AddUserToEventInput {
+  eventId: String!
+  slackId: String!
+}
+
+type AddUserToEventPayload {
+  event: Event
 }
 
 type User {
@@ -16,6 +44,7 @@ type User {
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
+
 type Event {
   id: String!
   attendeeCount: Int
@@ -26,15 +55,15 @@ type Event {
   slug: String
   title: String
   duration: Int
-  creator: [User]
+  creator: User
   activity: Activity
   attendees: [User]
-  users: [User]
   reminders: [Reminder]
   time: GraphQLDateTime
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
+
 type Reminder {
   type: String
   sent: Boolean
@@ -42,6 +71,7 @@ type Reminder {
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
+
 type Activity {
   id: String!
   title: String
@@ -50,8 +80,9 @@ type Activity {
   limit: String
   duration: String
   createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime    
+  updatedAt: GraphQLDateTime
 }
+
 type Rsvp {
   id: String!
   user: User
@@ -59,6 +90,7 @@ type Rsvp {
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
+
 type Message {
   id: String!
   text: String

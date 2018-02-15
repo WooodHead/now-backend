@@ -1,10 +1,10 @@
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
-import * as Query from './Query';
-import * as Event from './Event';
+import { queries, resolvers, mutations } from './Event';
 
 export default {
-  Query,
-  Event,
+  Query: queries,
+  Mutation: mutations,
+  Event: resolvers,
   GraphQLDate,
   GraphQLTime,
   GraphQLDateTime,
