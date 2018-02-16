@@ -79,7 +79,7 @@ const createEvent = (
       updatedAt: Date.now(),
       post_channel: postChannel,
       channel_id: chatChannel,
-      inorout: [],
+      inorout: {},
       time: time.getTime(),
       creator_id: creatorId,
     }))
@@ -93,7 +93,7 @@ const addUserToEvent = (root, { input: { eventId, slackId } }) =>
     .then(inorout =>
       update(
         'now',
-        { eventId },
+        { id: eventId },
         'SET inorout = :inorout, updatedAt = :updatedAt',
         {
           ':updatedAt': Date.now(),
