@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk';
-import { promisify } from 'util';
+import { promisify } from 'util.promisify';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
