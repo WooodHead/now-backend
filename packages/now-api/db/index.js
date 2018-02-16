@@ -1,6 +1,5 @@
 import AWS from 'aws-sdk';
-
-const promisify = require('util.promisify');
+import { promisify } from './util';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -13,7 +12,7 @@ export const get = (table, key = {}) =>
       },
       callback
     )
-  )().then(response => response.Item);
+  ).then(response => response.Item);
 export const put = (table, item) =>
   promisify(callback =>
     dynamoDb.put(
@@ -46,4 +45,4 @@ export const scan = table =>
       },
       callback
     )
-  )().then(response => response.Items);
+  ).then(response => response.Items);
