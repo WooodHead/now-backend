@@ -16,6 +16,7 @@ const transformEvent = event => ({
   chatChannel: event.channel_id,
   postChannel: event.post_channel,
   duration: event.duration,
+  creatorId: event.creator_id,
   createdAt: parseDate(event.createdAt),
   updatedAt: parseDate(event.updatedAt),
 });
