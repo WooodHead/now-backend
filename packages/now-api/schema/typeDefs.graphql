@@ -12,6 +12,7 @@ type Query {
 type Mutation {
   createEvent(input: CreateEventInput): CreateEventPayload
   addUserToEvent(input: AddUserToEventInput): AddUserToEventPayload
+  setReminderSent(input: SetReminderSentInput): SetReminderSentPayload
 }
 
 input CreateEventInput {
@@ -32,6 +33,15 @@ input AddUserToEventInput {
 }
 
 type AddUserToEventPayload {
+  event: Event
+}
+
+input SetReminderSentInput {
+  eventId: String!
+  type: ReminderType!
+}
+
+type SetReminderSentPayload {
   event: Event
 }
 
@@ -65,8 +75,13 @@ type Event {
   updatedAt: GraphQLDateTime
 }
 
+enum ReminderType {
+  oneHour
+  tenMinutes
+}
+
 type Reminder {
-  type: String
+  type: ReminderType
   sent: Boolean
   sentDate: GraphQLDateTime
   createdAt: GraphQLDateTime

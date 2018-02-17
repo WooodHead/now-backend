@@ -5,6 +5,10 @@ import { scan, get, update, put } from '../../db';
 import { parseDate } from '../../db/util';
 import { activity } from './Activity';
 
+const REMINDER_TYPE = {
+  ONE_HOUR: 'oneHour',
+  TEN_MINUTES: 'tenMinutes',
+};
 // DB Stuff
 const transformEvent = event => ({
   id: event.id,
@@ -41,11 +45,11 @@ const attendees = root =>
 const reminders = root =>
   rawEvent(root.id).then(e => [
     {
-      type: 'oneHour',
+      type: REMINDER_TYPE.ONE_HOUR,
       sent: !!e.reminder,
     },
     {
-      type: 'tenMinutes',
+      type: REMINDER_TYPE.TEN_MINUTES,
       sent: !!e.reminder_ten,
     },
   ]);
@@ -104,4 +108,22 @@ const addUserToEvent = (root, { input: { eventId, slackId } }) =>
     )
     .then(() => ({ event: event(eventId) }));
 
-export const mutations = { createEvent, addUserToEvent };
+const setReminderSent = (root, { input: { eventId, type } }) => {
+  let expr = '';
+  switch (type) {
+    case REMINDER_TYPE.ONE_HOUR:
+      expr = 'SET reminder = :true, updatedAt = :updatedAt';
+      break;
+    case REMINDER_TYPE.TEN_MINUTES:
+      expr = 'SET reminder_ten = :true, updatedAt = :updatedAt';
+      break;
+    default:
+      throw new Error(`Unknown reminder type ${type}`);
+  }
+  return update('now', { id: eventId }, expr, {
+    ':updatedAt': Date.now(),
+    ':true': true,
+  }).then(() => ({ event: event(eventId) }));
+};
+
+export const mutations = { createEvent, addUserToEvent, setReminderSent };
