@@ -6,7 +6,8 @@ scalar GraphQLDateTime
 
 type Query {
   allEvents: [Event]
-  event(id: String): Event
+  allTomorrowEvemts: [TomorrowEvent]
+  event(id: ID): Event
 }
 
 type Mutation {
@@ -28,7 +29,7 @@ type CreateEventPayload {
 }
 
 input AddUserToEventInput {
-  eventId: String!
+  eventId: ID!
   slackId: String!
 }
 
@@ -37,7 +38,7 @@ type AddUserToEventPayload {
 }
 
 input SetReminderSentInput {
-  eventId: String!
+  eventId: ID!
   type: ReminderType!
 }
 
@@ -46,17 +47,48 @@ type SetReminderSentPayload {
 }
 
 type User {
-  id: String!
+  id: ID!
   email: String
   meetupId: String
   slackId: String
   events: [Event]
+  tomorrowEvents: [TomorrowEvent]
+  devices: [Device]
+  preferences: [Preference]
+  createdAt: GraphQLDateTime
+  updatedAt: GraphQLDateTime
+}
+
+type TomorrowEvent {
+  id: ID!
+  time: GraphQLDateTime
+  activity: Activity
+  rsvps: [Rsvp]
+  limit: Int
+  instigator: User
+  location: Location
+  createdAt: GraphQLDateTime
+  updatedAt: GraphQLDateTime
+}
+
+type Location {
+  id: ID!
+  foursquareVenueId: String
+  lat: Float!
+  lng: Float!
+  address: String
+  crossStreet: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  isFuzzed: Boolean
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
 
 type Event {
-  id: String!
+  id: ID!
   attendeeCount: Int
   chatChannel: String
   postChannel: String
@@ -67,7 +99,7 @@ type Event {
   duration: Int
   creator: User
   creatorId: String
-  activity: Activity
+  activity: ActivityTemplate
   attendees: [User]
   reminders: [Reminder]
   time: GraphQLDateTime
@@ -88,29 +120,75 @@ type Reminder {
   updatedAt: GraphQLDateTime
 }
 
-type Activity {
-  id: String!
+interface Activity {
+  id: ID!
   title: String
   slug: String
   description: String
-  limit: String
+  duration: String
+  createdAt: GraphQLDateTime
+  updatedAt: GraphQLDateTime
+}
+
+type ActivityTemplate implements Activity {
+  id: ID!
+  title: String
+  slug: String
+  description: String
+  duration: String
+  createdAt: GraphQLDateTime
+  updatedAt: GraphQLDateTime
+}
+
+type TomorrowActivity implements Activity {
+  id: ID!
+  title: String
+  slug: String
+  description: String
   duration: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
 
 type Rsvp {
-  id: String!
+  id: ID!
   user: User
   event: Event
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
 
+enum RsvpAction {
+  add
+  remove
+  flake
+}
+
+type RsvpLog {
+  user: User
+  event: Event
+  time: GraphQLDateTime
+  action: RsvpAction
+}
+
 type Message {
-  id: String!
+  id: ID!
   text: String
   user: User
   event: Event
   ts: String
+}
+
+type Device {
+  id: ID!
+  type: String!
+  token: String!
+  createdAt: GraphQLDateTime
+  updatedAt: GraphQLDateTime
+}
+
+type Preference {
+  id: ID!
+  key: String!
+  value: String
 }

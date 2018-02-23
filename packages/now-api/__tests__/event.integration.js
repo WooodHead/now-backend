@@ -31,7 +31,7 @@ const mockDynamoActivity = {
   createdAt: 1518531077115,
 };
 
-describe('allEvents', () => {
+describe('event', () => {
   it('return allEvents', async () => {
     mocks.scan = table => {
       switch (table) {
@@ -48,7 +48,7 @@ describe('allEvents', () => {
         table === 'now' &&
         key.id === 'fa8a48e0-1043-11e8-b919-8f03cfc03e44'
       ) {
-        return mockPromise([mockDynamoEvent]);
+        return mockPromise(mockDynamoEvent);
       }
       throw new Error(`Unknown table: ${table}, key: ${key}`, key);
     };
@@ -73,7 +73,6 @@ describe('allEvents', () => {
               title
               slug
               description
-              limit
               duration
               createdAt
               updatedAt
@@ -90,7 +89,65 @@ describe('allEvents', () => {
         }
       `,
     });
-    // results.then(r => console.log(r.data));
+    const { data } = await results;
+    expect(data).toMatchSnapshot();
+  });
+
+  it('return event', async () => {
+    mocks.scan = table => {
+      switch (table) {
+        case 'now_table':
+          return mockPromise([mockDynamoActivity]);
+        default:
+          return null;
+      }
+    };
+    mocks.get = (table, key) => {
+      if (
+        table === 'now' &&
+        key.id === 'fa8a48e0-1043-11e8-b919-8f03cfc03e44'
+      ) {
+        return mockPromise(mockDynamoEvent);
+      }
+      throw new Error(`Unknown table: ${table}, key: ${key}`, key);
+    };
+
+    const results = client.query({
+      query: gql`
+        {
+          event(id: "fa8a48e0-1043-11e8-b919-8f03cfc03e44") {
+            id
+            title
+            attendeeCount
+            chatChannel
+            postChannel
+            description
+            limit
+            slug
+            title
+            duration
+            creator
+            activity {
+              id
+              title
+              slug
+              description
+              duration
+              createdAt
+              updatedAt
+            }
+            attendees
+            reminders {
+              type
+              sent
+            }
+            time
+            createdAt
+            updatedAt
+          }
+        }
+      `,
+    });
     const { data } = await results;
     expect(data).toMatchSnapshot();
   });
