@@ -8,6 +8,7 @@ type Query {
   allEvents: [Event]
   allTomorrowEvemts: [TomorrowEvent]
   event(id: ID): Event
+  currentUser: User
 }
 
 type Mutation {
@@ -55,8 +56,15 @@ type User {
   tomorrowEvents: [TomorrowEvent]
   devices: [Device]
   preferences: [Preference]
+  photo: Photo
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+}
+
+type Photo {
+  highresLink: String
+  photoLink: String
+  thumbLink: String
 }
 
 type TomorrowEvent {
