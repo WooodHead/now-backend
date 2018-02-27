@@ -7,6 +7,9 @@ scalar GraphQLDateTime
 type Query {
   allBotEvents: [BotEvent]
   allEvents: [Event]
+  allActivityTemplates: [ActivityTemplate]
+  template(id: ID): ActivityTemplate
+  event: Event
   events: Event
   botEvent(id: ID): BotEvent
   currentUser: User
@@ -14,6 +17,9 @@ type Query {
 
 type Mutation {
   createBotEvent(input: CreateBotEventInput): CreateBotEventPayload
+  createActivityTemplate(
+    input: CreateActivityTemplate
+  ): CreateActivityTemplatePayload
   addUserToBotEvent(input: AddUserToBotEventInput): AddUserToBotEventPayload
   setBotEventReminderSent(
     input: SetBotEventReminderSentInput
@@ -35,6 +41,16 @@ input CreateBotEventInput {
 
 type CreateBotEventPayload {
   event: Event
+}
+
+input CreateActivityTemplate {
+  title: String!
+  description: String!
+  duration: Int
+}
+
+type CreateActivityTemplatePayload {
+  template: ActivityTemplate
 }
 
 input AddUserToBotEventInput {
