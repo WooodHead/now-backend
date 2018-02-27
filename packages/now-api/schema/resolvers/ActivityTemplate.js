@@ -18,6 +18,7 @@ const createActivityTemplate = (
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
   const newActivityTemplate = {
+    id: newId,
     title,
     description,
     slug: 'nowSlug',
