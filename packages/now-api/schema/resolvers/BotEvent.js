@@ -62,12 +62,12 @@ export const resolvers = {
 };
 
 // Queries
-const allEvents = () => events();
+const allBotEvents = () => events();
 const eventQuery = (root, { id }) => event(id);
 
-export const queries = { event: eventQuery, allEvents };
+export const queries = { botEvent: eventQuery, allBotEvents };
 
-const createEvent = (
+const createBotEvent = (
   root,
   { input: { activitySlug, time, postChannel, chatChannel, creatorId } }
 ) => {
@@ -89,16 +89,16 @@ const createEvent = (
       creator_id: creatorId,
     }))
     .then(putEvent)
-    .then(() => ({ event: event(newId) }));
+    .then(() => ({ botEvent: event(newId) }));
 };
 
-const addUserToEvent = (root, { input: { eventId, slackId } }) =>
-  rawEvent(eventId)
+const addUserToBotEvent = (root, { input: { botEventId, slackId } }) =>
+  rawEvent(botEventId)
     .then(e => ({ ...(e.inorout || {}), [slackId]: 'in' }))
     .then(inorout =>
       update(
         'now',
-        { id: eventId },
+        { id: botEventId },
         'SET inorout = :inorout, updatedAt = :updatedAt',
         {
           ':updatedAt': Date.now(),
@@ -106,9 +106,9 @@ const addUserToEvent = (root, { input: { eventId, slackId } }) =>
         }
       )
     )
-    .then(() => ({ event: event(eventId) }));
+    .then(() => ({ botEvent: event(botEventId) }));
 
-const setReminderSent = (root, { input: { eventId, type } }) => {
+const setBotEventReminderSent = (root, { input: { botEventId, type } }) => {
   let expr = '';
   switch (type) {
     case REMINDER_TYPE.ONE_HOUR:
@@ -120,10 +120,14 @@ const setReminderSent = (root, { input: { eventId, type } }) => {
     default:
       throw new Error(`Unknown reminder type ${type}`);
   }
-  return update('now', { id: eventId }, expr, {
+  return update('now', { id: botEventId }, expr, {
     ':updatedAt': Date.now(),
     ':true': true,
-  }).then(() => ({ event: event(eventId) }));
+  }).then(() => ({ botEvent: event(botEventId) }));
 };
 
-export const mutations = { createEvent, addUserToEvent, setReminderSent };
+export const mutations = {
+  createBotEvent,
+  addUserToBotEvent,
+  setBotEventReminderSent,
+};

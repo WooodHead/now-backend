@@ -5,19 +5,27 @@ scalar GraphQLTime
 scalar GraphQLDateTime
 
 type Query {
+  allBotEvents: [BotEvent]
   allEvents: [Event]
-  allTomorrowEvemts: [TomorrowEvent]
-  event(id: ID): Event
+  events: Event
+  botEvent(id: ID): BotEvent
   currentUser: User
 }
 
 type Mutation {
-  createEvent(input: CreateEventInput): CreateEventPayload
-  addUserToEvent(input: AddUserToEventInput): AddUserToEventPayload
-  setReminderSent(input: SetReminderSentInput): SetReminderSentPayload
+  createBotEvent(input: CreateBotEventInput): CreateBotEventPayload
+  addUserToBotEvent(input: AddUserToBotEventInput): AddUserToBotEventPayload
+  setBotEventReminderSent(
+    input: SetBotEventReminderSentInput
+  ): SetBotEventReminderSentPayload
 }
 
-input CreateEventInput {
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+input CreateBotEventInput {
   activitySlug: String!
   postChannel: String!
   chatChannel: String!
@@ -25,25 +33,25 @@ input CreateEventInput {
   time: GraphQLDateTime!
 }
 
-type CreateEventPayload {
+type CreateBotEventPayload {
   event: Event
 }
 
-input AddUserToEventInput {
+input AddUserToBotEventInput {
   eventId: ID!
   slackId: String!
 }
 
-type AddUserToEventPayload {
+type AddUserToBotEventPayload {
   event: Event
 }
 
-input SetReminderSentInput {
+input SetBotEventReminderSentInput {
   eventId: ID!
   type: ReminderType!
 }
 
-type SetReminderSentPayload {
+type SetBotEventReminderSentPayload {
   event: Event
 }
 
@@ -53,9 +61,21 @@ type User {
   meetupId: String
   slackId: String
   events: [Event]
-  tomorrowEvents: [TomorrowEvent]
+  Events(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): UserEventsConnection
   devices: [Device]
   preferences: [Preference]
+  eventMessages(
+    eventId: ID!
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): UserEventMessagesConnection
   photo: Photo
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
@@ -67,11 +87,43 @@ type Photo {
   thumbLink: String
 }
 
-type TomorrowEvent {
+type EventRsvpsConnection {
+  pageInfo: PageInfo!
+  edges: [EventRsvpsEdge]
+}
+
+type EventRsvpsEdge {
+  cursor: String!
+  node: Rsvp
+}
+
+type UserEventsConnection {
+  pageInfo: PageInfo!
+  edges: [UserEventsEdge]
+}
+
+type UserEventsEdge {
+  cursor: String!
+  node: Event
+}
+
+type Event {
   id: ID!
   time: GraphQLDateTime
-  activity: Activity
-  rsvps: [Rsvp]
+  activity: EventActivity
+  rsvps(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): EventRsvpsConnection
+  userMessages(
+    userId: ID!
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): UserEventMessagesConnection
   limit: Int
   instigator: User
   location: Location
@@ -95,7 +147,7 @@ type Location {
   updatedAt: GraphQLDateTime
 }
 
-type Event {
+type BotEvent {
   id: ID!
   attendeeCount: Int
   chatChannel: String
@@ -148,7 +200,7 @@ type ActivityTemplate implements Activity {
   updatedAt: GraphQLDateTime
 }
 
-type TomorrowActivity implements Activity {
+type EventActivity implements Activity {
   id: ID!
   title: String
   slug: String
@@ -177,6 +229,16 @@ type RsvpLog {
   event: Event
   time: GraphQLDateTime
   action: RsvpAction
+}
+
+type UserEventMessagesConnection {
+  pageInfo: PageInfo!
+  edges: [UserEventMessagesEdge]
+}
+
+type UserEventMessagesEdge {
+  cursor: String!
+  node: Message
 }
 
 type Message {

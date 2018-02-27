@@ -31,8 +31,8 @@ const mockDynamoActivity = {
   createdAt: 1518531077115,
 };
 
-describe('event', () => {
-  it('return allEvents', async () => {
+describe('botEvent', () => {
+  it('return allBotEvents', async () => {
     mocks.scan = table => {
       switch (table) {
         case 'now':
@@ -56,7 +56,7 @@ describe('event', () => {
     const results = client.query({
       query: gql`
         {
-          allEvents {
+          allBotEvents {
             id
             title
             attendeeCount
@@ -93,7 +93,7 @@ describe('event', () => {
     expect(data).toMatchSnapshot();
   });
 
-  it('return event', async () => {
+  it('return bot event', async () => {
     mocks.scan = table => {
       switch (table) {
         case 'now_table':
@@ -115,7 +115,7 @@ describe('event', () => {
     const results = client.query({
       query: gql`
         {
-          event(id: "fa8a48e0-1043-11e8-b919-8f03cfc03e44") {
+          botEvent(id: "fa8a48e0-1043-11e8-b919-8f03cfc03e44") {
             id
             title
             attendeeCount

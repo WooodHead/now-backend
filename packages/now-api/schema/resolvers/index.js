@@ -1,11 +1,11 @@
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
-import * as Event from './Event';
+import * as BotEvent from './BotEvent';
 import * as User from './User';
 
 export default {
-  Query: { ...Event.queries, ...User.queries },
-  Mutation: Event.mutations,
-  Event: Event.resolvers,
+  Query: { ...BotEvent.queries, ...User.queries },
+  Mutation: BotEvent.mutations,
+  BotEvent: BotEvent.resolvers,
   GraphQLDate,
   GraphQLTime,
   GraphQLDateTime,
