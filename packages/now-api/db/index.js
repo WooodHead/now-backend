@@ -1,48 +1,36 @@
 import AWS from 'aws-sdk';
-import { promisify } from './util';
+import promisify from 'util.promisify';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+const pGet = promisify(dynamoDb.get.bind(dynamoDb));
+const pScan = promisify(dynamoDb.scan.bind(dynamoDb));
+const pUpdate = promisify(dynamoDb.update.bind(dynamoDb));
+const pPut = promisify(dynamoDb.put.bind(dynamoDb));
+const pQuery = promisify(dynamoDb.query.bind(dynamoDb));
+
 export const get = (table, key = {}) =>
-  promisify(callback =>
-    dynamoDb.get(
-      {
-        TableName: table,
-        Key: key,
-      },
-      callback
-    )
-  ).then(response => response.Item);
+  pGet({
+    TableName: table,
+    Key: key,
+  }).then(response => response.Item);
 export const put = (table, item) =>
-  promisify(callback =>
-    dynamoDb.put(
-      {
-        TableName: table,
-        Item: item,
-      },
-      callback
-    )
-  );
+  pPut({
+    TableName: table,
+    Item: item,
+  });
 export const update = (table, key, expr, values, names = undefined) =>
-  promisify(callback =>
-    dynamoDb.update(
-      {
-        TableName: table,
-        Key: key,
-        ExpressionAttributeValues: values,
-        ExpressionAttributeNames: names,
-        UpdateExpression: expr,
-        ReturnValues: 'ALL_NEW',
-      },
-      callback
-    )
-  );
+  pUpdate({
+    TableName: table,
+    Key: key,
+    ExpressionAttributeValues: values,
+    ExpressionAttributeNames: names,
+    UpdateExpression: expr,
+    ReturnValues: 'ALL_NEW',
+  });
 export const scan = table =>
-  promisify(callback =>
-    dynamoDb.scan(
-      {
-        TableName: table,
-      },
-      callback
-    )
-  ).then(response => response.Items);
+  pScan({
+    TableName: table,
+  }).then(response => response.Items);
+
+export const query = params => pQuery(params).then(response => response.Items);
