@@ -26,7 +26,7 @@ const createActivityTemplate = (
     updatedAt: ISOString,
   };
   return put('now_template', newActivityTemplate).then(() => ({
-    activityTemplate: template(newId),
+    template: template(newId),
   }));
 };
 
