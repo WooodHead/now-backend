@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Event return allEvents 1`] = `
+Object {
+  "allEvents": Array [
+    Object {
+      "__typename": "Event",
+      "activity": Object {
+        "__typename": "ActivityTemplate",
+        "createdAt": "2018-02-26T19:44:34.778Z",
+        "description": "We are going to do something really great!",
+        "duration": "120",
+        "id": "fa7a48e0-1043-11e8-b919-8f03cfc03e44",
+        "title": "My Great Activity",
+        "updatedAt": "2018-02-26T19:44:34.778Z",
+        Symbol(id): "ActivityTemplate:fa7a48e0-1043-11e8-b919-8f03cfc03e44",
+      },
+      "createdAt": "2018-02-26T19:44:34.778Z",
+      "id": "fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+      "limit": 10,
+      "rsvps": Object {},
+      "time": "2018-02-27T19:44:34.778Z",
+      "updatedAt": "2018-02-26T19:44:34.778Z",
+      Symbol(id): "Event:fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+    },
+  ],
+  Symbol(id): "ROOT_QUERY",
+}
+`;
+
+exports[`Event return bot event 1`] = `
+Object {
+  "event": Object {
+    "__typename": "Event",
+    "activity": Object {
+      "__typename": "ActivityTemplate",
+      "createdAt": "2018-02-26T19:44:34.778Z",
+      "description": "We are going to do something really great!",
+      "duration": "120",
+      "id": "fa7a48e0-1043-11e8-b919-8f03cfc03e44",
+      "title": "My Great Activity",
+      "updatedAt": "2018-02-26T19:44:34.778Z",
+      Symbol(id): "ActivityTemplate:fa7a48e0-1043-11e8-b919-8f03cfc03e44",
+    },
+    "createdAt": "2018-02-26T19:44:34.778Z",
+    "id": "fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+    "limit": 10,
+    "rsvps": Object {},
+    "time": "2018-02-27T19:44:34.778Z",
+    "updatedAt": "2018-02-26T19:44:34.778Z",
+    Symbol(id): "Event:fa8a48e0-1043-11e8-b919-8f03cfc03e44",
+  },
+  Symbol(id): "ROOT_QUERY",
+}
+`;

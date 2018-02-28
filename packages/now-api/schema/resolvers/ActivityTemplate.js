@@ -1,10 +1,8 @@
 import uuid from 'uuid';
-import { scan, get, put } from '../../db';
+import { scan, put, getTemplate } from '../../db';
 
 const allActivityTemplates = () => scan('now_template');
-const template = id => get('now_template', { id });
-
-const activityTemplateQuery = (root, { id }) => template(id);
+const activityTemplateQuery = (root, { id }) => getTemplate(id);
 
 export const queries = {
   template: activityTemplateQuery,
@@ -27,7 +25,7 @@ const createActivityTemplate = (
     updatedAt: ISOString,
   };
   return put('now_template', newActivityTemplate).then(() => ({
-    template: template(newId),
+    template: getTemplate(newId),
   }));
 };
 

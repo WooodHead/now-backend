@@ -8,15 +8,16 @@ type Query {
   allBotEvents: [BotEvent]
   allEvents: [Event]
   allActivityTemplates: [ActivityTemplate]
-  template(id: ID): ActivityTemplate
-  event: Event
+  template(id: ID!): ActivityTemplate
+  event(id: ID!): Event
   events: Event
-  botEvent(id: ID): BotEvent
+  botEvent(id: ID!): BotEvent
   currentUser: User
 }
 
 type Mutation {
   createBotEvent(input: CreateBotEventInput): CreateBotEventPayload
+  createEvent(input: CreateEventInput!): CreateEventPayload
   createActivityTemplate(
     input: CreateActivityTemplate
   ): CreateActivityTemplatePayload
@@ -37,6 +38,15 @@ input CreateBotEventInput {
   chatChannel: String!
   creatorId: String!
   time: GraphQLDateTime!
+}
+
+input CreateEventInput {
+  templateId: String!
+  time: GraphQLDateTime!
+}
+
+type CreateEventPayload {
+  event: Event
 }
 
 type CreateBotEventPayload {
@@ -126,7 +136,7 @@ type UserEventsEdge {
 type Event {
   id: ID!
   time: GraphQLDateTime
-  activity: EventActivity
+  activity: ActivityTemplate
   rsvps(
     first: Int
     last: Int

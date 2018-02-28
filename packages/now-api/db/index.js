@@ -34,3 +34,5 @@ export const scan = table =>
   }).then(response => response.Items);
 
 export const query = params => pQuery(params).then(response => response.Items);
+
+export const getTemplate = id => get('now_template', { id });

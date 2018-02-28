@@ -12,6 +12,7 @@ export const mocks = {
   get: () => {},
   put: () => {},
   update: () => {},
+  getTemplate: () => {},
 };
 
 jest.mock('../db', () => ({
@@ -19,6 +20,7 @@ jest.mock('../db', () => ({
   get: (table, key) => mocks.get(table, key),
   put: () => mocks.put,
   update: () => mocks.update,
+  getTemplate: id => mocks.get('now_template', { id }),
 }));
 
 const apolloCache = new InMemoryCache();
