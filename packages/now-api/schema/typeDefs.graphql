@@ -13,6 +13,14 @@ type Query {
   events: Event
   botEvent(id: ID!): BotEvent
   currentUser: User
+  user(id: ID!): User
+  eventMessages(
+    eventId: ID!
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): EventMessagesConnection
 }
 
 type Mutation {
@@ -25,6 +33,7 @@ type Mutation {
   setBotEventReminderSent(
     input: SetBotEventReminderSentInput
   ): SetBotEventReminderSentPayload
+  createMessage(input: CreateMessageInput): CreateMessagePayload
 }
 
 type PageInfo {
@@ -63,6 +72,16 @@ type CreateActivityTemplatePayload {
   template: ActivityTemplate
 }
 
+input CreateMessageInput {
+  text: String!
+  eventId: String!
+  userId: String!
+}
+
+type CreateMessagePayload {
+  message: Message
+}
+
 input AddUserToBotEventInput {
   eventId: ID!
   slackId: String!
@@ -86,8 +105,7 @@ type User {
   email: String
   meetupId: String
   slackId: String
-  events: [Event]
-  Events(
+  events(
     first: Int
     last: Int
     after: String
@@ -95,13 +113,6 @@ type User {
   ): UserEventsConnection
   devices: [Device]
   preferences: [Preference]
-  eventMessages(
-    eventId: ID!
-    first: Int
-    last: Int
-    after: String
-    before: String
-  ): UserEventMessagesConnection
   photo: Photo
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
@@ -131,6 +142,12 @@ type UserEventsConnection {
 type UserEventsEdge {
   cursor: String!
   node: Event
+  messages(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): EventMessagesConnection
 }
 
 type Event {
@@ -143,13 +160,12 @@ type Event {
     after: String
     before: String
   ): EventRsvpsConnection
-  userMessages(
-    userId: ID!
+  messages(
     first: Int
     last: Int
     after: String
     before: String
-  ): UserEventMessagesConnection
+  ): EventMessagesConnection
   limit: Int
   instigator: User
   location: Location
@@ -257,12 +273,12 @@ type RsvpLog {
   action: RsvpAction
 }
 
-type UserEventMessagesConnection {
+type EventMessagesConnection {
   pageInfo: PageInfo!
-  edges: [UserEventMessagesEdge]
+  edges: [EventMessagesEdge]
 }
 
-type UserEventMessagesEdge {
+type EventMessagesEdge {
   cursor: String!
   node: Message
 }

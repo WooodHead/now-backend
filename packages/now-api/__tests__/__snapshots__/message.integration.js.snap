@@ -1,0 +1,181 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`message returns eventMessages 1`] = `
+Object {
+  "eventMessages": Object {
+    "__typename": "EventMessagesConnection",
+    "edges": Array [
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415755",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.0.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.0",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415765",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.1.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.1",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415775",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.2.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.2",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415785",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.3.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.3",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415795",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.4.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"}).edges.4",
+      },
+    ],
+    Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\"})",
+  },
+  Symbol(id): "ROOT_QUERY",
+}
+`;
+
+exports[`message returns first n results 1`] = `
+Object {
+  "eventMessages": Object {
+    "__typename": "EventMessagesConnection",
+    "edges": Array [
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415755",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"first\\":2}).edges.0.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"first\\":2}).edges.0",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415765",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"first\\":2}).edges.1.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"first\\":2}).edges.1",
+      },
+    ],
+    Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"first\\":2})",
+  },
+  Symbol(id): "ROOT_QUERY",
+}
+`;
+
+exports[`message returns last n results 1`] = `
+Object {
+  "eventMessages": Object {
+    "__typename": "EventMessagesConnection",
+    "edges": Array [
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415785",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"last\\":2}).edges.0.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"last\\":2}).edges.0",
+      },
+      Object {
+        "__typename": "EventMessagesEdge",
+        "node": Object {
+          "__typename": "Message",
+          "event": Object {
+            "__typename": "Event",
+            "id": "1",
+            Symbol(id): "Event:1",
+          },
+          "text": "message text",
+          "ts": "1519765415795",
+          "user": null,
+          Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"last\\":2}).edges.1.node",
+        },
+        Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"last\\":2}).edges.1",
+      },
+    ],
+    Symbol(id): "$ROOT_QUERY.eventMessages({\\"eventId\\":\\"1\\",\\"last\\":2})",
+  },
+  Symbol(id): "ROOT_QUERY",
+}
+`;

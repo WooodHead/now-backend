@@ -8,19 +8,34 @@ export const mockPromise = (resolver, rejecter) =>
   rejecter ? Promise.reject(rejecter) : Promise.resolve(resolver);
 
 export const mocks = {
-  scan: () => {},
-  get: () => {},
-  put: () => {},
-  update: () => {},
-  getTemplate: () => {},
+  scan: () => {
+    throw new Error('Unimplemented mock for scan');
+  },
+  get: () => {
+    throw new Error('Unimplemented mock for get');
+  },
+  put: () => {
+    throw new Error('Unimplemented mock for put');
+  },
+  update: () => {
+    throw new Error('Unimplemented mock for update');
+  },
+  query: () => {
+    throw new Error('Unimplemented mock for query');
+  },
+  getTemplate: () => {
+    throw new Error('Unimplemented mock for getTemplate');
+  },
 };
 
 jest.mock('../db', () => ({
   scan: table => mocks.scan(table),
   get: (table, key) => mocks.get(table, key),
-  put: () => mocks.put,
-  update: () => mocks.update,
   getTemplate: id => mocks.get('now_template', { id }),
+  put: (table, item) => mocks.put(table, item),
+  update: (table, key, expr, values, names = undefined) =>
+    mocks.update(table, key, expr, values, names),
+  query: params => mocks.query(params),
 }));
 
 const apolloCache = new InMemoryCache();
