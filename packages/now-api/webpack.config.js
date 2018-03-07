@@ -1,11 +1,14 @@
-const slsw = require('serverless-webpack');
+const path = require('path');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-  entry: slsw.lib.entries,
+  mode: 'production',
+  entry: './graphql.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'server.js',
+  },
   target: 'node',
-  // Since 'aws-sdk' is not compatible with webpack,
-  // we exclude all node dependencies
   externals: [nodeExternals()],
   // Run babel on all .js files and skip those in node_modules
   module: {

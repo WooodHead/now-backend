@@ -1,15 +1,22 @@
+sudo: required 
 language: node_js
 node_js:
-- "6.10"
-cache:
-  directories:
-    - node_modules
+- "8.9.4"
+services:
+  - docker
+install:
+  - pip install --user awscli
+  - yarn install
+before_deploy:
+  - yarn build # webpack the app
+  - yarn install --modules-folder dist/node_modules --prod #only prod dependencies in the docker image
 deploy:
   - provider: script
-    script: bin/deploy.sh
+    script: bin/deploy.sh now-api NowApi-env `git rev-parse --short HEAD`-$TRAVIS_BUILD_NUMBER
     skip_cleanup: true
     on:
       branch: master
 cache:
   directories:
     - node_modules
+    - $HOME/.cache/pip

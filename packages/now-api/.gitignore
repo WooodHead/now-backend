@@ -8,3 +8,10 @@ yarn-error.log
 template.yaml
 template.yml
 .webpack/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+dist/

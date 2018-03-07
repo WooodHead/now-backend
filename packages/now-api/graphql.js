@@ -1,34 +1,48 @@
-import { graphqlLambda, graphiqlLambda } from 'apollo-server-lambda';
+import express from 'express';
+import bodyParser from 'body-parser';
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { get } from 'lodash';
+
 import schema from './schema';
 import { getSelf } from './api';
 
-export const graphqlHandler = graphqlLambda((event, context) => {
-  const { headers } = event;
-  const { functionName } = context;
-  const graphqlContext = {
-    headers,
-    functionName,
-    event,
-    context,
-    user: null,
-  };
-  return new Promise(resolve => {
-    getSelf(graphqlContext)
-      .then(user => {
-        resolve({
-          schema,
-          context: { ...graphqlContext, user },
-        });
-      })
-      .catch(() => {
-        resolve({
-          schema,
-          context: graphqlContext,
-        });
-      });
-  });
-});
+const PORT = 3000;
 
-export const graphiqlHandler = graphiqlLambda({
-  endpointURL: '/prod/graphql',
-});
+const app = express();
+
+// bodyParser is needed just for POST.
+app.use(
+  '/graphql',
+  bodyParser.json(),
+  graphqlExpress(req => {
+    const { headers } = req;
+    const graphqlContext = {
+      headers,
+      user: null,
+    };
+    return new Promise(resolve => {
+      getSelf(graphqlContext)
+        .then(user => {
+          resolve({
+            schema,
+            context: { ...graphqlContext, user },
+          });
+        })
+        .catch(() => {
+          resolve({
+            schema,
+            context: graphqlContext,
+          });
+        });
+    });
+  })
+);
+app.get(
+  '/graphiql',
+  graphiqlExpress(req => ({
+    endpointURL: '/graphql',
+    passHeader: `'Authorization': 'Bearer ${get(req, ['query', 'token'])}'`,
+  }))
+);
+
+app.listen(PORT);
