@@ -1,6 +1,7 @@
 import uuid from 'uuid';
 
 import { scan, get, put, getTemplate } from '../../db';
+import { getRsvps } from './Rsvp';
 
 const events = () => scan('now_event');
 const event = id => get('now_event', { id });
@@ -8,9 +9,18 @@ const putEvent = e => put('now_event', e);
 
 // Resolvers
 const templateResolver = root => getTemplate(root.templateId);
+const rsvpsResolver = root =>
+  getRsvps(root, {
+    eventId: root.id,
+    first: undefined,
+    last: 20,
+    after: undefined,
+    before: undefined,
+  });
 
 export const resolvers = {
   activity: templateResolver,
+  rsvps: rsvpsResolver,
 };
 
 // Queries

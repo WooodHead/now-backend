@@ -10,6 +10,7 @@ type Query {
   allActivityTemplates: [ActivityTemplate]
   template(id: ID!): ActivityTemplate
   event(id: ID!): Event
+  rsvp(id: ID!): Rsvp
   events: Event
   botEvent(id: ID!): BotEvent
   currentUser: User
@@ -26,6 +27,8 @@ type Query {
 type Mutation {
   createBotEvent(input: CreateBotEventInput): CreateBotEventPayload
   createEvent(input: CreateEventInput!): CreateEventPayload
+  addRsvp(input: CreateRsvpInput!): CreateRsvpPayload
+  removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
   createActivityTemplate(
     input: CreateActivityTemplate
   ): CreateActivityTemplatePayload
@@ -39,6 +42,14 @@ type Mutation {
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
+}
+
+input CreateRsvpInput {
+  eventId: ID!
+}
+
+type CreateRsvpPayload {
+  rsvp: Rsvp
 }
 
 input CreateBotEventInput {
@@ -122,16 +133,6 @@ type Photo {
   highresLink: String
   photoLink: String
   thumbLink: String
-}
-
-type EventRsvpsConnection {
-  pageInfo: PageInfo!
-  edges: [EventRsvpsEdge]
-}
-
-type EventRsvpsEdge {
-  cursor: String!
-  node: Rsvp
 }
 
 type UserEventsConnection {
@@ -256,6 +257,7 @@ type Rsvp {
   id: ID!
   user: User
   event: Event
+  action: RsvpAction
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
@@ -271,6 +273,16 @@ type RsvpLog {
   event: Event
   time: GraphQLDateTime
   action: RsvpAction
+}
+
+type EventRsvpsConnection {
+  pageInfo: PageInfo!
+  edges: [EventRsvpsEdge]
+}
+
+type EventRsvpsEdge {
+  cursor: String!
+  node: Rsvp
 }
 
 type EventMessagesConnection {

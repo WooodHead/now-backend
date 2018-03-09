@@ -21,6 +21,25 @@ const mockDynamoTemplate = {
   createdAt: '2018-02-26T19:44:34.778Z',
 };
 
+const mockDynamoRsvp1 = {
+  id: '1',
+  userId: '1',
+  action: 'add',
+  eventId: 'fa8a48e0-1043-11e8-b919-8f03cfc03e44',
+  createdAt: '2018-02-26T19:44:34.778Z',
+  updatedAt: '2018-02-27T19:44:34.778Z',
+};
+
+const mockDynamoRsvp2 = {
+  id: '2',
+  userId: '1',
+  action: 'add',
+  eventId: 'fa8a48e0-1043-11e8-b919-8f03cfc03e44',
+  createdAt: '2018-02-26T19:44:34.778Z',
+  updatedAt: '2018-02-27T19:44:34.778Z',
+};
+mocks.query = () => mockPromise([mockDynamoRsvp1, mockDynamoRsvp2]);
+
 describe('Event', () => {
   it('return allEvents', async () => {
     mocks.scan = table => {
@@ -61,7 +80,16 @@ describe('Event', () => {
               createdAt
               updatedAt
             }
-            rsvps
+            rsvps {
+              edges {
+                node {
+                  event {
+                    id
+                  }
+                  updatedAt
+                }
+              }
+            }
             time
             createdAt
             updatedAt
@@ -73,7 +101,7 @@ describe('Event', () => {
     expect(data).toMatchSnapshot();
   });
 
-  it('return bot event', async () => {
+  it('return event', async () => {
     mocks.get = (table, key) => {
       if (
         table === 'now_event' &&
@@ -104,7 +132,16 @@ describe('Event', () => {
               createdAt
               updatedAt
             }
-            rsvps
+            rsvps {
+              edges {
+                node {
+                  event {
+                    id
+                  }
+                  updatedAt
+                }
+              }
+            }
             time
             createdAt
             updatedAt

@@ -4,6 +4,7 @@ import * as Event from './Event';
 import * as User from './User';
 import * as ActivityTemplate from './ActivityTemplate';
 import * as Message from './Message';
+import * as Rsvp from './Rsvp';
 
 export default {
   Query: {
@@ -18,10 +19,12 @@ export default {
     ...ActivityTemplate.mutations,
     ...Event.mutations,
     ...Message.mutations,
+    ...Rsvp.mutations,
   },
   BotEvent: BotEvent.resolvers,
   Event: Event.resolvers,
   Message: Message.resolvers,
+  Rsvp: Rsvp.resolvers,
   GraphQLDate,
   GraphQLTime,
   GraphQLDateTime,
