@@ -42,5 +42,8 @@ const apolloCache = new InMemoryCache();
 
 export const client = new ApolloClient({
   cache: apolloCache,
-  link: new SchemaLink({ schema }),
+  link: new SchemaLink({
+    schema,
+    context: { token: null, loaders: { members: { load: jest.fn() } } },
+  }),
 });

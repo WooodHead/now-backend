@@ -2,6 +2,7 @@ import uuid from 'uuid';
 
 import { scan, get, put, getTemplate } from '../../db';
 import { getRsvps } from './Rsvp';
+import { getMessages } from './Message';
 
 const events = () => scan('now_event');
 const event = id => get('now_event', { id });
@@ -9,18 +10,22 @@ const putEvent = e => put('now_event', e);
 
 // Resolvers
 const templateResolver = root => getTemplate(root.templateId);
-const rsvpsResolver = root =>
+const rsvpsResolver = (root, args) =>
   getRsvps(root, {
     eventId: root.id,
-    first: undefined,
-    last: 20,
-    after: undefined,
-    before: undefined,
+    ...args,
+  });
+
+const messagesResolver = (root, args) =>
+  getMessages(root, {
+    eventId: root.id,
+    ...args,
   });
 
 export const resolvers = {
   activity: templateResolver,
   rsvps: rsvpsResolver,
+  messages: messagesResolver,
 };
 
 // Queries

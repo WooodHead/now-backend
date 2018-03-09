@@ -1,7 +1,11 @@
 import { Instant } from 'js-joda';
 
 import { put, get } from '../../db';
-import { userIdFromContext, paginatify } from '../util';
+import { userIdFromContext, paginatify, buildEdge } from '../util';
+import { pubsub } from '../../subscriptions';
+
+const MESSAGE_ADDED_TOPIC = 'messageAdded';
+const MESSAGE_CURSOR_ID = 'ts';
 
 export const getMessages = (root, { eventId, first, last, after, before }) =>
   paginatify(
@@ -9,8 +13,9 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
       expr: 'eventId = :eventId',
       exprValues: { ':eventId': eventId },
       tableName: 'now_messages',
-      cursorId: 'ts',
+      cursorId: MESSAGE_CURSOR_ID,
       cursorDeserialize: Number,
+      queryParamsExtra: { ScanIndexForward: false },
     },
     {
       first,
@@ -20,11 +25,8 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
     }
   );
 
-const createMessage = (root, { input: { userId, eventId, text } }, ctx) => {
+const createMessage = (root, { input: { eventId, text } }, ctx) => {
   const loggedInUserId = userIdFromContext(ctx);
-  if (userId !== loggedInUserId) {
-    throw new Error('Only the logged in user can create a message');
-  }
   // TODO: if user isn't in event, throw error
   if (false) {
     throw new Error("Only users who have Rsvp'd can create messages");
@@ -32,16 +34,31 @@ const createMessage = (root, { input: { userId, eventId, text } }, ctx) => {
   const ts = Instant.now().toEpochMilli();
   const newMessage = {
     eventId,
-    userId,
+    userId: loggedInUserId,
     text,
     ts,
   };
-  return put('now_messages', newMessage).then(() => ({ message: newMessage }));
+  return put('now_messages', newMessage).then(() => {
+    pubsub.publish(MESSAGE_ADDED_TOPIC, {
+      [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+    });
+    return { message: newMessage };
+  });
 };
 
 // TODO: cache the event data loader?
 const event = message => get('now_event', { id: message.eventId });
+const user = ({ userId: id }, args, context) => {
+  if (id) {
+    return context.loaders.members.load(id);
+  }
+  return null;
+};
+const messageAdded = {
+  subscribe: () => pubsub.asyncIterator(MESSAGE_ADDED_TOPIC),
+};
 
-export const queries = { eventMessages: getMessages };
+export const queries = {};
 export const mutations = { createMessage };
-export const resolvers = { event };
+export const resolvers = { event, user };
+export const subscriptions = { messageAdded };

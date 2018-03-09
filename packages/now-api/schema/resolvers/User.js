@@ -1,33 +1,14 @@
-import { get } from 'lodash';
-import { userFromContext } from '../util';
-import { getMember } from '../../api';
+import { getSelf } from '../../api';
 
-const transformUser = u => {
-  if (u !== null && u.id) {
-    const { email, photo } = u;
-    const [first, last] = get(u, 'name', '').split(' ');
-    return {
-      id: u.id,
-      meetupId: u.id,
-      email,
-      first,
-      last,
-      photo: {
-        highresLink: get(photo, 'highres_link'),
-        photoLink: get(photo, 'photo_link'),
-        thumbLink: get(photo, 'thumb_link'),
-      },
-    };
+const user = (root, { id }, context) => {
+  if (id) {
+    return context.loaders.members.load(id);
   }
-  throw new Error('User not found');
+  return null;
 };
-const user = (root, { id }, context) =>
-  getMember(id, context).then(transformUser);
 
-const currentUser = (root, variables, context) => {
-  const u = userFromContext(context);
-  return transformUser(u);
-};
+const currentUser = (root, vars, context) => getSelf(context);
+
 export const queries = { currentUser, user };
 
 export const resolvers = {};

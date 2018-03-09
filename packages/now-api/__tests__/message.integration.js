@@ -4,35 +4,35 @@ import { mocks, mockPromise, client } from '../db/mock';
 
 const mockDynamoMessage1 = {
   eventId: '1',
-  text: 'message text',
+  text: 'message text 1',
   ts: 1519765415755,
   userId: '1',
 };
 
 const mockDynamoMessage2 = {
   eventId: '1',
-  text: 'message text',
+  text: 'message text 2',
   ts: 1519765415765,
   userId: '2',
 };
 
 const mockDynamoMessage3 = {
   eventId: '1',
-  text: 'message text',
+  text: 'message text 3',
   ts: 1519765415775,
   userId: '2',
 };
 
 const mockDynamoMessage4 = {
   eventId: '1',
-  text: 'message text',
+  text: 'message text 4',
   ts: 1519765415785,
   userId: '2',
 };
 
 const mockDynamoMessage5 = {
   eventId: '1',
-  text: 'message text',
+  text: 'message text 5',
   ts: 1519765415795,
   userId: '2',
 };
@@ -51,16 +51,18 @@ describe('message', () => {
     const results = client.query({
       query: gql`
         {
-          eventMessages(eventId: "1") {
-            edges {
-              node {
-                event {
-                  id
-                }
-                text
-                ts
-                user {
-                  id
+          event(id: "1") {
+            messages {
+              edges {
+                node {
+                  event {
+                    id
+                  }
+                  text
+                  ts
+                  user {
+                    id
+                  }
                 }
               }
             }
@@ -75,16 +77,18 @@ describe('message', () => {
     const results = client.query({
       query: gql`
         {
-          eventMessages(eventId: "1", first: 2) {
-            edges {
-              node {
-                event {
-                  id
-                }
-                text
-                ts
-                user {
-                  id
+          event(id: "1") {
+            messages(first: 2) {
+              edges {
+                node {
+                  event {
+                    id
+                  }
+                  text
+                  ts
+                  user {
+                    id
+                  }
                 }
               }
             }
@@ -99,16 +103,18 @@ describe('message', () => {
     const results = client.query({
       query: gql`
         {
-          eventMessages(eventId: "1", last: 2) {
-            edges {
-              node {
-                event {
-                  id
-                }
-                text
-                ts
-                user {
-                  id
+          event(id: "1") {
+            messages(last: 2) {
+              edges {
+                node {
+                  event {
+                    id
+                  }
+                  text
+                  ts
+                  user {
+                    id
+                  }
                 }
               }
             }

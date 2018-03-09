@@ -15,13 +15,6 @@ type Query {
   botEvent(id: ID!): BotEvent
   currentUser: User
   user(id: ID!): User
-  eventMessages(
-    eventId: ID!
-    first: Int
-    last: Int
-    after: String
-    before: String
-  ): EventMessagesConnection
 }
 
 type Mutation {
@@ -37,6 +30,10 @@ type Mutation {
     input: SetBotEventReminderSentInput
   ): SetBotEventReminderSentPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
+}
+
+type Subscription {
+  messageAdded(eventId: ID!): EventMessagesEdge
 }
 
 type PageInfo {
@@ -85,8 +82,7 @@ type CreateActivityTemplatePayload {
 
 input CreateMessageInput {
   text: String!
-  eventId: String!
-  userId: String!
+  eventId: ID!
 }
 
 type CreateMessagePayload {

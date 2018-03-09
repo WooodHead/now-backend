@@ -14,6 +14,9 @@ export default {
     ...Event.queries,
     ...Message.queries,
   },
+  Subscription: {
+    ...Message.subscriptions,
+  },
   Mutation: {
     ...BotEvent.mutations,
     ...ActivityTemplate.mutations,
@@ -25,6 +28,11 @@ export default {
   Event: Event.resolvers,
   Message: Message.resolvers,
   Rsvp: Rsvp.resolvers,
+  EventMessagesEdge: {
+    node: root => ({
+      ...root.node,
+    }),
+  },
   GraphQLDate,
   GraphQLTime,
   GraphQLDateTime,

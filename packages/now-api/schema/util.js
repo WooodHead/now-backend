@@ -9,7 +9,13 @@ const fromBase64 = str => Buffer.from(str, 'base64').toString();
 
 const paginationDefaults = {
   cursorDeserialize: x => x,
+  queryParamsExtra: {},
 };
+
+export const buildEdge = (cursorId, node) => ({
+  cursor: toBase64(String(node[cursorId])),
+  node,
+});
 
 export const paginatify = async (settings, { first, last, after, before }) => {
   const pageInfo = {
@@ -17,7 +23,7 @@ export const paginatify = async (settings, { first, last, after, before }) => {
     hasNextPage: false,
   };
 
-  const options = Object.assign(paginationDefaults, settings);
+  const options = { ...paginationDefaults, ...settings };
 
   let { expr } = options;
 
@@ -37,29 +43,38 @@ export const paginatify = async (settings, { first, last, after, before }) => {
     TableName: tableName,
     KeyConditionExpression: expr,
     ExpressionAttributeValues: exprValues,
+    ...options.queryParamsExtra,
   };
 
   const serverData = await query(params);
   let data = serverData;
 
-  if (first <= 0) {
+  // if after, default first, if before default last, otherwise default first
+  let actualFirst = first;
+  let actualLast = last;
+
+  if (before && last === undefined) {
+    actualLast = 20;
+  } else if (first === undefined) {
+    actualFirst = 20;
+  }
+
+  if (actualFirst <= 0) {
     throw new Error('first must be greater than 0');
-  } else if (first !== undefined) {
-    data = slice(serverData, 0, first);
+  } else if (actualFirst !== undefined) {
+    data = slice(serverData, 0, actualFirst);
     pageInfo.hasNextPage = data.length < serverData.length;
   }
-  if (last <= 0) {
+  if (actualLast <= 0) {
     throw new Error('last must be greater than 0');
-  } else if (last !== undefined) {
-    const maxLast = last > serverData.length ? serverData.length : last;
+  } else if (actualLast !== undefined) {
+    const maxLast =
+      actualLast > serverData.length ? serverData.length : actualLast;
     data = slice(serverData, -maxLast);
     pageInfo.hasPreviousPage = data.length < serverData.length;
   }
   return {
     pageInfo,
-    edges: data.map(d => ({
-      cursor: toBase64(String(d[cursorId])),
-      node: d,
-    })),
+    edges: data.map(d => buildEdge(cursorId, d)),
   };
 };
