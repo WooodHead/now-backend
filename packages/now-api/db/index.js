@@ -35,4 +35,14 @@ export const scan = table =>
 
 export const query = params => pQuery(params).then(response => response.Items);
 
+export const getUserRsvpByEvent = (userId, eventId) =>
+  query({
+    TableName: 'now_rsvp',
+    IndexName: 'eventId-userId-index',
+    KeyConditionExpression: 'eventId = :eventId and userId = :userId',
+    ExpressionAttributeValues: {
+      ':eventId': eventId,
+      ':userId': userId,
+    },
+  });
 export const getTemplate = id => get('now_template', { id });

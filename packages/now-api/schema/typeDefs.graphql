@@ -163,6 +163,7 @@ type Event {
     after: String
     before: String
   ): EventMessagesConnection
+  isAttending(userId: ID): Boolean
   limit: Int
   instigator: User
   location: Location

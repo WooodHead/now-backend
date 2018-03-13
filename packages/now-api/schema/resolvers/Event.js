@@ -1,6 +1,7 @@
 import uuid from 'uuid';
 
-import { scan, get, put, getTemplate } from '../../db';
+import { scan, get, put, getTemplate, getUserRsvpByEvent } from '../../db';
+import { userIdFromContext } from '../util';
 import { getRsvps } from './Rsvp';
 import { getMessages } from './Message';
 
@@ -22,10 +23,16 @@ const messagesResolver = (root, args) =>
     ...args,
   });
 
+const isAttendingResolver = ({ id }, { userId }, ctx) =>
+  getUserRsvpByEvent(userId || userIdFromContext(ctx), id).then(
+    items => items.length && items.length > 0 && items[0].action === 'add'
+  );
+
 export const resolvers = {
   activity: templateResolver,
   rsvps: rsvpsResolver,
   messages: messagesResolver,
+  isAttending: isAttendingResolver,
 };
 
 // Queries
