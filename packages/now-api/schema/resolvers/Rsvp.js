@@ -4,6 +4,7 @@ import { userIdFromContext, paginatify } from '../util';
 import { get, put } from '../../db';
 
 const putRsvp = e => put('now_rsvp', e);
+const event = rsvp => get('now_event', { id: rsvp.eventId });
 
 const createRsvp = (eventId, userId, action) => {
   const id = uuid.v1();
@@ -16,7 +17,9 @@ const createRsvp = (eventId, userId, action) => {
     createdAt: ISOString,
     updatedAt: ISOString,
   };
-  return putRsvp(newRsvp).then(() => ({ rsvp: newRsvp }));
+  return putRsvp(newRsvp).then(() => ({
+    event: event(newRsvp),
+  }));
 };
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
@@ -40,8 +43,6 @@ export const getRsvps = (root, { eventId, first, last, after, before }) =>
       before,
     }
   );
-
-const event = rsvp => get('now_event', { id: rsvp.eventId });
 
 export const resolvers = { event };
 export const mutations = { addRsvp, removeRsvp };
