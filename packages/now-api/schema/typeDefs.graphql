@@ -46,6 +46,7 @@ input CreateRsvpInput {
 }
 
 type CreateRsvpPayload {
+  rsvp: Rsvp
   event: Event
 }
 

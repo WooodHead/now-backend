@@ -4,6 +4,8 @@ import { query } from '../db';
 export const userIdFromContext = context => get(context, ['user', 'id']);
 export const userFromContext = context => get(context, ['user']);
 
+export const rsvpId = (eventId, userId) => `${eventId}-${userId}`;
+
 const toBase64 = str => Buffer.from(str).toString('base64');
 const fromBase64 = str => Buffer.from(str, 'base64').toString();
 

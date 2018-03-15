@@ -1,6 +1,6 @@
 import { getSelf } from '../../api';
 
-const user = (root, { id }, context) => {
+export const user = (root, { id }, context) => {
   if (id) {
     return context.loaders.members.load(id);
   }

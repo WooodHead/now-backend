@@ -1,5 +1,6 @@
 import AWS from 'aws-sdk';
 import promisify from 'util.promisify';
+import { rsvpId } from '../schema/util';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -36,13 +37,6 @@ export const scan = table =>
 export const query = params => pQuery(params).then(response => response.Items);
 
 export const getUserRsvpByEvent = (userId, eventId) =>
-  query({
-    TableName: 'now_rsvp',
-    IndexName: 'eventId-userId-index',
-    KeyConditionExpression: 'eventId = :eventId and userId = :userId',
-    ExpressionAttributeValues: {
-      ':eventId': eventId,
-      ':userId': userId,
-    },
-  });
+  get('now_rsvp', rsvpId(eventId, userId));
+
 export const getTemplate = id => get('now_template', { id });
