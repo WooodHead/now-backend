@@ -25,7 +25,7 @@ const messagesResolver = (root, args) =>
 
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
   getUserRsvpByEvent(userId || userIdFromContext(ctx), id).then(
-    items => items.length && items.length > 0 && items[0].action === 'add'
+    item => item !== undefined && item.action === 'add'
   );
 
 export const resolvers = {

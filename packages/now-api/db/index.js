@@ -37,6 +37,6 @@ export const scan = table =>
 export const query = params => pQuery(params).then(response => response.Items);
 
 export const getUserRsvpByEvent = (userId, eventId) =>
-  get('now_rsvp', rsvpId(eventId, userId));
+  get('now_rsvp', { id: rsvpId(eventId, userId) });
 
 export const getTemplate = id => get('now_template', { id });
