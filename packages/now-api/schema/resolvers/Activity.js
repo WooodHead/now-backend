@@ -10,6 +10,7 @@ const transformActivity = activity => ({
   duration: activity.duration,
   createdAt: parseDate(activity.createdAt),
   updatedAt: parseDate(activity.updatedAt),
+  emoji: activity.emoji,
 });
 
 const transformActivities = events => events.map(transformActivity);

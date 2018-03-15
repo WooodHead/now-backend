@@ -11,7 +11,7 @@ export const queries = {
 
 const createActivityTemplate = (
   root,
-  { input: { title, description, duration } }
+  { input: { title, description, duration, emoji } }
 ) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
@@ -23,6 +23,7 @@ const createActivityTemplate = (
     duration,
     createdAt: ISOString,
     updatedAt: ISOString,
+    emoji
   };
   return put('now_template', newActivityTemplate).then(() => ({
     template: getTemplate(newId),

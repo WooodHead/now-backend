@@ -75,6 +75,7 @@ input CreateActivityTemplate {
   title: String!
   description: String!
   duration: Int
+  emoji: String
 }
 
 type CreateActivityTemplatePayload {
@@ -229,6 +230,7 @@ interface Activity {
   duration: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+  emoji: String
 }
 
 type ActivityTemplate implements Activity {
@@ -239,6 +241,7 @@ type ActivityTemplate implements Activity {
   duration: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+  emoji: String
 }
 
 type EventActivity implements Activity {
@@ -249,6 +252,7 @@ type EventActivity implements Activity {
   duration: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+  emoji: String
 }
 
 type Rsvp {
