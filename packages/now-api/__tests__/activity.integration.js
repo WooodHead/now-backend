@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 
 import { mocks, mockPromise, client } from '../db/mock';
+import { TABLES } from '../db/constants';
 
-const mockDynamoTemplate = {
+const mockDynamoActivity = {
   id: 'fa7a48e0-1043-11e8-b919-8f03cfc03e44',
   title: 'My Great Activity',
   description: 'We are going to do something really great!',
@@ -11,12 +12,12 @@ const mockDynamoTemplate = {
   createdAt: '2018-02-26T19:44:34.778Z',
 };
 
-describe('template', () => {
-  it('return allTemplates', async () => {
+describe('activity', () => {
+  it('return allActivities', async () => {
     mocks.scan = table => {
       switch (table) {
-        case 'now_template':
-          return mockPromise([mockDynamoTemplate]);
+        case TABLES.ACTIVITY:
+          return mockPromise([mockDynamoActivity]);
         default:
           return null;
       }
@@ -24,7 +25,7 @@ describe('template', () => {
     const results = client.query({
       query: gql`
         {
-          allActivityTemplates {
+          allActivities {
             id
             title
             description
@@ -39,21 +40,18 @@ describe('template', () => {
     expect(data).toMatchSnapshot();
   });
 
-  it('gets single template', async () => {
-    mocks.get = (table, key) => {
-      if (
-        table === 'now_template' &&
-        key.id === 'fa7a48e0-1043-11e8-b919-8f03cfc03e44'
-      ) {
-        return mockPromise(mockDynamoTemplate);
+  it('gets single activity', async () => {
+    mocks.getActivity = key => {
+      if (key === 'fa7a48e0-1043-11e8-b919-8f03cfc03e44') {
+        return mockPromise(mockDynamoActivity);
       }
-      throw new Error(`Unknown table: ${table}, key: ${key}`, key);
+      throw new Error(`Unknown key: ${key}`, key);
     };
 
     const res = client.query({
       query: gql`
         {
-          template(id: "fa7a48e0-1043-11e8-b919-8f03cfc03e44") {
+          activity(id: "fa7a48e0-1043-11e8-b919-8f03cfc03e44") {
             id
             title
             description

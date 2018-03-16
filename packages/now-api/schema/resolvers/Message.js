@@ -1,8 +1,9 @@
 import { Instant } from 'js-joda';
 
-import { put, get } from '../../db';
+import { put, getEvent } from '../../db';
 import { userIdFromContext, paginatify, buildEdge } from '../util';
 import { pubsub } from '../../subscriptions';
+import { TABLES } from '../../db/constants';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const MESSAGE_CURSOR_ID = 'ts';
@@ -12,7 +13,7 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
     {
       expr: 'eventId = :eventId',
       exprValues: { ':eventId': eventId },
-      tableName: 'now_messages',
+      tableName: TABLES.MESSAGE,
       cursorId: MESSAGE_CURSOR_ID,
       cursorDeserialize: Number,
       queryParamsExtra: { ScanIndexForward: false },
@@ -38,7 +39,7 @@ const createMessage = (root, { input: { eventId, text } }, ctx) => {
     text,
     ts,
   };
-  return put('now_messages', newMessage).then(() => {
+  return put(TABLES.MESSAGE, newMessage).then(() => {
     pubsub.publish(MESSAGE_ADDED_TOPIC, {
       [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
     });
@@ -47,7 +48,7 @@ const createMessage = (root, { input: { eventId, text } }, ctx) => {
 };
 
 // TODO: cache the event data loader?
-const event = message => get('now_event', { id: message.eventId });
+const event = message => getEvent(message.eventId);
 const user = ({ userId: id }, args, context) => {
   if (id) {
     return context.loaders.members.load(id);

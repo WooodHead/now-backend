@@ -1,11 +1,12 @@
 import { userIdFromContext, paginatify, rsvpId } from '../util';
 
-import { get, update } from '../../db';
+import { update, getEvent } from '../../db';
 import { user as getUser } from './User';
+import { TABLES } from '../../db/constants';
 
 const putRsvp = r =>
   update(
-    'now_rsvp',
+    TABLES.RSVP,
     { id: r.id },
     'set eventId=:eventId, userId=:userId, #a=:a, createdAt=if_not_exists(createdAt,:createdAt), updatedAt=:updatedAt',
     {
@@ -18,12 +19,12 @@ const putRsvp = r =>
     { '#a': 'action' }
   );
 
-const event = rsvp => get('now_event', { id: rsvp.eventId });
+const event = ({ eventId }) => getEvent(eventId);
 
 const user = (rsvp, args, context) =>
   getUser(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = (eventId, userId, action) => {
+const createRsvp = (eventId, activityId, userId, action) => {
   const id = rsvpId(eventId, userId);
   const ISOString = new Date().toISOString();
   const newRsvp = {
@@ -36,23 +37,26 @@ const createRsvp = (eventId, userId, action) => {
   };
   return putRsvp(newRsvp).then(r => ({
     rsvp: r.Attributes,
-    event: event(newRsvp),
+    event: event(eventId, activityId),
   }));
 };
 
-const addRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'add');
+const addRsvp = (root, { input: { eventId, activityId } }, ctx) =>
+  createRsvp(eventId, activityId, userIdFromContext(ctx), 'add');
 
-const removeRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'remove');
+const removeRsvp = (root, { input: { eventId, activityId } }, ctx) =>
+  createRsvp(eventId, activityId, userIdFromContext(ctx), 'remove');
 
 export const getRsvps = (root, { eventId, first, last, after, before }) =>
   paginatify(
     {
       expr: 'eventId = :eventId',
       exprValues: { ':eventId': eventId },
-      tableName: 'now_rsvps',
+      tableName: TABLES.RSVP,
       cursorId: 'updatedAt',
+      queryParamsExtra: {
+        IndexName: 'eventId-userId-index',
+      },
     },
     {
       first,
@@ -61,6 +65,5 @@ export const getRsvps = (root, { eventId, first, last, after, before }) =>
       before,
     }
   );
-
 export const resolvers = { event, user };
 export const mutations = { addRsvp, removeRsvp };

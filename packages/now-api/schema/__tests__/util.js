@@ -1,5 +1,6 @@
 import { paginatify } from '../util';
 import { mockPromise } from '../../db/mock';
+import { TABLES } from '../../db/constants';
 
 const mockDynamoRsvp1 = {
   id: '1',
@@ -28,13 +29,18 @@ const mockDynamoRsvp3 = {
 const mockDynamoSettings = {
   expr: 'eventId = :eventId',
   exprValues: { ':eventId': '3' },
-  tableName: 'now_rsvps',
+  tableName: TABLES.RSVP,
   cursorId: 'updatedAt',
 };
 
 jest.mock('../../db', () => ({
   get: () => mockPromise({ id: 1 }),
   query: () => mockPromise([mockDynamoRsvp1, mockDynamoRsvp2, mockDynamoRsvp3]),
+  queryRaw: () =>
+    mockPromise({
+      ScannedCount: 3,
+      Items: [mockDynamoRsvp1, mockDynamoRsvp2, mockDynamoRsvp3],
+    }),
 }));
 
 describe('paginatify basics', () => {

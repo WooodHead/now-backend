@@ -1,5 +1,5 @@
 import { get, slice } from 'lodash';
-import { query } from '../db';
+import { query, queryRaw } from '../db';
 
 export const userIdFromContext = context => get(context, ['user', 'id']);
 export const userFromContext = context => get(context, ['user']);
@@ -28,9 +28,10 @@ export const paginatify = async (settings, { first, last, after, before }) => {
   const options = { ...paginationDefaults, ...settings };
 
   let { expr } = options;
+  const baseExpr = expr;
 
   const { exprValues, cursorId, tableName, cursorDeserialize } = options;
-
+  const baseExprValues = { ...exprValues };
   if (after) {
     expr += ` and ${cursorId} > :after`;
     exprValues[':after'] = cursorDeserialize(fromBase64(after));
@@ -48,7 +49,25 @@ export const paginatify = async (settings, { first, last, after, before }) => {
     ...options.queryParamsExtra,
   };
 
-  const serverData = await query(params);
+  // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Count
+  /**
+   * If the size of the Query result set is larger than 1 MB, then ScannedCount and Count will
+   * represent only a partial count of the total items. You will need to perform multiple Query
+   * operations in order to retrieve all of the results (see Paginating the Results).
+   */
+  const raw = await queryRaw({
+    ...params,
+    KeyConditionExpression: baseExpr,
+    ExpressionAttributeValues: baseExprValues,
+  });
+  const count = get(raw, 'ScannedCount', 0);
+
+  let serverData = [];
+  if (baseExpr !== expr) {
+    serverData = await query(params);
+  } else {
+    serverData = raw.Items;
+  }
   let data = serverData;
 
   // if after, default first, if before default last, otherwise default first
@@ -77,6 +96,7 @@ export const paginatify = async (settings, { first, last, after, before }) => {
   }
   return {
     pageInfo,
+    count,
     edges: data.map(d => buildEdge(cursorId, d)),
   };
 };

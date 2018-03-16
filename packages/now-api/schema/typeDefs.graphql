@@ -4,31 +4,37 @@ scalar GraphQLTime
 
 scalar GraphQLDateTime
 
+interface Node {
+  id: ID!
+}
+
+interface Edge {
+  cursor: String!
+  node: Node
+}
+
+interface Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [Edge]!
+}
+
 type Query {
-  allBotEvents: [BotEvent]
   allEvents: [Event]
-  allActivityTemplates: [ActivityTemplate]
-  template(id: ID!): ActivityTemplate
+  activity(id: ID!): Activity
+  allActivities: [Activity]
+  todayActivity(timeZone: String!): Activity
   event(id: ID!): Event
   rsvp(id: ID!): Rsvp
-  events: Event
-  botEvent(id: ID!): BotEvent
   currentUser: User
   user(id: ID!): User
 }
 
 type Mutation {
-  createBotEvent(input: CreateBotEventInput): CreateBotEventPayload
   createEvent(input: CreateEventInput!): CreateEventPayload
   addRsvp(input: CreateRsvpInput!): CreateRsvpPayload
   removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
-  createActivityTemplate(
-    input: CreateActivityTemplate
-  ): CreateActivityTemplatePayload
-  addUserToBotEvent(input: AddUserToBotEventInput): AddUserToBotEventPayload
-  setBotEventReminderSent(
-    input: SetBotEventReminderSentInput
-  ): SetBotEventReminderSentPayload
+  createActivity(input: CreateActivity): CreateActivityPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
 }
 
@@ -50,16 +56,8 @@ type CreateRsvpPayload {
   event: Event
 }
 
-input CreateBotEventInput {
-  activitySlug: String!
-  postChannel: String!
-  chatChannel: String!
-  creatorId: String!
-  time: GraphQLDateTime!
-}
-
 input CreateEventInput {
-  templateId: String!
+  activityId: String!
   time: GraphQLDateTime!
 }
 
@@ -67,19 +65,15 @@ type CreateEventPayload {
   event: Event
 }
 
-type CreateBotEventPayload {
-  event: Event
-}
-
-input CreateActivityTemplate {
+input CreateActivity {
   title: String!
   description: String!
   duration: Int
   emoji: String
 }
 
-type CreateActivityTemplatePayload {
-  template: ActivityTemplate
+type CreateActivityPayload {
+  activity: Activity
 }
 
 input CreateMessageInput {
@@ -89,24 +83,6 @@ input CreateMessageInput {
 
 type CreateMessagePayload {
   message: Message
-}
-
-input AddUserToBotEventInput {
-  eventId: ID!
-  slackId: String!
-}
-
-type AddUserToBotEventPayload {
-  event: Event
-}
-
-input SetBotEventReminderSentInput {
-  eventId: ID!
-  type: ReminderType!
-}
-
-type SetBotEventReminderSentPayload {
-  event: Event
 }
 
 type User {
@@ -133,12 +109,13 @@ type Photo {
   thumbLink: String
 }
 
-type UserEventsConnection {
+type UserEventsConnection implements Connection {
   pageInfo: PageInfo!
-  edges: [UserEventsEdge]
+  count: Int
+  edges: [UserEventsEdge]!
 }
 
-type UserEventsEdge {
+type UserEventsEdge implements Edge {
   cursor: String!
   node: Event
   messages(
@@ -149,10 +126,10 @@ type UserEventsEdge {
   ): EventMessagesConnection
 }
 
-type Event {
+type Event implements Node {
   id: ID!
   time: GraphQLDateTime
-  activity: ActivityTemplate
+  activity: Activity
   rsvps(
     first: Int
     last: Int
@@ -189,26 +166,6 @@ type Location {
   updatedAt: GraphQLDateTime
 }
 
-type BotEvent {
-  id: ID!
-  attendeeCount: Int
-  chatChannel: String
-  postChannel: String
-  description: String
-  limit: Int
-  slug: String
-  title: String
-  duration: Int
-  creator: User
-  creatorId: String
-  activity: ActivityTemplate
-  attendees: [User]
-  reminders: [Reminder]
-  time: GraphQLDateTime
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
-}
-
 enum ReminderType {
   oneHour
   tenMinutes
@@ -222,40 +179,25 @@ type Reminder {
   updatedAt: GraphQLDateTime
 }
 
-interface Activity {
+type Activity {
   id: ID!
   title: String
   slug: String
   description: String
   duration: String
+  activityDate: GraphQLDateTime
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
   emoji: String
+  events(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): ActivityEventsConnection
 }
 
-type ActivityTemplate implements Activity {
-  id: ID!
-  title: String
-  slug: String
-  description: String
-  duration: String
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
-  emoji: String
-}
-
-type EventActivity implements Activity {
-  id: ID!
-  title: String
-  slug: String
-  description: String
-  duration: String
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
-  emoji: String
-}
-
-type Rsvp {
+type Rsvp implements Node {
   id: ID!
   user: User
   event: Event
@@ -277,27 +219,40 @@ type RsvpLog {
   action: RsvpAction
 }
 
-type EventRsvpsConnection {
+type EventRsvpsConnection implements Connection {
   pageInfo: PageInfo!
-  edges: [EventRsvpsEdge]
+  count: Int
+  edges: [EventRsvpsEdge]!
 }
 
-type EventRsvpsEdge {
+type EventRsvpsEdge implements Edge {
   cursor: String!
   node: Rsvp
 }
 
-type EventMessagesConnection {
+type EventMessagesConnection implements Connection {
   pageInfo: PageInfo!
-  edges: [EventMessagesEdge]
+  count: Int
+  edges: [EventMessagesEdge]!
 }
 
-type EventMessagesEdge {
+type EventMessagesEdge implements Edge {
   cursor: String!
   node: Message
 }
 
-type Message {
+type ActivityEventsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [ActivityEventsEdge]!
+}
+
+type ActivityEventsEdge implements Edge {
+  cursor: String!
+  node: Event
+}
+
+type Message implements Node {
   id: ID!
   text: String
   user: User

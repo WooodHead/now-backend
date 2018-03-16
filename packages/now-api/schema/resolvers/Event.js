@@ -1,16 +1,17 @@
 import uuid from 'uuid';
 
-import { scan, get, put, getTemplate, getUserRsvpByEvent } from '../../db';
+import { scan, getEvent, put, getActivity, getUserRsvpByEvent } from '../../db';
 import { userIdFromContext } from '../util';
 import { getRsvps } from './Rsvp';
 import { getMessages } from './Message';
+import { TABLES } from '../../db/constants';
 
-const events = () => scan('now_event');
-const event = id => get('now_event', { id });
-const putEvent = e => put('now_event', e);
+const events = () => scan(TABLES.EVENT);
+const putEvent = e => put(TABLES.EVENT, e);
 
 // Resolvers
-const templateResolver = root => getTemplate(root.templateId);
+const activityResolver = ({ activityId }) => getActivity(activityId);
+
 const rsvpsResolver = (root, args) =>
   getRsvps(root, {
     eventId: root.id,
@@ -29,7 +30,7 @@ const isAttendingResolver = ({ id }, { userId }, ctx) =>
   );
 
 export const resolvers = {
-  activity: templateResolver,
+  activity: activityResolver,
   rsvps: rsvpsResolver,
   messages: messagesResolver,
   isAttending: isAttendingResolver,
@@ -37,25 +38,25 @@ export const resolvers = {
 
 // Queries
 const allEvents = () => events();
-const eventQuery = (root, { id }) => event(id);
+const eventQuery = (root, { id }) => getEvent(id);
 
 export const queries = { event: eventQuery, allEvents };
 
-const createEvent = (root, { input: { time, templateId } }) => {
+const createEvent = (root, { input: { time, activityId } }) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
-  return getTemplate(templateId)
+  return getActivity(activityId)
     .then(t => ({
       id: newId,
       limit: t.limit,
-      templateId,
+      activityId,
       createdAt: ISOString,
       updatedAt: ISOString,
       rsvps: [],
       time,
     }))
     .then(putEvent)
-    .then(() => ({ event: event(newId) }));
+    .then(() => ({ event: getEvent(newId) }));
 };
 
 export const mutations = {

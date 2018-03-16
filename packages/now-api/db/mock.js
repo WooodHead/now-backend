@@ -23,19 +23,27 @@ export const mocks = {
   query: () => {
     throw new Error('Unimplemented mock for query');
   },
-  getTemplate: () => {
-    throw new Error('Unimplemented mock for getTemplate');
+  queryRaw: () => {
+    throw new Error('Unimplemented mock for queryRaw');
+  },
+  getActivity: () => {
+    throw new Error('Unimplemented mock for getActivity');
+  },
+  getEvent: () => {
+    throw new Error('Unimplemented mock for getEvent');
   },
 };
 
 jest.mock('../db', () => ({
   scan: table => mocks.scan(table),
   get: (table, key) => mocks.get(table, key),
-  getTemplate: id => mocks.get('now_template', { id }),
+  getActivity: id => mocks.getActivity(id),
+  getEvent: id => mocks.getEvent(id),
   put: (table, item) => mocks.put(table, item),
   update: (table, key, expr, values, names = undefined) =>
     mocks.update(table, key, expr, values, names),
   query: params => mocks.query(params),
+  queryRaw: params => mocks.queryRaw(params),
 }));
 
 const apolloCache = new InMemoryCache();

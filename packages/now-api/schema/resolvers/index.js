@@ -1,30 +1,27 @@
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
-import * as BotEvent from './BotEvent';
 import * as Event from './Event';
 import * as User from './User';
-import * as ActivityTemplate from './ActivityTemplate';
+import * as Activity from './Activity';
 import * as Message from './Message';
 import * as Rsvp from './Rsvp';
 
 export default {
   Query: {
-    ...BotEvent.queries,
     ...User.queries,
-    ...ActivityTemplate.queries,
+    ...Activity.queries,
     ...Event.queries,
     ...Message.queries,
   },
   Subscription: {
     ...Message.subscriptions,
   },
+  Activity: Activity.resolvers,
   Mutation: {
-    ...BotEvent.mutations,
-    ...ActivityTemplate.mutations,
+    ...Activity.mutations,
     ...Event.mutations,
     ...Message.mutations,
     ...Rsvp.mutations,
   },
-  BotEvent: BotEvent.resolvers,
   Event: Event.resolvers,
   Message: Message.resolvers,
   Rsvp: Rsvp.resolvers,

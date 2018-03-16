@@ -44,7 +44,18 @@ mocks.query = () =>
     mockDynamoMessage4,
     mockDynamoMessage5,
   ]);
-mocks.get = () => mockPromise({ id: 1 });
+mocks.queryRaw = () =>
+  mockPromise({
+    ScannedCount: 5,
+    Items: [
+      mockDynamoMessage1,
+      mockDynamoMessage2,
+      mockDynamoMessage3,
+      mockDynamoMessage4,
+      mockDynamoMessage5,
+    ],
+  });
+mocks.getEvent = () => mockPromise({ id: 1 });
 
 describe('message', () => {
   it('returns eventMessages', async () => {
