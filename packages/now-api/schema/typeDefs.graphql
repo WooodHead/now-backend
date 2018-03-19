@@ -156,6 +156,7 @@ type Location {
   lat: Float!
   lng: Float!
   address: String
+  name: String
   crossStreet: String
   city: String
   state: String
