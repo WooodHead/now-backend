@@ -25,6 +25,7 @@ export default {
   Event: Event.resolvers,
   Message: Message.resolvers,
   Rsvp: Rsvp.resolvers,
+  User: User.resolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,

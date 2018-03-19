@@ -8,7 +8,7 @@ const transformUser = u => {
     const { email, photo } = u;
     const [first, last] = get(u, 'name', '').split(' ');
     return {
-      id: u.id,
+      id: String(u.id),
       meetupId: u.id,
       email,
       first,

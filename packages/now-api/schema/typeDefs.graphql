@@ -90,12 +90,12 @@ type User {
   email: String
   meetupId: String
   slackId: String
-  events(
+  rsvps(
     first: Int
     last: Int
     after: String
     before: String
-  ): UserEventsConnection
+  ): UserRsvpsConnection
   devices: [Device]
   preferences: [Preference]
   photo: Photo
@@ -109,21 +109,15 @@ type Photo {
   thumbLink: String
 }
 
-type UserEventsConnection implements Connection {
+type UserRsvpsConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
-  edges: [UserEventsEdge]!
+  edges: [UserRsvpsEdge]!
 }
 
-type UserEventsEdge implements Edge {
+type UserRsvpsEdge implements Edge {
   cursor: String!
-  node: Event
-  messages(
-    first: Int
-    last: Int
-    after: String
-    before: String
-  ): EventMessagesConnection
+  node: Rsvp
 }
 
 type Event implements Node {

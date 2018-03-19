@@ -1,4 +1,5 @@
 import { getSelf } from '../../api';
+import { getUserRsvps } from './Rsvp';
 
 export const user = (root, { id }, context) => {
   if (id) {
@@ -11,4 +12,6 @@ const currentUser = (root, vars, context) => getSelf(context);
 
 export const queries = { currentUser, user };
 
-export const resolvers = {};
+const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });
+
+export const resolvers = { rsvps };

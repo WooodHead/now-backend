@@ -2,7 +2,7 @@ import uuid from 'uuid';
 
 import { scan, getEvent, put, getActivity, getUserRsvpByEvent } from '../../db';
 import { userIdFromContext } from '../util';
-import { getRsvps } from './Rsvp';
+import { getEventRsvps } from './Rsvp';
 import { getMessages } from './Message';
 import { TABLES } from '../../db/constants';
 
@@ -13,7 +13,7 @@ const putEvent = e => put(TABLES.EVENT, e);
 const activityResolver = ({ activityId }) => getActivity(activityId);
 
 const rsvpsResolver = (root, args) =>
-  getRsvps(root, {
+  getEventRsvps({
     eventId: root.id,
     ...args,
   });

@@ -24,7 +24,7 @@ const event = ({ eventId }) => getEvent(eventId);
 const user = (rsvp, args, context) =>
   getUser(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = (eventId, activityId, userId, action) => {
+const createRsvp = (eventId, userId, action) => {
   const id = rsvpId(eventId, userId);
   const ISOString = new Date().toISOString();
   const newRsvp = {
@@ -37,23 +37,25 @@ const createRsvp = (eventId, activityId, userId, action) => {
   };
   return putRsvp(newRsvp).then(r => ({
     rsvp: r.Attributes,
-    event: event(eventId, activityId),
+    event: getEvent(eventId),
   }));
 };
 
-const addRsvp = (root, { input: { eventId, activityId } }, ctx) =>
-  createRsvp(eventId, activityId, userIdFromContext(ctx), 'add');
+const addRsvp = (root, { input: { eventId } }, ctx) =>
+  createRsvp(eventId, userIdFromContext(ctx), 'add');
 
-const removeRsvp = (root, { input: { eventId, activityId } }, ctx) =>
-  createRsvp(eventId, activityId, userIdFromContext(ctx), 'remove');
+const removeRsvp = (root, { input: { eventId } }, ctx) =>
+  createRsvp(eventId, userIdFromContext(ctx), 'remove');
+export const resolvers = { event, user };
+export const mutations = { addRsvp, removeRsvp };
 
-export const getRsvps = (root, { eventId, first, last, after, before }) =>
+export const getEventRsvps = ({ eventId, first, last, after, before }) =>
   paginatify(
     {
       expr: 'eventId = :eventId',
       exprValues: { ':eventId': eventId },
       tableName: TABLES.RSVP,
-      cursorId: 'updatedAt',
+      cursorId: 'userId',
       queryParamsExtra: {
         IndexName: 'eventId-userId-index',
       },
@@ -65,5 +67,22 @@ export const getRsvps = (root, { eventId, first, last, after, before }) =>
       before,
     }
   );
-export const resolvers = { event, user };
-export const mutations = { addRsvp, removeRsvp };
+
+export const getUserRsvps = ({ userId, first, last, after, before }) =>
+  paginatify(
+    {
+      expr: 'userId = :userId',
+      exprValues: { ':userId': userId },
+      tableName: TABLES.RSVP,
+      cursorId: 'eventId',
+      queryParamsExtra: {
+        IndexName: 'userId-eventId-index',
+      },
+    },
+    {
+      first,
+      last,
+      after,
+      before,
+    }
+  );
