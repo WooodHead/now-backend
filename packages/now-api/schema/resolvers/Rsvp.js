@@ -53,11 +53,13 @@ export const getEventRsvps = ({ eventId, first, last, after, before }) =>
   paginatify(
     {
       expr: 'eventId = :eventId',
-      exprValues: { ':eventId': eventId },
+      exprValues: { ':eventId': eventId, ':action': 'add' },
       tableName: TABLES.RSVP,
       cursorId: 'userId',
       queryParamsExtra: {
         IndexName: 'eventId-userId-index',
+        FilterExpression: '#a = :action',
+        ExpressionAttributeNames: { '#a': 'action' },
       },
     },
     {
@@ -72,11 +74,13 @@ export const getUserRsvps = ({ userId, first, last, after, before }) =>
   paginatify(
     {
       expr: 'userId = :userId',
-      exprValues: { ':userId': userId },
+      exprValues: { ':userId': userId, ':action': 'add' },
       tableName: TABLES.RSVP,
       cursorId: 'eventId',
       queryParamsExtra: {
         IndexName: 'userId-eventId-index',
+        FilterExpression: '#a = :action',
+        ExpressionAttributeNames: { '#a': 'action' },
       },
     },
     {
