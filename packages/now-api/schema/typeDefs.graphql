@@ -156,6 +156,7 @@ type Location {
   state: String
   postalCode: String
   country: String
+  neighborhood: String
   isFuzzed: Boolean
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
