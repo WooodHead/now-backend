@@ -10,13 +10,13 @@ interface Node {
 
 interface Edge {
   cursor: String!
-  node: Node
+  node: Node!
 }
 
 interface Connection {
   pageInfo: PageInfo!
   count: Int
-  edges: [Edge]!
+  edges: [Edge!]!
 }
 
 type Query {
@@ -95,7 +95,7 @@ type User {
     last: Int
     after: String
     before: String
-  ): UserRsvpsConnection
+  ): UserRsvpsConnection!
   devices: [Device]
   preferences: [Preference]
   photo: Photo
@@ -112,12 +112,12 @@ type Photo {
 type UserRsvpsConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
-  edges: [UserRsvpsEdge]!
+  edges: [UserRsvpsEdge!]!
 }
 
 type UserRsvpsEdge implements Edge {
   cursor: String!
-  node: Rsvp
+  node: Rsvp!
 }
 
 type Event implements Node {
@@ -139,7 +139,7 @@ type Event implements Node {
   isAttending(userId: ID): Boolean
   limit: Int
   instigator: User
-  location: Location
+  location: Location!
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
@@ -218,34 +218,34 @@ type RsvpLog {
 type EventRsvpsConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
-  edges: [EventRsvpsEdge]!
+  edges: [EventRsvpsEdge!]!
 }
 
 type EventRsvpsEdge implements Edge {
   cursor: String!
-  node: Rsvp
+  node: Rsvp!
 }
 
 type EventMessagesConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
-  edges: [EventMessagesEdge]!
+  edges: [EventMessagesEdge!]!
 }
 
 type EventMessagesEdge implements Edge {
   cursor: String!
-  node: Message
+  node: Message!
 }
 
 type ActivityEventsConnection implements Connection {
   pageInfo: PageInfo!
   count: Int!
-  edges: [ActivityEventsEdge]!
+  edges: [ActivityEventsEdge!]!
 }
 
 type ActivityEventsEdge implements Edge {
   cursor: String!
-  node: Event
+  node: Event!
 }
 
 type Message implements Node {
