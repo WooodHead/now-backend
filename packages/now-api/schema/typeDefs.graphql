@@ -181,7 +181,7 @@ type Activity {
   slug: String
   description: String
   duration: String
-  activityDate: GraphQLDateTime
+  activityDate: GraphQLDate
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
   emoji: String
