@@ -15,3 +15,4 @@ template.yml
 !.elasticbeanstalk/*.global.yml
 
 dist/
+coverage

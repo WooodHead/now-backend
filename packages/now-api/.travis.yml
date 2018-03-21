@@ -2,11 +2,18 @@ sudo: required
 language: node_js
 node_js:
 - "8.9.4"
+env:
+  global:
+    - COVERALLS_SERVICE_NAME=travis-pro
 services:
   - docker
 install:
   - pip install --user awscli
   - yarn install
+script:
+  - yarn test
+after_success:
+  - yarn coveralls < coverage/lcov.info
 before_deploy:
   - yarn build # webpack the app
   - yarn install --modules-folder dist/node_modules --prod #only prod dependencies in the docker image
