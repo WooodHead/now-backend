@@ -129,13 +129,13 @@ type Event implements Node {
     last: Int
     after: String
     before: String
-  ): EventRsvpsConnection
+  ): EventRsvpsConnection!
   messages(
     first: Int
     last: Int
     after: String
     before: String
-  ): EventMessagesConnection
+  ): EventMessagesConnection!
   isAttending(userId: ID): Boolean
   limit: Int
   instigator: User
@@ -190,7 +190,7 @@ type Activity {
     last: Int
     after: String
     before: String
-  ): ActivityEventsConnection
+  ): ActivityEventsConnection!
 }
 
 type Rsvp implements Node {
