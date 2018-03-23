@@ -1,5 +1,6 @@
 import { get } from 'lodash';
 import fetch from 'node-fetch';
+import { splitName } from './util';
 
 const API_BASE = 'https://api.meetup.com/';
 
@@ -8,7 +9,7 @@ const STATEFUL_COUNTRIES = ['us', 'ca'];
 const transformUser = u => {
   if (u !== null && u.id) {
     const { email, photo } = u;
-    const [firstName, lastName] = get(u, 'name', '').split(' ');
+    const [firstName, lastName] = splitName(get(u, 'name', ''));
     const locationParts = [u.city];
     if (u.state && STATEFUL_COUNTRIES.includes(u.country)) {
       locationParts.push(u.state);
