@@ -90,6 +90,10 @@ type User {
   email: String
   meetupId: String
   slackId: String
+  firstName: String
+  lastName: String
+  bio: String
+  location: String
   rsvps(
     first: Int
     last: Int

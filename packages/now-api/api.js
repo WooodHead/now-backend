@@ -3,16 +3,24 @@ import fetch from 'node-fetch';
 
 const API_BASE = 'https://api.meetup.com/';
 
+const STATEFUL_COUNTRIES = ['us', 'ca'];
+
 const transformUser = u => {
   if (u !== null && u.id) {
     const { email, photo } = u;
-    const [first, last] = get(u, 'name', '').split(' ');
+    const [firstName, lastName] = get(u, 'name', '').split(' ');
+    const locationParts = [u.city];
+    if (u.state && STATEFUL_COUNTRIES.includes(u.country)) {
+      locationParts.push(u.state);
+    }
     return {
       id: String(u.id),
       meetupId: u.id,
       email,
-      first,
-      last,
+      firstName,
+      lastName,
+      bio: u.bio || '',
+      location: locationParts.join(', '),
       photo: {
         id: get(photo, 'id'),
         highresLink: get(photo, 'highres_link'),
