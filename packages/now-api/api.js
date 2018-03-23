@@ -14,9 +14,12 @@ const transformUser = u => {
       first,
       last,
       photo: {
+        id: get(photo, 'id'),
         highresLink: get(photo, 'highres_link'),
         photoLink: get(photo, 'photo_link'),
         thumbLink: get(photo, 'thumb_link'),
+        baseUrl: get(photo, 'base_url'),
+        type: get(photo, 'type'),
       },
     };
   }

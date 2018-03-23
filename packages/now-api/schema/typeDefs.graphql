@@ -104,9 +104,12 @@ type User {
 }
 
 type Photo {
-  highresLink: String
-  photoLink: String
-  thumbLink: String
+  id: ID!
+  highresLink: String @deprecated
+  photoLink: String @deprecated
+  thumbLink: String @deprecated
+  baseUrl: String
+  type: String
 }
 
 type UserRsvpsConnection implements Connection {
