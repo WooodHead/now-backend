@@ -8,9 +8,13 @@ import { createServer } from 'http';
 import DataLoader from 'dataloader';
 import morgan from 'morgan';
 import url from 'url';
+import { use as jsJodaUse } from 'js-joda';
+import jsJodaTimezone from 'js-joda-timezone';
 
 import schema from './schema';
 import { getSelf, getMember } from './api';
+
+jsJodaUse(jsJodaTimezone);
 
 const PORT = 3000;
 

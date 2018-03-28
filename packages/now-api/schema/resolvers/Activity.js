@@ -1,6 +1,6 @@
 import uuid from 'uuid';
 import { get } from 'lodash';
-import { LocalDate, ZoneOffset } from 'js-joda';
+import { LocalDate, ZoneId } from 'js-joda';
 
 import { scan, put, getActivity } from '../../db';
 import { paginatify } from '../util';
@@ -10,7 +10,7 @@ const allActivities = () => scan(TABLES.ACTIVITY);
 const activityQuery = (root, { id }) => getActivity(id);
 const todayActivity = () =>
   allActivities().then(activities => {
-    const now = LocalDate.now(ZoneOffset.UTC).toString();
+    const now = LocalDate.now(ZoneId.of('America/New_York')).toString();
     return activities.find(t => get(t, 'activityDate') === now);
   });
 

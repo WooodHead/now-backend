@@ -23,7 +23,7 @@ type Query {
   allEvents: [Event]
   activity(id: ID!): Activity
   allActivities: [Activity]
-  todayActivity(timeZone: String!): Activity
+  todayActivity: Activity
   event(id: ID!): Event
   rsvp(id: ID!): Rsvp
   currentUser: User
