@@ -6,6 +6,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
 import DataLoader from 'dataloader';
+import morgan from 'morgan';
 import url from 'url';
 
 import schema from './schema';
@@ -14,12 +15,13 @@ import { getSelf, getMember } from './api';
 const PORT = 3000;
 
 const app = express();
-
 const loaderContext = token => ({
   members: new DataLoader(ids =>
     Promise.all(ids.map(id => getMember(id, { token })))
   ),
 });
+
+app.use(morgan('tiny'));
 
 app.use(
   '/graphql',
@@ -68,7 +70,9 @@ app.get(
 );
 
 const graphQLServer = createServer(app);
-graphQLServer.listen(PORT);
+graphQLServer.listen(PORT, () => {
+  console.log('Server initialized');
+});
 
 SubscriptionServer.create(
   {

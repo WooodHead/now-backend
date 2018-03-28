@@ -5,4 +5,6 @@ EXPOSE 3000
 
 COPY dist .
 
+ENV NODE_ENV=production
+
 CMD ["node","server.js"]
