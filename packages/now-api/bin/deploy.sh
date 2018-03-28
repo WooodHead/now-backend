@@ -18,6 +18,7 @@ eval $(aws ecr get-login --no-include-email)
 # Build and push the image
 docker build -t $APP:$VERSION .
 docker tag $APP:$VERSION $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$APP:$VERSION
+docker tag $APP:latest $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$APP:latest
 docker push $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$APP:$VERSION
 
 # Replace the <AWS_ACCOUNT_ID> with the real ID
