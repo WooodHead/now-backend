@@ -42,7 +42,7 @@ export const resolvers = {
 
 const createActivity = (
   root,
-  { input: { title, description, duration, emoji } }
+  { input: { title, description, activityDate, emoji } }
 ) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
@@ -50,7 +50,7 @@ const createActivity = (
     id: newId,
     title,
     description,
-    duration,
+    activityDate: activityDate.toISOString().substring(0, 10),
     createdAt: ISOString,
     updatedAt: ISOString,
     emoji,

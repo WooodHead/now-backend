@@ -42,21 +42,24 @@ const eventQuery = (root, { id }) => getEvent(id);
 
 export const queries = { event: eventQuery, allEvents };
 
-const createEvent = (root, { input: { time, activityId } }) => {
+const createEvent = (
+  root,
+  { input: { time, activityId, limit, location } }
+) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
-  return getActivity(activityId)
-    .then(t => ({
-      id: newId,
-      limit: t.limit,
-      activityId,
-      createdAt: ISOString,
-      updatedAt: ISOString,
-      rsvps: [],
-      time,
-    }))
-    .then(putEvent)
-    .then(() => ({ event: getEvent(newId) }));
+  const newEvent = {
+    id: newId,
+    limit,
+    activityId,
+    createdAt: ISOString,
+    updatedAt: ISOString,
+    rsvps: [],
+    time: time.toISOString(),
+    location,
+  };
+
+  return putEvent(newEvent).then(() => ({ event: getEvent(newId) }));
 };
 
 export const mutations = {

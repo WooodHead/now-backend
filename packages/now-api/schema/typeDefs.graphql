@@ -34,7 +34,7 @@ type Mutation {
   createEvent(input: CreateEventInput!): CreateEventPayload
   addRsvp(input: CreateRsvpInput!): CreateRsvpPayload
   removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
-  createActivity(input: CreateActivity): CreateActivityPayload
+  createActivity(input: CreateActivityInput): CreateActivityPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
 }
 
@@ -59,17 +59,34 @@ type CreateRsvpPayload {
 input CreateEventInput {
   activityId: String!
   time: GraphQLDateTime!
+  limit: Int!
+  location: LocationInput!
+}
+
+input LocationInput {
+  foursquareVenueId: String
+  lat: Float!
+  lng: Float!
+  address: String
+  name: String
+  crossStreet: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  neighborhood: String
+  isFuzzed: Boolean
 }
 
 type CreateEventPayload {
   event: Event
 }
 
-input CreateActivity {
+input CreateActivityInput {
   title: String!
   description: String!
-  duration: Int
-  emoji: String
+  emoji: String!
+  activityDate: GraphQLDate!
 }
 
 type CreateActivityPayload {
