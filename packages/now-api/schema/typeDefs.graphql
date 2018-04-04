@@ -20,13 +20,13 @@ interface Connection {
 }
 
 type Query {
-  allEvents: [Event]
+  allEvents: [Event!]!
   activity(id: ID!): Activity
-  allActivities: [Activity]
+  allActivities: [Activity!]!
   todayActivity: Activity
   event(id: ID!): Event
   rsvp(id: ID!): Rsvp
-  currentUser: User
+  currentUser: User!
   user(id: ID!): User
 }
 
