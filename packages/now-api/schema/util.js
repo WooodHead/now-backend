@@ -60,7 +60,7 @@ export const paginatify = async (settings, { first, last, after, before }) => {
     KeyConditionExpression: baseExpr,
     ExpressionAttributeValues: baseExprValues,
   });
-  const count = get(raw, 'ScannedCount', 0);
+  const count = get(raw, 'Count', 0);
 
   let serverData = [];
   if (baseExpr !== expr) {
