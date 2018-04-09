@@ -30,9 +30,10 @@ export const update = (table, key, expr, values, names = undefined) =>
     UpdateExpression: expr,
     ReturnValues: 'ALL_NEW',
   });
-export const scan = table =>
+export const scan = (table, filter = undefined) =>
   pScan({
     TableName: table,
+    FilterExpression: filter,
   }).then(response => response.Items);
 
 export const queryRaw = params => pQuery(params);
@@ -50,3 +51,5 @@ export const getEvent = id =>
     ExpressionAttributeValues: { ':id': id },
     IndexName: 'id-index',
   }).then(response => response.Items[0]);
+
+export { TABLES };

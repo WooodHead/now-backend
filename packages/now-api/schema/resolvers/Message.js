@@ -1,4 +1,5 @@
 import { Instant } from 'js-joda';
+import uuid from 'uuid/v4';
 
 import { put, getEvent } from '../../db';
 import { userIdFromContext, paginatify, buildEdge } from '../util';
@@ -26,7 +27,7 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
     }
   );
 
-const createMessage = (root, { input: { eventId, text } }, ctx) => {
+const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
   const loggedInUserId = userIdFromContext(ctx);
   // TODO: if user isn't in event, throw error
   if (false) {
@@ -38,6 +39,7 @@ const createMessage = (root, { input: { eventId, text } }, ctx) => {
     userId: loggedInUserId,
     text,
     ts,
+    id: id || uuid(),
   };
   return put(TABLES.MESSAGE, newMessage).then(() => {
     pubsub.publish(MESSAGE_ADDED_TOPIC, {

@@ -99,6 +99,7 @@ type CreateActivityPayload {
 input CreateMessageInput {
   text: String!
   eventId: ID!
+  id: ID
 }
 
 type CreateMessagePayload {
