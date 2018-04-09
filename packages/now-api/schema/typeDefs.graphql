@@ -4,6 +4,8 @@ scalar GraphQLTime
 
 scalar GraphQLDateTime
 
+scalar Upload
+
 interface Node {
   id: ID!
 }
@@ -36,6 +38,7 @@ type Mutation {
   removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
   createActivity(input: CreateActivityInput): CreateActivityPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
+  setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
 }
 
 type Subscription {
@@ -292,4 +295,14 @@ type Preference {
   id: ID!
   key: String!
   value: String
+}
+
+input SetProfilePhotoInput {
+  photo: Upload!
+  main: Boolean
+  syncPhoto: Boolean
+}
+
+type CreatePhotoPayload {
+  photo: Photo
 }

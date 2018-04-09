@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import url from 'url';
 import { use as jsJodaUse } from 'js-joda';
 import jsJodaTimezone from 'js-joda-timezone';
+import { apolloUploadExpress } from 'apollo-upload-server';
 
 import schema from './schema';
 import { getSelf, getMember } from './api';
@@ -30,6 +31,7 @@ app.use(morgan('tiny'));
 app.use(
   '/graphql',
   bodyParser.json(),
+  apolloUploadExpress({ maxFileSize: 10 * 1024 * 1024, maxFiles: 10 }),
   graphqlExpress(req => {
     const token = get(req, ['headers', 'authorization'], '').split(' ')[1];
     const graphqlContext = {

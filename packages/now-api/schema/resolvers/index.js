@@ -1,9 +1,11 @@
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
+import { GraphQLUpload } from 'apollo-upload-server';
 import * as Event from './Event';
 import * as User from './User';
 import * as Activity from './Activity';
 import * as Message from './Message';
 import * as Rsvp from './Rsvp';
+import * as Photo from './Photo';
 
 export default {
   Query: {
@@ -21,6 +23,7 @@ export default {
     ...Event.mutations,
     ...Message.mutations,
     ...Rsvp.mutations,
+    ...Photo.mutations,
   },
   Event: Event.resolvers,
   Message: Message.resolvers,
@@ -34,4 +37,5 @@ export default {
   GraphQLDate,
   GraphQLTime,
   GraphQLDateTime,
+  Upload: GraphQLUpload,
 };
