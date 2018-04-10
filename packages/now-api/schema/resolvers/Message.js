@@ -1,4 +1,5 @@
 import { Instant } from 'js-joda';
+import { withFilter } from 'graphql-subscriptions';
 import uuid from 'uuid/v4';
 
 import { get, getEvent, put } from '../../db';
@@ -82,7 +83,11 @@ const user = ({ userId: id }, args, context) => {
   return null;
 };
 const messageAdded = {
-  subscribe: () => pubsub.asyncIterator(MESSAGE_ADDED_TOPIC),
+  subscribe: withFilter(
+    () => pubsub.asyncIterator(MESSAGE_ADDED_TOPIC),
+    (payload, variables) =>
+      payload.messageAdded.node.eventId === variables.eventId
+  ),
 };
 
 export const queries = {};
