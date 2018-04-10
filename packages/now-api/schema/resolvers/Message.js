@@ -1,7 +1,7 @@
 import { Instant } from 'js-joda';
 import uuid from 'uuid/v4';
 
-import { put, getEvent } from '../../db';
+import { get, getEvent, put } from '../../db';
 import { userIdFromContext, paginatify, buildEdge } from '../util';
 import { pubsub } from '../../subscriptions';
 import { TABLES } from '../../db/constants';
@@ -30,6 +30,20 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
     }
   );
 
+/* If trying to post a message failed because it already exists, see if it's
+ * because the message was already posted recently. If so, idempotently
+ * allow the same message to be returned.
+ */
+const existingMessage = message =>
+  get(TABLES.MESSAGE, { id: message.id }).then(
+    dbMessage =>
+      message.eventId === dbMessage.eventId &&
+      message.userId === dbMessage.userId &&
+      message.text === dbMessage.text
+        ? { message: dbMessage }
+        : Promise.reject(new Error('Duplicate message ID'))
+  );
+
 const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
   const loggedInUserId = userIdFromContext(ctx);
   // TODO: if user isn't in event, throw error
@@ -44,12 +58,19 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     ts,
     id: id || uuid(),
   };
-  return put(TABLES.MESSAGE, newMessage).then(() => {
-    pubsub.publish(MESSAGE_ADDED_TOPIC, {
-      [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
-    });
-    return { message: newMessage };
-  });
+  return put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)')
+    .then(() => {
+      pubsub.publish(MESSAGE_ADDED_TOPIC, {
+        [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+      });
+      return { message: newMessage };
+    })
+    .catch(
+      e =>
+        e.code === 'ConditionalCheckFailedException'
+          ? existingMessage(newMessage)
+          : Promise.reject(e)
+    );
 };
 
 // TODO: cache the event data loader?

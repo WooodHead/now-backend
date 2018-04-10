@@ -16,10 +16,11 @@ export const get = (table, key = {}) =>
     TableName: table,
     Key: key,
   }).then(response => response.Item);
-export const put = (table, item) =>
+export const put = (table, item, condition = undefined) =>
   pPut({
     TableName: table,
     Item: item,
+    ConditionExpression: condition,
   });
 export const update = (table, key, expr, values, names = undefined) =>
   pUpdate({
