@@ -17,7 +17,10 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
       tableName: TABLES.MESSAGE,
       cursorId: MESSAGE_CURSOR_ID,
       cursorDeserialize: Number,
-      queryParamsExtra: { ScanIndexForward: false },
+      queryParamsExtra: {
+        IndexName: 'eventId-ts-index',
+        ScanIndexForward: false,
+      },
     },
     {
       first,
