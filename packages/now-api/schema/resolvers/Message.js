@@ -41,7 +41,7 @@ const existingMessage = message =>
       message.eventId === dbMessage.eventId &&
       message.userId === dbMessage.userId &&
       message.text === dbMessage.text
-        ? { message: dbMessage }
+        ? dbMessage
         : Promise.reject(new Error('Duplicate message ID'))
   );
 
@@ -64,14 +64,15 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
       pubsub.publish(MESSAGE_ADDED_TOPIC, {
         [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
       });
-      return { message: newMessage };
+      return newMessage;
     })
     .catch(
       e =>
         e.code === 'ConditionalCheckFailedException'
           ? existingMessage(newMessage)
           : Promise.reject(e)
-    );
+    )
+    .then(message => ({ edge: buildEdge(MESSAGE_CURSOR_ID, message) }));
 };
 
 // TODO: cache the event data loader?

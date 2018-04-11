@@ -103,7 +103,7 @@ input CreateMessageInput {
 }
 
 type CreateMessagePayload {
-  message: Message
+  edge: EventMessagesEdge
 }
 
 type User {
