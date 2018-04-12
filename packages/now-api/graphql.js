@@ -26,6 +26,9 @@ const loaderContext = token => ({
   ),
 });
 
+// We're behind a proxy and it will read the right data
+app.enable('trust proxy');
+
 app.use(morgan('tiny'));
 
 app.use(
