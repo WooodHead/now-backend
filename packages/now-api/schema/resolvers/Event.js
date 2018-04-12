@@ -1,3 +1,4 @@
+import { ChronoUnit, Instant, ZonedDateTime } from 'js-joda';
 import uuid from 'uuid';
 
 import { scan, getEvent, put, getActivity, getUserRsvpByEvent } from '../../db';
@@ -29,11 +30,24 @@ const isAttendingResolver = ({ id }, { userId }, ctx) =>
     item => item !== undefined && item.action === 'add'
   );
 
+// one day, this will be fancier.
+const stateResolver = ({ time }) => {
+  const eventTime = ZonedDateTime.parse(time).toInstant();
+  const now = Instant.now();
+
+  if (now.isBefore(eventTime))
+    return 'FUTURE';
+  else if (eventTime.until(now, ChronoUnit.HOURS) < 2)
+    return 'PRESENT';
+  return 'PAST';
+};
+
 export const resolvers = {
   activity: activityResolver,
   rsvps: rsvpsResolver,
   messages: messagesResolver,
   isAttending: isAttendingResolver,
+  state: stateResolver,
 };
 
 // Queries

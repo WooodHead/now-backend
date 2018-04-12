@@ -170,6 +170,13 @@ type Event implements Node {
   location: Location!
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+  state: EventState!
+}
+
+enum EventState {
+  PAST
+  PRESENT
+  FUTURE
 }
 
 type Location {
