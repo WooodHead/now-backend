@@ -5,4 +5,5 @@ export const TABLES = {
   EVENT: 'now_event',
   RSVP: 'now_rsvp',
   MESSAGE: 'now_messages',
+  USER: 'now_user',
 };

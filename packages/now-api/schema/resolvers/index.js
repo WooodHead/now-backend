@@ -24,6 +24,7 @@ export default {
     ...Message.mutations,
     ...Rsvp.mutations,
     ...Photo.mutations,
+    ...User.mutations,
   },
   Event: Event.resolvers,
   Message: Message.resolvers,

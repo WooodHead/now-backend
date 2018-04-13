@@ -30,6 +30,7 @@ type Query {
   rsvp(id: ID!): Rsvp
   currentUser: User!
   user(id: ID!): User
+  nowUser(id: ID!): User
 }
 
 type Mutation {
@@ -39,6 +40,8 @@ type Mutation {
   createActivity(input: CreateActivityInput): CreateActivityPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
+  createUser(input: CreateUserInput): CreateUserPayload
+  updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
 }
 
 type Subscription {
@@ -64,6 +67,36 @@ input CreateEventInput {
   time: GraphQLDateTime!
   limit: Int!
   location: LocationInput!
+}
+
+input CreateUserInput {
+  id: ID
+  email: String
+  meetupId: String
+  slackId: String
+  firstName: String
+  lastName: String
+  bio: String
+  location: String
+}
+
+type CreateUserPayload {
+  user: User
+}
+
+input UpdateCurrentUserInput {
+  id: ID!
+  email: String
+  meetupId: String
+  slackId: String
+  firstName: String
+  lastName: String
+  bio: String
+  location: String
+}
+
+type UpdateCurrentUserPayload {
+  user: User
 }
 
 input LocationInput {

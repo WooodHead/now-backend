@@ -29,6 +29,9 @@ export const mocks = {
   getActivity: () => {
     throw new Error('Unimplemented mock for getActivity');
   },
+  getUser: () => {
+    throw new Error('Unimplemented mock for getUser');
+  },
   getEvent: () => {
     throw new Error('Unimplemented mock for getEvent');
   },
@@ -38,6 +41,7 @@ jest.mock('../db', () => ({
   scan: table => mocks.scan(table),
   get: (table, key) => mocks.get(table, key),
   getActivity: id => mocks.getActivity(id),
+  getUser: id => mocks.getUser(id),
   getEvent: id => mocks.getEvent(id),
   put: (table, item) => mocks.put(table, item),
   update: (table, key, expr, values, names = undefined) =>

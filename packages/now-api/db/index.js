@@ -16,12 +16,14 @@ export const get = (table, key = {}) =>
     TableName: table,
     Key: key,
   }).then(response => response.Item);
+
 export const put = (table, item, condition = undefined) =>
   pPut({
     TableName: table,
     Item: item,
     ConditionExpression: condition,
   });
+
 export const update = (table, key, expr, values, names = undefined) =>
   pUpdate({
     TableName: table,
@@ -31,6 +33,7 @@ export const update = (table, key, expr, values, names = undefined) =>
     UpdateExpression: expr,
     ReturnValues: 'ALL_NEW',
   });
+
 export const scan = (table, filter = undefined) =>
   pScan({
     TableName: table,
@@ -42,6 +45,8 @@ export const query = params => pQuery(params).then(response => response.Items);
 
 export const getUserRsvpByEvent = (userId, eventId) =>
   get(TABLES.RSVP, { id: rsvpId(eventId, userId) });
+
+export const getUser = id => get(TABLES.USER, { id });
 
 export const getActivity = id => get(TABLES.ACTIVITY, { id });
 
