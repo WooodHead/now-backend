@@ -19,7 +19,7 @@ before_deploy:
   - yarn install --modules-folder dist/node_modules --prod #only prod dependencies in the docker image
 deploy:
   - provider: script
-    script: bin/deploy.sh now-api NowApi-env $TRAVIS_BUILD_NUMBER-`git rev-parse --short HEAD`
+    script: bin/deploy.sh now-api now-api $TRAVIS_BUILD_NUMBER-`git rev-parse --short HEAD`
     skip_cleanup: true
     on:
       branch: master
