@@ -29,19 +29,16 @@ export const mocks = {
   getActivity: () => {
     throw new Error('Unimplemented mock for getActivity');
   },
-  getUser: () => {
-    throw new Error('Unimplemented mock for getUser');
-  },
   getEvent: () => {
     throw new Error('Unimplemented mock for getEvent');
   },
+  loadMember: jest.fn(),
 };
 
 jest.mock('../db', () => ({
   scan: table => mocks.scan(table),
   get: (table, key) => mocks.get(table, key),
   getActivity: id => mocks.getActivity(id),
-  getUser: id => mocks.getUser(id),
   getEvent: id => mocks.getEvent(id),
   put: (table, item) => mocks.put(table, item),
   update: (table, key, expr, values, names = undefined) =>
@@ -56,6 +53,6 @@ export const client = new ApolloClient({
   cache: apolloCache,
   link: new SchemaLink({
     schema,
-    context: { token: null, loaders: { members: { load: jest.fn() } } },
+    context: { token: null, loaders: { members: { load: mocks.loadMember } } },
   }),
 });

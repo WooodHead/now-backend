@@ -2,7 +2,7 @@
 
 exports[`user returns the current user 1`] = `
 Object {
-  "nowUser": Object {
+  "user": Object {
     "__typename": "User",
     "bio": "I am a test user.",
     "createdAt": "2018-02-26T19:44:34.778Z",
@@ -10,7 +10,6 @@ Object {
     "id": "88cd90f0-3e96-11e8-8c8e-99193c2f37fb",
     "lastName": "Tester",
     "location": "New York, NY",
-    "meetupId": "88cd90f0-3e96-11e8-8c8e-99193c2f37fb",
     "updatedAt": "2018-02-26T19:44:34.778Z",
     Symbol(id): "User:88cd90f0-3e96-11e8-8c8e-99193c2f37fb",
   },

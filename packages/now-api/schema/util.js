@@ -2,7 +2,6 @@ import { get, slice } from 'lodash';
 import { query, queryRaw } from '../db';
 
 export const userIdFromContext = context => get(context, ['user', 'id']);
-export const userFromContext = context => get(context, ['user']);
 
 export const rsvpId = (eventId, userId) => `${eventId}-${userId}`;
 

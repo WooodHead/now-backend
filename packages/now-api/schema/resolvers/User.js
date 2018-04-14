@@ -1,7 +1,8 @@
+import { pick } from 'lodash';
+
 import { userIdFromContext } from '../util';
-import { getSelf } from '../../api';
 import { getUserRsvps } from './Rsvp';
-import { getUser, put, update } from '../../db';
+import { get, put, query, update } from '../../db';
 import { TABLES } from '../../db/constants';
 
 const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
@@ -20,18 +21,60 @@ const putUser = u =>
   );
 
 /* Queries */
-export const user = (root, { id }, context) => {
+export const userQuery = (root, { id }, context) => {
   if (id) {
     return context.loaders.members.load(id);
   }
   return null;
 };
 
-const currentUser = (root, vars, context) => getSelf(context);
+const filterAttributes = id => user => {
+  // many fields are always available
+  const fields = [
+    'id',
+    'bio',
+    'createdAt',
+    'firstName',
+    'lastName',
+    'location',
+    'updatedAt',
+  ];
+  // some fields are available only to the currently-authenticated user
+  if (id === user.id) {
+    fields.push('email');
+  }
+  // other fields (including, notably, auth0Id) are not available to API clients at all
+  return pick(user, fields);
+};
 
-const userQuery = (root, { id }) => getUser(id);
+export const getUser = (id, currentUserId) =>
+  get(TABLES.USER, { id }).then(user => {
+    if (!user) {
+      return null;
+    }
+    return filterAttributes(currentUserId)(user);
+  });
 
-export const queries = { currentUser, user, nowUser: userQuery };
+export const getByAuth0Id = auth0Id =>
+  query({
+    TableName: TABLES.USER,
+    KeyConditionExpression: 'auth0Id = :auth0Id',
+    ExpressionAttributeValues: { ':auth0Id': auth0Id },
+    IndexName: 'auth0Id-index',
+  }).then(items => {
+    if (items.length === 0) return null;
+    else if (items.length === 1) return items[0];
+    return Promise.reject(
+      new Error(`unexpectedly got ${items.length} users from db`)
+    );
+  });
+
+const currentUser = (root, vars, context) => {
+  const id = userIdFromContext(context);
+  return getUser(id, id).then(filterAttributes(id));
+};
+
+export const queries = { currentUser, user: userQuery };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });

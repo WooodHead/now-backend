@@ -1,12 +1,10 @@
+/* eslint-disable import/prefer-default-export,no-unused-vars */
 import { get, isArray, isBoolean } from 'lodash';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import streamToPromise from 'stream-to-promise';
-import { splitName } from './util';
 
 const API_BASE = 'https://api.meetup.com/';
-
-const STATEFUL_COUNTRIES = ['us', 'ca'];
 
 const transformPhoto = photo => ({
   id: get(photo, 'id'),
@@ -16,28 +14,6 @@ const transformPhoto = photo => ({
   baseUrl: get(photo, 'base_url'),
   type: get(photo, 'type'),
 });
-
-const transformUser = u => {
-  if (u !== null && u.id) {
-    const { email, photo } = u;
-    const [firstName, lastName] = splitName(get(u, 'name', ''));
-    const locationParts = [u.city];
-    if (u.state && STATEFUL_COUNTRIES.includes(u.country)) {
-      locationParts.push(u.state);
-    }
-    return {
-      id: String(u.id),
-      meetupId: u.id,
-      email,
-      firstName,
-      lastName,
-      bio: u.bio || '',
-      location: locationParts.join(', '),
-      photo: transformPhoto(photo),
-    };
-  }
-  return null;
-};
 
 const extractErrors = (status, { errors }) => {
   if (isArray(errors) && errors.length > 0) {
@@ -73,12 +49,6 @@ const apiMultipart = (path, context, fields) => {
     body: form,
   }).then(parseResponse);
 };
-
-export const getSelf = context =>
-  apiGet('members/self', context).then(transformUser);
-
-export const getMember = (id, context) =>
-  apiGet(`members/${id}`, context).then(transformUser);
 
 export const setProfilePhoto = (photo, main, syncPhoto, context) =>
   photo

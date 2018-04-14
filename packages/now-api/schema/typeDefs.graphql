@@ -30,7 +30,6 @@ type Query {
   rsvp(id: ID!): Rsvp
   currentUser: User!
   user(id: ID!): User
-  nowUser(id: ID!): User
 }
 
 type Mutation {
@@ -72,8 +71,8 @@ input CreateEventInput {
 input CreateUserInput {
   id: ID
   email: String
-  meetupId: String
-  slackId: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
   firstName: String
   lastName: String
   bio: String
@@ -87,8 +86,8 @@ type CreateUserPayload {
 input UpdateCurrentUserInput {
   id: ID!
   email: String
-  meetupId: String
-  slackId: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
   firstName: String
   lastName: String
   bio: String
@@ -142,8 +141,8 @@ type CreateMessagePayload {
 type User {
   id: ID!
   email: String
-  meetupId: String
-  slackId: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
   firstName: String
   lastName: String
   bio: String

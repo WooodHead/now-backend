@@ -1,7 +1,7 @@
 import { userIdFromContext, paginatify, rsvpId } from '../util';
 
 import { update, getEvent } from '../../db';
-import { user as getUser } from './User';
+import { userQuery } from './User';
 import { TABLES } from '../../db/constants';
 
 const putRsvp = r =>
@@ -22,7 +22,7 @@ const putRsvp = r =>
 const event = ({ eventId }) => getEvent(eventId);
 
 const user = (rsvp, args, context) =>
-  getUser(rsvp, { id: rsvp.userId }, context);
+  userQuery(rsvp, { id: rsvp.userId }, context);
 
 const createRsvp = (eventId, userId, action) => {
   const id = rsvpId(eventId, userId);

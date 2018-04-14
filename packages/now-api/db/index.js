@@ -46,8 +46,6 @@ export const query = params => pQuery(params).then(response => response.Items);
 export const getUserRsvpByEvent = (userId, eventId) =>
   get(TABLES.RSVP, { id: rsvpId(eventId, userId) });
 
-export const getUser = id => get(TABLES.USER, { id });
-
 export const getActivity = id => get(TABLES.ACTIVITY, { id });
 
 export const getEvent = id =>

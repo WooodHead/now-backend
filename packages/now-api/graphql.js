@@ -11,18 +11,21 @@ import url from 'url';
 import { use as jsJodaUse } from 'js-joda';
 import jsJodaTimezone from 'js-joda-timezone';
 import { apolloUploadExpress } from 'apollo-upload-server';
+import jwt from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
 
 import schema from './schema';
-import { getSelf, getMember } from './api';
+import { getUser, getByAuth0Id } from './schema/resolvers/User';
 
 jsJodaUse(jsJodaTimezone);
 
 const PORT = 3000;
 
 const app = express();
-const loaderContext = token => ({
+
+const loaderContext = ({ currentUserAuth0Id }) => ({
   members: new DataLoader(ids =>
-    Promise.all(ids.map(id => getMember(id, { token })))
+    Promise.all(ids.map(id => getUser(id, currentUserAuth0Id)))
   ),
 });
 
@@ -31,34 +34,45 @@ app.enable('trust proxy');
 
 app.use(morgan('tiny'));
 
+const buildUserForContext = (req, otherContext = {}) => {
+  const currentUserAuth0Id = req.user.sub;
+  return getByAuth0Id(currentUserAuth0Id).then(user => ({
+    ...otherContext,
+    currentUserAuth0Id,
+    user,
+    loaders: loaderContext({ currentUserAuth0Id }),
+  }));
+};
+
+const checkJwt = jwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: 'https://now-test.dev.auth0.com/.well-known/jwks.json',
+  }),
+  credentialsRequired: true,
+  audience: 'https://now.meetup.com/graphql',
+  issuer: 'https://now-test.dev.auth0.com/',
+  algorithms: ['RS256'],
+});
+
 app.use(
   '/graphql',
+  checkJwt,
   bodyParser.json(),
   apolloUploadExpress({ maxFileSize: 10 * 1024 * 1024, maxFiles: 10 }),
-  graphqlExpress(req => {
-    const token = get(req, ['headers', 'authorization'], '').split(' ')[1];
-    const graphqlContext = {
-      token,
-      loaders: loaderContext(token),
-      user: null,
-    };
-    return new Promise(resolve => {
-      getSelf(graphqlContext)
-        .then(({ id }) => {
-          resolve({
-            schema,
-            context: { ...graphqlContext, user: { id: String(id) } },
-          });
-        })
-        .catch(() => {
-          resolve({
-            schema,
-            context: graphqlContext,
-          });
-        });
-    });
+  graphqlExpress((req, res) => {
+    if (!req.user) {
+      return res.send(401);
+    }
+    return buildUserForContext(req, { http: true }).then(context => ({
+      schema,
+      context,
+    }));
   })
 );
+
 app.get(
   '/graphiql',
   graphiqlExpress(req => {
@@ -88,24 +102,17 @@ SubscriptionServer.create(
     schema,
     execute,
     subscribe,
-    onConnect: ({ token }) => {
-      const context = {
-        token,
-        loaders: loaderContext(token),
-        user: null,
-      };
-      return new Promise(resolve => {
-        getSelf(context)
-          .then(({ id }) => {
-            resolve({ ...context, user: { id: String(id) } });
-          })
-          .catch(() => {
-            resolve({
-              context,
-            });
-          });
-      });
-    },
+    onConnect: ({ token }) =>
+      new Promise((resolve, reject) => {
+        const req = { headers: { authorization: `Bearer ${token}` } };
+        checkJwt(req, null, err => {
+          if (err) {
+            reject(new Error('error authorizing'));
+          } else {
+            resolve(buildUserForContext(req, { websocket: true }));
+          }
+        });
+      }),
   },
   {
     server: graphQLServer,
