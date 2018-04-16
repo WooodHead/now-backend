@@ -6,6 +6,7 @@ import { get, getEvent, put } from '../../db';
 import { userIdFromContext, paginatify, buildEdge } from '../util';
 import { pubsub } from '../../subscriptions';
 import { TABLES } from '../../db/constants';
+import { userDidRsvp } from './Rsvp';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const MESSAGE_CURSOR_ID = 'ts';
@@ -47,10 +48,6 @@ const existingMessage = message =>
 
 const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
   const loggedInUserId = userIdFromContext(ctx);
-  // TODO: if user isn't in event, throw error
-  if (false) {
-    throw new Error("Only users who have Rsvp'd can create messages");
-  }
   const ts = Instant.now().toEpochMilli();
   const newMessage = {
     eventId,
@@ -59,7 +56,17 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     ts,
     id: id || uuid(),
   };
-  return put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)')
+
+  return userDidRsvp({eventId, userId: loggedInUserId})
+    .then(didRsvp => {
+      if (!didRsvp)
+        return Promise.reject(
+          new Error('You must have RSVPed before you can post a message.')
+        );
+
+      return true;
+    })
+    .then(() => put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)'))
     .then(() => {
       pubsub.publish(MESSAGE_ADDED_TOPIC, {
         [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),

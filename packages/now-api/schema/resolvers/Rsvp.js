@@ -1,6 +1,6 @@
 import { userIdFromContext, paginatify, rsvpId } from '../util';
 
-import { update, getEvent } from '../../db';
+import { get, update, getEvent } from '../../db';
 import { userQuery } from './User';
 import { TABLES } from '../../db/constants';
 
@@ -89,4 +89,9 @@ export const getUserRsvps = ({ userId, first, last, after, before }) =>
       after,
       before,
     }
+  );
+
+export const userDidRsvp = ({ eventId, userId }) =>
+  get(TABLES.RSVP, { id: rsvpId(eventId, userId) }).then(
+    item => !!(item && item.action === 'add')
   );
