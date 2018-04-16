@@ -13,11 +13,15 @@ import jsJodaTimezone from 'js-joda-timezone';
 import { apolloUploadExpress } from 'apollo-upload-server';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
+import sharp from 'sharp';
 
 import schema from './schema';
 import { getUser, getByAuth0Id } from './schema/resolvers/User';
 
 jsJodaUse(jsJodaTimezone);
+
+// http://sharp.pixelplumbing.com/en/stable/install/#alpine-linux
+sharp.cache(false);
 
 const PORT = 3000;
 
