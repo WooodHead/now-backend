@@ -35,12 +35,19 @@ app.enable('trust proxy');
 app.use(morgan('tiny'));
 
 const buildUserForContext = (req, otherContext = {}) => {
-  const currentUserAuth0Id = req.user.sub;
-  return getByAuth0Id(currentUserAuth0Id).then(user => ({
+  const currentUserAuth0Id = get(req, ['user', 'sub']);
+  const context = {
     ...otherContext,
     currentUserAuth0Id,
-    user,
+    user: undefined,
     loaders: loaderContext({ currentUserAuth0Id }),
+  };
+  if (!currentUserAuth0Id) {
+    return Promise.resolve(context);
+  }
+  return getByAuth0Id(currentUserAuth0Id).then(user => ({
+    ...context,
+    user,
   }));
 };
 

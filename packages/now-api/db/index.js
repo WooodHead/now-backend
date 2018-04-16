@@ -24,13 +24,21 @@ export const put = (table, item, condition = undefined) =>
     ConditionExpression: condition,
   });
 
-export const update = (table, key, expr, values, names = undefined) =>
+export const update = (
+  table,
+  key,
+  expr,
+  values,
+  names = undefined,
+  condition = undefined
+) =>
   pUpdate({
     TableName: table,
     Key: key,
     ExpressionAttributeValues: values,
     ExpressionAttributeNames: names,
     UpdateExpression: expr,
+    ConditionExpression: condition,
     ReturnValues: 'ALL_NEW',
   });
 

@@ -20,6 +20,20 @@ const putUser = u =>
     }
   );
 
+export const putPhoto = (userId, photoId, preview) =>
+  update(
+    TABLES.USER,
+    { id: userId },
+    'set photoPreview=:photoPreview, photoId=:photoId, updatedAt=:updatedAt',
+    {
+      ':photoPreview': preview,
+      ':photoId': photoId,
+      ':updatedAt': new Date().toISOString(),
+    },
+    undefined,
+    'attribute_exists(id)' // prevent creating a row if the user doesn't exist
+  );
+
 /* Queries */
 export const userQuery = (root, { id }, context) => {
   if (id) {
@@ -37,6 +51,8 @@ const filterAttributes = id => user => {
     'firstName',
     'lastName',
     'location',
+    'photoId',
+    'photoPreview',
     'updatedAt',
   ];
   // some fields are available only to the currently-authenticated user
@@ -78,8 +94,17 @@ export const queries = { currentUser, user: userQuery };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });
-
-export const resolvers = { rsvps };
+const photo = root => {
+  if (root.photoId) {
+    return {
+      id: root.photoId,
+      preview: root.photoPreview,
+      baseUrl: 'https://dd116wbqbi5t0.cloudfront.net',
+    };
+  }
+  return null;
+};
+export const resolvers = { rsvps, photo };
 
 /* Mutations */
 const createUserMutation = (

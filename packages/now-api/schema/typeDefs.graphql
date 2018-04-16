@@ -162,11 +162,9 @@ type User {
 
 type Photo {
   id: ID!
-  highresLink: String @deprecated
-  photoLink: String @deprecated
-  thumbLink: String @deprecated
   baseUrl: String
-  type: String
+  type: String @deprecated
+  preview: String
 }
 
 type UserRsvpsConnection implements Connection {
@@ -345,4 +343,5 @@ input SetProfilePhotoInput {
 
 type CreatePhotoPayload {
   photo: Photo
+  user: User
 }
