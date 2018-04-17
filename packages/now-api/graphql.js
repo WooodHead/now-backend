@@ -60,11 +60,11 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: 'https://now-test.dev.auth0.com/.well-known/jwks.json',
+    jwksUri: 'https://meetupnow.auth0.com/.well-known/jwks.json',
   }),
   credentialsRequired: true,
   audience: 'https://now.meetup.com/graphql',
-  issuer: 'https://now-test.dev.auth0.com/',
+  issuer: 'https://meetupnow.auth0.com/',
   algorithms: ['RS256'],
 });
 
