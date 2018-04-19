@@ -1,4 +1,5 @@
 import { get, slice } from 'lodash';
+import { ChronoUnit, LocalDate, ZoneId } from 'js-joda';
 import { query, queryRaw } from '../db';
 
 export const userIdFromContext = context => get(context, ['user', 'id']);
@@ -7,6 +8,7 @@ export const rsvpId = (eventId, userId) => `${eventId}-${userId}`;
 
 const toBase64 = str => Buffer.from(str).toString('base64');
 const fromBase64 = str => Buffer.from(str, 'base64').toString();
+export const identity = a => a;
 
 const paginationDefaults = {
   cursorDeserialize: x => x,
@@ -98,4 +100,17 @@ export const paginatify = async (settings, { first, last, after, before }) => {
     count,
     edges: data.map(d => buildEdge(cursorId, d)),
   };
+};
+
+export const computeAge = birthDate => {
+  const now = LocalDate.now(ZoneId.of('America/New_York'));
+  let then;
+  if (typeof birthDate === 'string') {
+    then = LocalDate.parse(birthDate);
+  } else if ('until' in birthDate) {
+    then = birthDate;
+  } else {
+    throw new Error('Unexpected type');
+  }
+  return then.until(now, ChronoUnit.YEARS);
 };

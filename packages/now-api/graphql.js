@@ -27,9 +27,9 @@ const PORT = 3000;
 
 const app = express();
 
-const loaderContext = ({ currentUserAuth0Id }) => ({
+const loaderContext = ({ currentUserId }) => ({
   members: new DataLoader(ids =>
-    Promise.all(ids.map(id => getUser(id, currentUserAuth0Id)))
+    Promise.all(ids.map(id => getUser(id, currentUserId)))
   ),
 });
 
@@ -44,15 +44,23 @@ const buildUserForContext = (req, otherContext = {}) => {
     ...otherContext,
     currentUserAuth0Id,
     user: undefined,
-    loaders: loaderContext({ currentUserAuth0Id }),
+    loaders: loaderContext({ currentUserId: null }),
   };
   if (!currentUserAuth0Id) {
     return Promise.resolve(context);
   }
-  return getByAuth0Id(currentUserAuth0Id).then(user => ({
-    ...context,
-    user,
-  }));
+  return getByAuth0Id(currentUserAuth0Id).then(user => {
+    if (user) {
+      const loaders = loaderContext({ currentUserId: user.id });
+      loaders.members.prime(user.id, user);
+      return {
+        ...context,
+        user,
+        loaders,
+      };
+    }
+    return context;
+  });
 };
 
 const checkJwt = jwt({

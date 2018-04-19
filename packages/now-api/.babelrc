@@ -1,4 +1,7 @@
 {
-  "plugins": ["transform-runtime"],
+  "plugins": [
+    "transform-runtime",
+    "transform-unicode-property-regex"
+  ],
   "presets": ["env", "stage-0"]
 }

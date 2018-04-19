@@ -53,6 +53,10 @@ export const client = new ApolloClient({
   cache: apolloCache,
   link: new SchemaLink({
     schema,
-    context: { token: null, loaders: { members: { load: mocks.loadMember } } },
+    context: {
+      token: null,
+      user: { id: 9 },
+      loaders: { members: { load: mocks.loadMember } },
+    },
   }),
 });

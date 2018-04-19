@@ -42,6 +42,28 @@ export const update = (
     ReturnValues: 'ALL_NEW',
   });
 
+export const updateDynamic = (table, key, values, condition = undefined) => {
+  const expressions = [];
+  const expressionNames = {};
+  const expressionValues = {};
+  Object.entries(values).forEach(([k, v], i) => {
+    const attrName = `#f${i}`;
+    const fieldName = `:f${i}`;
+    expressions.push(`${attrName}=${fieldName}`);
+    expressionNames[attrName] = k;
+    expressionValues[fieldName] = v;
+  });
+
+  return update(
+    table,
+    key,
+    `set ${expressions.join(', ')}`,
+    expressionValues,
+    expressionNames,
+    condition
+  );
+};
+
 export const scan = (table, filter = undefined) =>
   pScan({
     TableName: table,

@@ -4,7 +4,13 @@ scalar GraphQLTime
 
 scalar GraphQLDateTime
 
+scalar GraphQLJSON
+
 scalar Upload
+
+scalar Name
+
+scalar Birthdate
 
 interface Node {
   id: ID!
@@ -69,14 +75,15 @@ input CreateEventInput {
 }
 
 input CreateUserInput {
-  id: ID
-  email: String
+  email: String!
   meetupId: String @deprecated
   slackId: String @deprecated
-  firstName: String
-  lastName: String
+  firstName: Name!
+  lastName: Name!
   bio: String
   location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate!
 }
 
 type CreateUserPayload {
@@ -84,14 +91,15 @@ type CreateUserPayload {
 }
 
 input UpdateCurrentUserInput {
-  id: ID!
   email: String
   meetupId: String @deprecated
   slackId: String @deprecated
-  firstName: String
-  lastName: String
+  firstName: Name
+  lastName: Name
   bio: String
   location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate
 }
 
 type UpdateCurrentUserPayload {
@@ -143,8 +151,8 @@ type User {
   email: String
   meetupId: String @deprecated
   slackId: String @deprecated
-  firstName: String
-  lastName: String
+  firstName: Name
+  lastName: Name
   bio: String
   location: String
   rsvps(
@@ -154,8 +162,10 @@ type User {
     before: String
   ): UserRsvpsConnection!
   devices: [Device]
-  preferences: [Preference]
+  preferences: GraphQLJSON
   photo: Photo
+  birthday: Birthdate
+  age: Int
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
@@ -327,12 +337,6 @@ type Device {
   token: String!
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
-}
-
-type Preference {
-  id: ID!
-  key: String!
-  value: String
 }
 
 input SetProfilePhotoInput {

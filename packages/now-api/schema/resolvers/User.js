@@ -1,24 +1,15 @@
 import { pick } from 'lodash';
+import uuid from 'uuid/v4';
 
-import { userIdFromContext } from '../util';
+import { computeAge, userIdFromContext } from '../util';
 import { getUserRsvps } from './Rsvp';
-import { get, put, query, update } from '../../db';
+import { get, put, query, update, updateDynamic } from '../../db';
 import { TABLES } from '../../db/constants';
 
 const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
 
-const putUser = u =>
-  update(
-    TABLES.USER,
-    { id: u.id },
-    'set lastName=:lastName, firstName=:firstName, bio=:bio, updatedAt=:updatedAt',
-    {
-      ':lastName': u.lastName,
-      ':firstName': u.firstName,
-      ':bio': u.bio,
-      ':updatedAt': u.updatedAt,
-    }
-  );
+const putUser = ({ id, ...otherFields }) =>
+  updateDynamic(TABLES.USER, { id }, otherFields, 'attribute_exists(id)');
 
 export const putPhoto = (userId, photoId, preview) =>
   update(
@@ -57,7 +48,7 @@ const filterAttributes = id => user => {
   ];
   // some fields are available only to the currently-authenticated user
   if (id === user.id) {
-    fields.push('email');
+    fields.push('email', 'birthday');
   }
   // other fields (including, notably, auth0Id) are not available to API clients at all
   return pick(user, fields);
@@ -87,7 +78,7 @@ export const getByAuth0Id = auth0Id =>
 
 const currentUser = (root, vars, context) => {
   const id = userIdFromContext(context);
-  return getUser(id, id).then(filterAttributes(id));
+  return context.loaders.members.load(id);
 };
 
 export const queries = { currentUser, user: userQuery };
@@ -104,49 +95,69 @@ const photo = root => {
   }
   return null;
 };
-export const resolvers = { rsvps, photo };
+
+const age = ({ birthday }) => (birthday ? computeAge(birthday) : null);
+
+export const resolvers = { rsvps, photo, age };
 
 /* Mutations */
 const createUserMutation = (
   root,
-  { input: { email, id, firstName, lastName, bio, location } },
+  {
+    input: {
+      email,
+      firstName,
+      lastName,
+      bio,
+      location,
+      preferences = {},
+      birthday,
+    },
+  },
   context
 ) => {
-  const newId = userIdFromContext(context);
-  const ISOString = new Date().toISOString();
+  if (userIdFromContext(context)) {
+    throw new Error('User has already been created.');
+  }
+
+  const newId = uuid();
+  const now = new Date().toISOString();
   const newUser = {
     id: newId,
-    meetupId: id,
     email,
     firstName,
     lastName,
     bio,
     location,
-    createdAt: ISOString,
-    updatedAt: ISOString,
+    preferences,
+    birthday: birthday.toString(),
+    auth0Id: context.currentUserAuth0Id,
+    createdAt: now,
+    updatedAt: now,
   };
   return createUser(newUser).then(() => ({ user: getUser(newId) }));
 };
 
-const updateCurrentUser = (
-  root,
-  { input: { id, firstName, lastName, bio } },
-  context
-) => {
-  if (userIdFromContext(context) !== id) {
+const updateCurrentUser = (root, { input }, context) => {
+  const id = userIdFromContext(context);
+  if (!id) {
     throw new Error('User must be authenticated in order to edit profile');
   }
 
-  const ISOString = new Date().toISOString();
+  const { birthday } = input;
+
+  const now = new Date().toISOString();
   const newUser = {
     id,
-    firstName,
-    lastName,
-    bio,
-    updatedAt: ISOString,
+    ...pick(input, ['firstName', 'lastName', 'bio', 'preferences']),
+    ...(birthday ? { birthday: birthday.toString() } : {}),
+    updatedAt: now,
   };
 
-  return putUser(newUser).then(u => ({ user: u.Attributes }));
+  context.loaders.members.clear(id);
+  return putUser(newUser).then(u => ({
+    user: filterAttributes(id)(u.Attributes),
+  }));
 };
 
 export const mutations = {
