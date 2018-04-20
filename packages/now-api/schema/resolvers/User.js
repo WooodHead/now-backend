@@ -48,7 +48,7 @@ const filterAttributes = id => user => {
   ];
   // some fields are available only to the currently-authenticated user
   if (id === user.id) {
-    fields.push('email', 'birthday');
+    fields.push('email', 'birthday', 'preferences');
   }
   // other fields (including, notably, auth0Id) are not available to API clients at all
   return pick(user, fields);
