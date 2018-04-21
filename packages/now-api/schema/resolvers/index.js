@@ -1,6 +1,7 @@
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { GraphQLUpload } from 'apollo-upload-server';
 import GraphQLJSON from 'graphql-type-json';
+import * as Device from './Device';
 import * as Event from './Event';
 import * as User from './User';
 import * as Activity from './Activity';
@@ -23,6 +24,7 @@ export default wrapResolvers({
   },
   Mutation: {
     ...Activity.mutations,
+    ...Device.mutations,
     ...Event.mutations,
     ...Message.mutations,
     ...Rsvp.mutations,
@@ -30,6 +32,7 @@ export default wrapResolvers({
     ...User.mutations,
   },
   Activity: Activity.resolvers,
+  Device: Device.resolvers,
   Event: Event.resolvers,
   Message: Message.resolvers,
   Rsvp: Rsvp.resolvers,

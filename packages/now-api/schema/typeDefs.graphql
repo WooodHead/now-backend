@@ -47,6 +47,7 @@ type Mutation {
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
   createUser(input: CreateUserInput): CreateUserPayload
   updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
+  registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
 }
 
 type Subscription {
@@ -161,7 +162,7 @@ type User {
     after: String
     before: String
   ): UserRsvpsConnection!
-  devices: [Device]
+  devices: [Device!]
   preferences: GraphQLJSON
   photo: Photo
   birthday: Birthdate
@@ -331,12 +332,28 @@ type Message implements Node {
   ts: String
 }
 
+enum DeviceType {
+  android
+  ios
+}
+
 type Device {
-  id: ID!
-  type: String!
-  token: String!
+  token: ID!
+  type: DeviceType
+  model: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
+  user: User
+}
+
+input RegisterDeviceInput {
+  token: ID!
+  type: DeviceType
+  model: String
+}
+
+type RegisterDevicePayload {
+  device: Device
 }
 
 input SetProfilePhotoInput {

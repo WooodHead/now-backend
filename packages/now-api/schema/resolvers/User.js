@@ -5,6 +5,7 @@ import { computeAge, userIdFromContext } from '../util';
 import { getUserRsvps } from './Rsvp';
 import { get, put, query, update, updateDynamic } from '../../db';
 import { TABLES } from '../../db/constants';
+import { getDevices } from './Device';
 
 const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
 
@@ -98,7 +99,14 @@ const photo = root => {
 
 const age = ({ birthday }) => (birthday ? computeAge(birthday) : null);
 
-export const resolvers = { rsvps, photo, age };
+const devices = ({ id }, args, context) => {
+  if (id === userIdFromContext(context)) {
+    return getDevices(id);
+  }
+  return null;
+};
+
+export const resolvers = { rsvps, photo, age, devices };
 
 /* Mutations */
 const createUserMutation = (
