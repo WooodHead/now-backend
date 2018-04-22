@@ -57,7 +57,7 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     id: id || uuid(),
   };
 
-  return userDidRsvp({eventId, userId: loggedInUserId})
+  return userDidRsvp({ eventId, userId: loggedInUserId })
     .then(didRsvp => {
       if (!didRsvp)
         return Promise.reject(

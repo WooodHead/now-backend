@@ -35,10 +35,8 @@ const stateResolver = ({ time }) => {
   const eventTime = ZonedDateTime.parse(time).toInstant();
   const now = Instant.now();
 
-  if (now.isBefore(eventTime))
-    return 'FUTURE';
-  else if (eventTime.until(now, ChronoUnit.HOURS) < 2)
-    return 'PRESENT';
+  if (now.isBefore(eventTime)) return 'FUTURE';
+  else if (eventTime.until(now, ChronoUnit.HOURS) < 2) return 'PRESENT';
   return 'PAST';
 };
 

@@ -10,7 +10,7 @@ const { LocalDate, DateTimeParseException } = require('js-joda');
 const faker = require('faker');
 const { range, shuffle } = require('lodash');
 const randomEmoji = require('random-emoji');
-const { venues } = require('../venues');
+const { venues } = require('../src/venues');
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),
