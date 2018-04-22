@@ -10,3 +10,5 @@ export const splitName = name => {
       ]
     : [name];
 };
+
+export const isDev = () => process.env.NODE_ENV === 'development';

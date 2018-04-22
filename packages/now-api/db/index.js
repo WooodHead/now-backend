@@ -2,8 +2,14 @@ import AWS from 'aws-sdk';
 import promisify from 'util.promisify';
 import { rsvpId } from '../schema/util';
 import { TABLES } from './constants';
+import { isDev } from '../util';
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const dynamoOpts = {};
+if (isDev()) {
+  dynamoOpts.logger = console;
+}
+
+const dynamoDb = new AWS.DynamoDB.DocumentClient(dynamoOpts);
 
 const pGet = promisify(dynamoDb.get.bind(dynamoDb));
 const pScan = promisify(dynamoDb.scan.bind(dynamoDb));
