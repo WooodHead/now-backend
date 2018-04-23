@@ -6,6 +6,7 @@ import { getUserRsvps } from './Rsvp';
 import { get, put, query, update, updateDynamic } from '../../db';
 import { TABLES } from '../../db/constants';
 import { getDevices } from './Device';
+import { updatePref as updateFcmPref } from '../../fcm';
 
 const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
 
@@ -108,6 +109,14 @@ const devices = ({ id }, args, context) => {
 
 export const resolvers = { rsvps, photo, age, devices };
 
+const maybeUpdateFcm = (preferences, userId, force = false) => {
+  const havePref = preferences && 'newEventNotification' in preferences;
+  const pref = havePref ? preferences.newEventNotification : true;
+  if (havePref || force) {
+    updateFcmPref(pref, userId);
+  }
+};
+
 /* Mutations */
 const createUserMutation = (
   root,
@@ -143,7 +152,10 @@ const createUserMutation = (
     createdAt: now,
     updatedAt: now,
   };
-  return createUser(newUser).then(() => ({ user: getUser(newId) }));
+  return createUser(newUser).then(() => {
+    maybeUpdateFcm(preferences, newId, true);
+    return { user: getUser(newId) };
+  });
 };
 
 const updateCurrentUser = (root, { input }, context) => {
@@ -163,9 +175,12 @@ const updateCurrentUser = (root, { input }, context) => {
   };
 
   context.loaders.members.clear(id);
-  return putUser(newUser).then(u => ({
-    user: filterAttributes(id)(u.Attributes),
-  }));
+  return putUser(newUser).then(u => {
+    maybeUpdateFcm(input.preferences, id);
+    return {
+      user: filterAttributes(id)(u.Attributes),
+    };
+  });
 };
 
 export const mutations = {

@@ -7,6 +7,8 @@ env:
     - COVERALLS_SERVICE_NAME=travis-pro
 services:
   - docker
+before_install:
+  - openssl aes-256-cbc -K $encrypted_b1e88cd19300_key -iv $encrypted_b1e88cd19300_iv -in meetupnow-google.json.enc -out meetupnow-google.json -d
 install:
   - pip install --user awscli
   - yarn install

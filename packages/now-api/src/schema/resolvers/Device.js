@@ -1,6 +1,7 @@
 import { query, update, TABLES } from '../../db';
 import { userQuery } from './User';
 import { userIdFromContext } from '../util';
+import { assocDevice } from '../../fcm';
 
 export const getDevices = userId =>
   query({
@@ -30,7 +31,10 @@ const registerDevice = (root, { input: { token, type, model } }, context) => {
       ':now': now,
     },
     { '#t': 'type' }
-  ).then(r => ({ device: r.Attributes }));
+  ).then(r => {
+    assocDevice(token, context.user);
+    return { device: r.Attributes };
+  });
 };
 
 export const mutations = { registerDevice };
