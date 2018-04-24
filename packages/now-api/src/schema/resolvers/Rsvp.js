@@ -1,8 +1,11 @@
-import { userIdFromContext, paginatify, rsvpId } from '../util';
+import { toNumber, isInteger } from 'lodash';
 
+import { userIdFromContext, paginatify, rsvpId } from '../util';
 import { get, update, getEvent } from '../../db';
 import { userQuery } from './User';
 import { TABLES } from '../../db/constants';
+
+const getRsvp = id => get(TABLES.RSVP, { id });
 
 const putRsvp = r =>
   update(
@@ -18,6 +21,12 @@ const putRsvp = r =>
     },
     { '#a': 'action' }
   );
+
+const putRsvpTs = (id, ts) =>
+  update(TABLES.RSVP, { id }, 'set lastReadTs=:ts, updatedAt=:updatedAt', {
+    ':ts': ts,
+    ':updatedAt': new Date().toISOString(),
+  });
 
 const event = ({ eventId }) => getEvent(eventId);
 
@@ -46,8 +55,25 @@ const addRsvp = (root, { input: { eventId } }, ctx) =>
 
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
   createRsvp(eventId, userIdFromContext(ctx), 'remove');
+
+const markEventChatRead = (root, { input: { eventId, ts } }, ctx) => {
+  const id = rsvpId(eventId, userIdFromContext(ctx));
+
+  return getRsvp(id)
+    .then(() => {
+      if (!isInteger(toNumber(ts))) {
+        throw new Error('ts must be an integer as a string');
+      }
+
+      return putRsvpTs(id, ts).then(({ Attributes }) => ({ rsvp: Attributes }));
+    })
+    .catch(() => {
+      throw new Error('Rsvp not found');
+    });
+};
+
 export const resolvers = { event, user };
-export const mutations = { addRsvp, removeRsvp };
+export const mutations = { addRsvp, removeRsvp, markEventChatRead };
 
 export const getEventRsvps = ({ eventId, first, last, after, before }) =>
   paginatify(

@@ -42,6 +42,7 @@ type Mutation {
   createEvent(input: CreateEventInput!): CreateEventPayload
   addRsvp(input: CreateRsvpInput!): CreateRsvpPayload
   removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
+  markEventChatRead(input: MarkEventChatReadInput!): MarkEventChatReadPayload
   createActivity(input: CreateActivityInput): CreateActivityPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
@@ -66,6 +67,15 @@ input CreateRsvpInput {
 type CreateRsvpPayload {
   rsvp: Rsvp
   event: Event
+}
+
+input MarkEventChatReadInput {
+  eventId: ID!
+  ts: String!
+}
+
+type MarkEventChatReadPayload {
+  rsvp: Rsvp
 }
 
 input CreateEventInput {
@@ -274,6 +284,7 @@ type Rsvp implements Node {
   user: User
   event: Event
   action: RsvpAction
+  lastReadTs: String
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
