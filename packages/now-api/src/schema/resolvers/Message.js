@@ -7,6 +7,7 @@ import { userIdFromContext, paginatify, buildEdge } from '../util';
 import { pubsub } from '../../subscriptions';
 import { TABLES } from '../../db/constants';
 import { userDidRsvp } from './Rsvp';
+import { sendChatNotif } from '../../fcm';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const MESSAGE_CURSOR_ID = 'ts';
@@ -71,6 +72,7 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
       pubsub.publish(MESSAGE_ADDED_TOPIC, {
         [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
       });
+      sendChatNotif(newMessage);
       return newMessage;
     })
     .catch(

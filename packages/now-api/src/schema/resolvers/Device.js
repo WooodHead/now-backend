@@ -3,12 +3,13 @@ import { userQuery } from './User';
 import { userIdFromContext } from '../util';
 import { assocDevice } from '../../fcm';
 
-export const getDevices = userId =>
+export const getDevices = (userId, opts = {}) =>
   query({
     TableName: TABLES.DEVICE,
     KeyConditionExpression: 'userId = :userId',
     ExpressionAttributeValues: { ':userId': userId },
     IndexName: 'userId-index',
+    ...opts,
   });
 
 const user = (device, args, context) =>

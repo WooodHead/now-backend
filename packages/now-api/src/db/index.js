@@ -2,7 +2,7 @@ import AWS from 'aws-sdk';
 import promisify from 'util.promisify';
 import { rsvpId } from '../schema/util';
 import { TABLES } from './constants';
-import { isDev } from '../util';
+import { concatMapOfArrays, isDev, promiseDelay } from '../util';
 
 const dynamoOpts = {};
 if (isDev()) {
@@ -16,6 +16,7 @@ const pScan = promisify(dynamoDb.scan.bind(dynamoDb));
 const pUpdate = promisify(dynamoDb.update.bind(dynamoDb));
 const pPut = promisify(dynamoDb.put.bind(dynamoDb));
 const pQuery = promisify(dynamoDb.query.bind(dynamoDb));
+const pBatchGet = promisify(dynamoDb.batchGet.bind(dynamoDb));
 
 export const get = (table, key = {}) =>
   pGet({
@@ -91,5 +92,30 @@ export const getEvent = id =>
     ExpressionAttributeValues: { ':id': id },
     IndexName: 'id-index',
   }).then(response => response.Items[0]);
+
+const batchGetHelper = (params, delay = 50, accum = {}) =>
+  pBatchGet(params).then(({ Responses, UnprocessedKeys }) => {
+    const nextAccum = concatMapOfArrays(accum, Responses);
+    if (!UnprocessedKeys || Object.keys(UnprocessedKeys).length === 0) {
+      return nextAccum;
+    }
+    if (delay >= 2000) {
+      return Promise.reject(new Error('too many retries'));
+    }
+    return promiseDelay(delay).then(() =>
+      batchGetHelper(
+        { ...params, RequestItems: UnprocessedKeys },
+        delay * 2,
+        nextAccum
+      )
+    );
+  });
+
+export const batchGet = (tableName, keys, keyName = 'id', opts = {}) => {
+  const RequestItems = {
+    [tableName]: { ...opts, Keys: keys.map(key => ({ [keyName]: key })) },
+  };
+  return batchGetHelper({ RequestItems }).then(response => response[tableName]);
+};
 
 export { TABLES };

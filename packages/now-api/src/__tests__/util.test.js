@@ -1,4 +1,4 @@
-import { splitName } from '../util';
+import { splitName, concatMapOfArrays } from '../util';
 
 describe('splitName', () => {
   it('splits two words into two words', () => {
@@ -14,5 +14,22 @@ describe('splitName', () => {
       'four',
       'or  even more words',
     ]);
+  });
+});
+
+describe('concatMapOfArrays', () => {
+  it('returns empty object given empty input', () => {
+    expect(concatMapOfArrays()).toEqual({});
+  });
+  it("returns an what it's given with only one input", () => {
+    expect(concatMapOfArrays({ a: [1], b: [1, 2] })).toEqual({
+      a: [1],
+      b: [1, 2],
+    });
+  });
+  it('works right given multiple inputs', () => {
+    expect(
+      concatMapOfArrays({ a: [1, 2], b: [4] }, { a: [3], c: [9] })
+    ).toEqual({ a: [1, 2, 3], b: [4], c: [9] });
   });
 });

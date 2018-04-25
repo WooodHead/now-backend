@@ -107,7 +107,28 @@ const devices = ({ id }, args, context) => {
   return null;
 };
 
-export const resolvers = { rsvps, photo, age, devices };
+const defaultPreferences = {
+  messagesNotification: true,
+  newEventNotification: true,
+  remindersNotification: true,
+};
+
+const fillInDefaultPreferences = (
+  { id, preferences: fromDb },
+  args,
+  context
+) => {
+  if (id !== userIdFromContext(context)) return null;
+  return Object.assign({}, defaultPreferences, fromDb);
+};
+
+export const resolvers = {
+  rsvps,
+  photo,
+  age,
+  devices,
+  preferences: fillInDefaultPreferences,
+};
 
 const maybeUpdateFcm = (preferences, userId, force = false) => {
   const havePref = preferences && 'newEventNotification' in preferences;

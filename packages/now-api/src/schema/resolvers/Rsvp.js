@@ -75,18 +75,32 @@ const markEventChatRead = (root, { input: { eventId, ts } }, ctx) => {
 export const resolvers = { event, user };
 export const mutations = { addRsvp, removeRsvp, markEventChatRead };
 
-export const getEventRsvps = ({ eventId, first, last, after, before }) =>
-  paginatify(
+/* computes the query needed to get a list of RSVPs to an event, for
+ * advanced use-cases */
+export const getEventRsvpsQuery = eventId => ({
+  KeyConditionExpression: 'eventId = :eventId',
+  ExpressionAttributeValues: { ':eventId': eventId, ':action': 'add' },
+  TableName: TABLES.RSVP,
+  IndexName: 'eventId-userId-index',
+  FilterExpression: '#a = :action',
+  ExpressionAttributeNames: { '#a': 'action' },
+});
+
+export const getEventRsvps = ({ eventId, first, last, after, before }) => {
+  const {
+    KeyConditionExpression,
+    ExpressionAttributeValues,
+    TableName,
+    ...otherParams
+  } = getEventRsvpsQuery(eventId);
+
+  return paginatify(
     {
-      expr: 'eventId = :eventId',
-      exprValues: { ':eventId': eventId, ':action': 'add' },
-      tableName: TABLES.RSVP,
+      expr: KeyConditionExpression,
+      exprValues: ExpressionAttributeValues,
+      tableName: TableName,
       cursorId: 'userId',
-      queryParamsExtra: {
-        IndexName: 'eventId-userId-index',
-        FilterExpression: '#a = :action',
-        ExpressionAttributeNames: { '#a': 'action' },
-      },
+      queryParamsExtra: otherParams,
     },
     {
       first,
@@ -95,6 +109,7 @@ export const getEventRsvps = ({ eventId, first, last, after, before }) =>
       before,
     }
   );
+};
 
 export const getUserRsvps = ({ userId, first, last, after, before }) =>
   paginatify(

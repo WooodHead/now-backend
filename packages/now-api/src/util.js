@@ -1,4 +1,5 @@
-// eslint-disable-next-line import/prefer-default-export
+import { assignWith } from 'lodash';
+
 export const splitName = name => {
   const re = /[\s]+/;
   const match = re.exec(name);
@@ -12,3 +13,14 @@ export const splitName = name => {
 };
 
 export const isDev = () => process.env.NODE_ENV === 'development';
+
+/** Returns a promise which will resolve after the specified number of milliseconds */
+export const promiseDelay = ms =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
+export const concatMapOfArrays = (...sources) =>
+  assignWith(
+    {},
+    ...sources,
+    (objValue, srcValue) => (objValue ? objValue.concat(srcValue) : srcValue)
+  );
