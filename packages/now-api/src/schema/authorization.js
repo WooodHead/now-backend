@@ -29,5 +29,5 @@ export const wrapResolvers = schema => ({
   ...schema,
   Query: wrapEntries(schema.Query),
   Mutation: wrapEntries(schema.Mutation, 'createUser'),
-  Subscription: wrapEntries(schema.Subscription),
+  Subscription: schema.Subscription,
 });
