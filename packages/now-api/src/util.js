@@ -1,4 +1,4 @@
-import { assignWith } from 'lodash';
+import { assignWith, truncate } from 'lodash';
 
 export const splitName = name => {
   const re = /[\s]+/;
@@ -32,3 +32,11 @@ export const putInOrder = (objects, ids, idProp = 'id') => {
   });
   return ids.map(id => lookup[id]);
 };
+
+// eslint-disable-next-line no-useless-escape
+const unicodeSpace = /[\p{Separator}]+/u;
+
+export const ellipsize = (text, length) =>
+  text.length > length
+    ? truncate(text, { length, omission: '…', separator: unicodeSpace })
+    : text;

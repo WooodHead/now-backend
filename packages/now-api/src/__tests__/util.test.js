@@ -1,4 +1,4 @@
-import { splitName, concatMapOfArrays, putInOrder } from '../util';
+import { splitName, concatMapOfArrays, putInOrder, ellipsize } from '../util';
 
 describe('splitName', () => {
   it('splits two words into two words', () => {
@@ -42,5 +42,21 @@ describe('putInOrder', () => {
     expect(
       putInOrder([{ id: 1, a: 9 }, { id: 0, a: 8 }, { id: 7, a: 6 }], [0, 1, 7])
     ).toEqual([{ id: 0, a: 8 }, { id: 1, a: 9 }, { id: 7, a: 6 }]);
+  });
+});
+
+describe('ellipsize', () => {
+  it('does nothing on short text', () => {
+    expect(ellipsize('', 20)).toEqual('');
+    expect(ellipsize('hello', 20)).toEqual('hello');
+  });
+
+  it('shortens long text', () => {
+    expect(ellipsize('hello this is a long sentence', 6)).toEqual('hello…');
+    expect(ellipsize('hello this is a long sentence', 7)).toEqual('hello…');
+    expect(ellipsize('hello this is a long sentence', 9)).toEqual('hello…');
+    expect(ellipsize('hello this is a long sentence', 13)).toEqual(
+      'hello this…'
+    );
   });
 });

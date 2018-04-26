@@ -1,6 +1,7 @@
 import { messaging } from './client';
 import { getTokensForEvent } from './tokens';
 import { get, getEvent, TABLES } from '../db';
+import { ellipsize } from '../util';
 
 const getEventAndActivity = eventId =>
   getEvent(eventId).then(event =>
@@ -29,8 +30,8 @@ const sendChatNotif = ({ eventId, userId, text }) =>
         }
         return messaging.sendToDevice(tokens, {
           notification: {
-            body: `${emoji} ${activityTitle.substr(
-              0,
+            body: `${emoji} ${ellipsize(
+              activityTitle,
               20
             )} @${firstName}: ${text}`,
           },
