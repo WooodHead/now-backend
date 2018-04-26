@@ -18,16 +18,25 @@ const sendChatNotif = ({ eventId, userId, text }) =>
     getEventAndActivity(eventId),
     getUser(userId),
   ])
-    .then(([tokens, { activity: { title: activityTitle } }, { firstName }]) => {
-      if (tokens.length === 0) {
-        return Promise.resolve();
+    .then(
+      ([
+        tokens,
+        { activity: { title: activityTitle, emoji } },
+        { firstName },
+      ]) => {
+        if (tokens.length === 0) {
+          return Promise.resolve();
+        }
+        return messaging.sendToDevice(tokens, {
+          notification: {
+            body: `${emoji} ${activityTitle.substr(
+              0,
+              20
+            )} @${firstName}: ${text}`,
+          },
+        });
       }
-      return messaging.sendToDevice(tokens, {
-        notification: {
-          body: `${activityTitle.substr(0, 50)} @${firstName}: ${text}`,
-        },
-      });
-    })
+    )
     .catch(console.warn);
 
 export default sendChatNotif;
