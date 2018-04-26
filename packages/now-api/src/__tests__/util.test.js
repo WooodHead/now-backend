@@ -1,4 +1,4 @@
-import { splitName, concatMapOfArrays } from '../util';
+import { splitName, concatMapOfArrays, putInOrder } from '../util';
 
 describe('splitName', () => {
   it('splits two words into two words', () => {
@@ -31,5 +31,16 @@ describe('concatMapOfArrays', () => {
     expect(
       concatMapOfArrays({ a: [1, 2], b: [4] }, { a: [3], c: [9] })
     ).toEqual({ a: [1, 2, 3], b: [4], c: [9] });
+  });
+});
+
+describe('putInOrder', () => {
+  it('does nothing given nothing', () => {
+    expect(putInOrder([], [])).toEqual([]);
+  });
+  it('works given valid input', () => {
+    expect(
+      putInOrder([{ id: 1, a: 9 }, { id: 0, a: 8 }, { id: 7, a: 6 }], [0, 1, 7])
+    ).toEqual([{ id: 0, a: 8 }, { id: 1, a: 9 }, { id: 7, a: 6 }]);
   });
 });

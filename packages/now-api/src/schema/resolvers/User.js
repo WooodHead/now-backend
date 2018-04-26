@@ -3,10 +3,11 @@ import uuid from 'uuid/v4';
 
 import { computeAge, userIdFromContext } from '../util';
 import { getUserRsvps } from './Rsvp';
-import { get, put, query, update, updateDynamic } from '../../db';
+import { batchGet, get, put, query, update, updateDynamic } from '../../db';
 import { TABLES } from '../../db/constants';
 import { getDevices } from './Device';
 import { updatePref as updateFcmPref } from '../../fcm';
+import { putInOrder } from '../../util';
 
 const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
 
@@ -36,6 +37,7 @@ export const userQuery = (root, { id }, context) => {
 };
 
 const filterAttributes = id => user => {
+  if (!user) return null;
   // many fields are always available
   const fields = [
     'id',
@@ -57,12 +59,12 @@ const filterAttributes = id => user => {
 };
 
 export const getUser = (id, currentUserId) =>
-  get(TABLES.USER, { id }).then(user => {
-    if (!user) {
-      return null;
-    }
-    return filterAttributes(currentUserId)(user);
-  });
+  get(TABLES.USER, { id }).then(user => filterAttributes(currentUserId)(user));
+
+export const getUserBatch = (ids, currentUserId) =>
+  batchGet(TABLES.USER, ids).then(users =>
+    putInOrder(users, ids).map(filterAttributes(currentUserId))
+  );
 
 export const getByAuth0Id = auth0Id =>
   query({

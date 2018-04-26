@@ -24,3 +24,11 @@ export const concatMapOfArrays = (...sources) =>
     ...sources,
     (objValue, srcValue) => (objValue ? objValue.concat(srcValue) : srcValue)
   );
+
+export const putInOrder = (objects, ids, idProp = 'id') => {
+  const lookup = {};
+  objects.forEach(obj => {
+    lookup[obj[idProp]] = obj;
+  });
+  return ids.map(id => lookup[id]);
+};

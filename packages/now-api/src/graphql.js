@@ -16,7 +16,7 @@ import jwksRsa from 'jwks-rsa';
 import sharp from 'sharp';
 
 import schema from './schema';
-import { getUser, getByAuth0Id } from './schema/resolvers/User';
+import { getUserBatch, getByAuth0Id } from './schema/resolvers/User';
 
 jsJodaUse(jsJodaTimezone);
 
@@ -28,9 +28,9 @@ const PORT = 3000;
 const app = express();
 
 const loaderContext = ({ currentUserId }) => ({
-  members: new DataLoader(ids =>
-    Promise.all(ids.map(id => getUser(id, currentUserId)))
-  ),
+  members: new DataLoader(ids => getUserBatch(ids, currentUserId), {
+    maxBatchSize: 100,
+  }),
 });
 
 // We're behind a proxy and it will read the right data
