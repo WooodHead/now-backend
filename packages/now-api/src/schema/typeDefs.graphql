@@ -49,6 +49,15 @@ type Mutation {
   createUser(input: CreateUserInput): CreateUserPayload
   updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
+  createReport(input: ReportInput!): ReportInputPayload
+}
+
+input ReportInput {
+  data: GraphQLJSON!
+}
+
+type ReportInputPayload {
+  data: GraphQLJSON!
 }
 
 type Subscription {

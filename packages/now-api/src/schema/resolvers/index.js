@@ -8,6 +8,7 @@ import * as Activity from './Activity';
 import * as Message from './Message';
 import * as Rsvp from './Rsvp';
 import * as Photo from './Photo';
+import * as Report from './Report';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
@@ -30,6 +31,7 @@ export default wrapResolvers({
     ...Rsvp.mutations,
     ...Photo.mutations,
     ...User.mutations,
+    ...Report.mutations,
   },
   Activity: Activity.resolvers,
   Device: Device.resolvers,
