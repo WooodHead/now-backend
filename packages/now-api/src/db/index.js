@@ -118,4 +118,6 @@ export const batchGet = (tableName, keys, keyName = 'id', opts = {}) => {
   return batchGetHelper({ RequestItems }).then(response => response[tableName]);
 };
 
+export const createSet = someArray => dynamoDb.createSet(someArray);
+
 export { TABLES };

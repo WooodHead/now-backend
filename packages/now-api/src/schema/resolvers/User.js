@@ -3,7 +3,15 @@ import uuid from 'uuid/v4';
 
 import { computeAge, userIdFromContext } from '../util';
 import { getUserRsvps } from './Rsvp';
-import { batchGet, get, put, query, update, updateDynamic } from '../../db';
+import {
+  batchGet,
+  get,
+  put,
+  query,
+  update,
+  updateDynamic,
+  createSet,
+} from '../../db';
 import { TABLES } from '../../db/constants';
 import { getDevices } from './Device';
 import { updatePref as updateFcmPref } from '../../fcm';
@@ -25,6 +33,21 @@ export const putPhoto = (userId, photoId, preview) =>
       ':updatedAt': new Date().toISOString(),
     },
     undefined,
+    'attribute_exists(id)' // prevent creating a row if the user doesn't exist
+  );
+
+export const blockUser = (blockerId, blockedId) =>
+  update(
+    TABLES.USER,
+    { id: blockerId },
+    'add #oldIds :newIds set updatedAt=:updatedAt',
+    {
+      ':newIds': createSet([blockedId]),
+      ':updatedAt': new Date().toISOString(),
+    },
+    {
+      '#oldIds': 'blockedUsers',
+    },
     'attribute_exists(id)' // prevent creating a row if the user doesn't exist
   );
 
@@ -89,12 +112,17 @@ export const queries = { currentUser, user: userQuery };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });
-const photo = root => {
-  if (root.photoId) {
+const photo = (
+  { id, photoId, photoPreview },
+  args,
+  { user: { blockedUsers = { values: [] } } }
+) => {
+  if (photoId) {
     return {
-      id: root.photoId,
-      preview: root.photoPreview,
+      id: photoId,
+      preview: photoPreview,
       baseUrl: 'https://dd116wbqbi5t0.cloudfront.net',
+      blocked: blockedUsers.values.includes(id),
     };
   }
   return null;
@@ -170,6 +198,7 @@ const createUserMutation = (
     bio,
     location,
     preferences,
+    blockedUsers: createSet(['placeholder']),
     birthday: birthday.toString(),
     auth0Id: context.currentUserAuth0Id,
     createdAt: now,
@@ -206,7 +235,16 @@ const updateCurrentUser = (root, { input }, context) => {
   });
 };
 
+const blockUserMutation = (root, { input: { blockedUserId } }, context) => {
+  const blockerId = userIdFromContext(context);
+  return blockUser(blockerId, blockedUserId).then(({ Attributes }) => ({
+    blockingUser: filterAttributes(blockerId)(Attributes),
+    blockedUser: getUser(blockedUserId),
+  }));
+};
+
 export const mutations = {
   createUser: createUserMutation,
   updateCurrentUser,
+  blockUser: blockUserMutation,
 };

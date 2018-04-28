@@ -50,14 +50,7 @@ type Mutation {
   updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
   createReport(input: ReportInput!): ReportInputPayload
-}
-
-input ReportInput {
-  data: GraphQLJSON!
-}
-
-type ReportInputPayload {
-  data: GraphQLJSON!
+  blockUser(input: BlockUserInput): BlockUserPayload
 }
 
 type Subscription {
@@ -67,6 +60,14 @@ type Subscription {
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
+}
+
+input ReportInput {
+  data: GraphQLJSON!
+}
+
+type ReportInputPayload {
+  data: GraphQLJSON!
 }
 
 input CreateRsvpInput {
@@ -85,6 +86,15 @@ input MarkEventChatReadInput {
 
 type MarkEventChatReadPayload {
   rsvp: Rsvp
+}
+
+input BlockUserInput {
+  blockedUserId: ID!
+}
+
+type BlockUserPayload {
+  blockedUser: User
+  blockingUser: User
 }
 
 input CreateEventInput {
@@ -195,6 +205,7 @@ type Photo {
   baseUrl: String
   type: String @deprecated
   preview: String
+  blocked: Boolean
 }
 
 type UserRsvpsConnection implements Connection {
