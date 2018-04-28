@@ -112,17 +112,15 @@ export const queries = { currentUser, user: userQuery };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });
-const photo = (
-  { id, photoId, photoPreview },
-  args,
-  { user: { blockedUsers = { values: [] } } }
-) => {
+const photo = ({ id, photoId, photoPreview }, args, { user }) => {
+  const blockedUsers =
+    (user && user.blockedUsers && user.blockedUsers.values) || [];
   if (photoId) {
     return {
       id: photoId,
       preview: photoPreview,
       baseUrl: 'https://dd116wbqbi5t0.cloudfront.net',
-      blocked: blockedUsers.values.includes(id),
+      blocked: blockedUsers.includes(id),
     };
   }
   return null;
