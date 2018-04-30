@@ -1,18 +1,27 @@
 import uuid from 'uuid';
 import { get } from 'lodash';
-import { LocalDate, ZoneId } from 'js-joda';
+import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
 
 import { scan, put, getActivity } from '../../db';
 import { paginatify } from '../util';
 import { TABLES } from '../../db/constants';
 
+const AVAILABILITY_HOUR = LocalTime.parse('21:00');
+
+export const getToday = () => {
+  const now = LocalDateTime.now(ZoneId.of('America/New_York'));
+  return (now.toLocalTime().isBefore(AVAILABILITY_HOUR)
+    ? now.toLocalDate()
+    : now.toLocalDate().plusDays(1)
+  ).toString();
+};
+
 const allActivities = () => scan(TABLES.ACTIVITY);
 const activityQuery = (root, { id }) => getActivity(id);
 const todayActivity = () =>
-  allActivities().then(activities => {
-    const now = LocalDate.now(ZoneId.of('America/New_York')).toString();
-    return activities.find(t => get(t, 'activityDate') === now);
-  });
+  allActivities().then(activities =>
+    activities.find(t => get(t, 'activityDate') === getToday())
+  );
 
 export const queries = {
   todayActivity,
