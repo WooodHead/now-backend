@@ -22,6 +22,11 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
+  - provider: script
+    script: bin/deploy.sh now-api now-api-next $TRAVIS_BUILD_NUMBER-`git rev-parse --short HEAD`-NEXT
+    skip_cleanup: true
+    on:
+      branch: next
 cache:
   directories:
     - node_modules

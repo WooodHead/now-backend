@@ -113,7 +113,7 @@ app.get(
 
 const graphQLServer = createServer(app);
 graphQLServer.listen(PORT, () => {
-  console.log('Server initialized');
+  console.log(`Server initialized -- ${process.env.NODE_ENV}`);
 });
 
 SubscriptionServer.create(

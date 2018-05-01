@@ -1,4 +1,28 @@
 import { PubSub } from 'graphql-subscriptions';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import Redis from 'ioredis';
+import { memoize } from 'lodash';
+import { isDev } from './util';
 
-export const pubsub = new PubSub();
-export default pubsub;
+const memory = () => new PubSub();
+const redis = () =>
+  new RedisPubSub({
+    publisher: new Redis({
+      host: 'now-pubsub-redis.int.meetup.com',
+      port: 6379,
+      retry_strategy: ({ attempt }) =>
+        // reconnect after
+        Math.max(attempt * 100, 3000),
+    }),
+    subscriber: new Redis({
+      host: 'now-pubsub-redis-ro.int.meetup.com',
+      port: 6379,
+      retry_strategy: ({ attempt }) =>
+        // reconnect after
+        Math.max(attempt * 100, 3000),
+    }),
+  });
+
+export const getMemoryPubSub = memoize(memory);
+export const getRedisPubSub = memoize(redis);
+export const getPubSub = isDev() ? getMemoryPubSub : getRedisPubSub;

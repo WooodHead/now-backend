@@ -4,7 +4,7 @@ import uuid from 'uuid/v4';
 
 import { get, getEvent, put } from '../../db';
 import { userIdFromContext, paginatify, buildEdge } from '../util';
-import { pubsub } from '../../subscriptions';
+import { getPubSub } from '../../subscriptions';
 import { TABLES } from '../../db/constants';
 import { userDidRsvp } from './Rsvp';
 import { sendChatNotif } from '../../fcm';
@@ -69,7 +69,7 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     })
     .then(() => put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)'))
     .then(() => {
-      pubsub.publish(MESSAGE_ADDED_TOPIC, {
+      getPubSub().publish(MESSAGE_ADDED_TOPIC, {
         [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
       });
       sendChatNotif(newMessage);
@@ -94,7 +94,7 @@ const user = ({ userId: id }, args, context) => {
 };
 const messageAdded = {
   subscribe: withFilter(
-    () => pubsub.asyncIterator(MESSAGE_ADDED_TOPIC),
+    () => getPubSub().asyncIterator(MESSAGE_ADDED_TOPIC),
     (payload, variables) =>
       payload.messageAdded.node.eventId === variables.eventId
   ),
