@@ -1,5 +1,4 @@
 import { Instant } from 'js-joda';
-import { withFilter } from 'graphql-subscriptions';
 import uuid from 'uuid/v4';
 
 import { get, getEvent, put } from '../../db';
@@ -9,7 +8,6 @@ import { TABLES } from '../../db/constants';
 import { userDidRsvp } from './Rsvp';
 import { sendChatNotif } from '../../fcm';
 
-const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const MESSAGE_CURSOR_ID = 'ts';
 
 export const getMessages = (root, { eventId, first, last, after, before }) =>
@@ -32,6 +30,8 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
       before,
     }
   );
+
+const topicName = eventId => `messages-${eventId}`;
 
 /* If trying to post a message failed because it already exists, see if it's
  * because the message was already posted recently. If so, idempotently
@@ -69,8 +69,8 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     })
     .then(() => put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)'))
     .then(() => {
-      getPubSub().publish(MESSAGE_ADDED_TOPIC, {
-        [MESSAGE_ADDED_TOPIC]: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+      getPubSub().publish(topicName(eventId), {
+        messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
       });
       sendChatNotif(newMessage);
       return newMessage;
@@ -93,11 +93,8 @@ const user = ({ userId: id }, args, context) => {
   return null;
 };
 const messageAdded = {
-  subscribe: withFilter(
-    () => getPubSub().asyncIterator(MESSAGE_ADDED_TOPIC),
-    (payload, variables) =>
-      payload.messageAdded.node.eventId === variables.eventId
-  ),
+  subscribe: (root, { eventId }) =>
+    getPubSub().asyncIterator(topicName(eventId)),
 };
 
 export const queries = {};

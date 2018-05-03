@@ -21,6 +21,7 @@ export default wrapResolvers({
     ...Message.queries,
   },
   Subscription: {
+    ...Event.subscriptions,
     ...Message.subscriptions,
   },
   Mutation: {

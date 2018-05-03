@@ -3,6 +3,7 @@ import { toNumber, isInteger } from 'lodash';
 import { userIdFromContext, paginatify, rsvpId } from '../util';
 import { get, update, getEvent } from '../../db';
 import { userQuery } from './User';
+import { notifyEventChange } from './Event';
 import { TABLES } from '../../db/constants';
 
 const getRsvp = id => get(TABLES.RSVP, { id });
@@ -44,10 +45,13 @@ const createRsvp = (eventId, userId, action) => {
     createdAt: ISOString,
     updatedAt: ISOString,
   };
-  return putRsvp(newRsvp).then(r => ({
-    rsvp: r.Attributes,
-    event: getEvent(eventId),
-  }));
+  return putRsvp(newRsvp).then(r => {
+    notifyEventChange(eventId);
+    return {
+      rsvp: r.Attributes,
+      event: getEvent(eventId),
+    };
+  });
 };
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>

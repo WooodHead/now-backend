@@ -55,6 +55,7 @@ type Mutation {
 
 type Subscription {
   messageAdded(eventId: ID!): EventMessagesEdge
+  event(id: ID!): Event
 }
 
 type PageInfo {

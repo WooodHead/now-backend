@@ -6,6 +6,7 @@ import { userIdFromContext } from '../util';
 import { getEventRsvps } from './Rsvp';
 import { getMessages } from './Message';
 import { TABLES } from '../../db/constants';
+import { getPubSub } from '../../subscriptions';
 
 const events = () => scan(TABLES.EVENT);
 const putEvent = e => put(TABLES.EVENT, e);
@@ -77,3 +78,15 @@ const createEvent = (
 export const mutations = {
   createEvent,
 };
+
+const topicName = eventId => `event-changes-${eventId}`;
+
+export const notifyEventChange = eventId =>
+  getPubSub().publish(topicName(eventId), true);
+
+const eventSubscription = {
+  subscribe: (root, { id }) => getPubSub().asyncIterator(topicName(id)),
+  resolve: (payload, { id }) => getEvent(id),
+};
+
+export const subscriptions = { event: eventSubscription };
