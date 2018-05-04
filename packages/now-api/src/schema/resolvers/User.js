@@ -150,12 +150,15 @@ const fillInDefaultPreferences = (
   return Object.assign({}, defaultPreferences, fromDb);
 };
 
+const isSelf = ({ id }, args, context) => id === userIdFromContext(context);
+
 export const resolvers = {
   rsvps,
   photo,
   age,
   devices,
   preferences: fillInDefaultPreferences,
+  isSelf,
 };
 
 const maybeUpdateFcm = (preferences, userId, force = false) => {

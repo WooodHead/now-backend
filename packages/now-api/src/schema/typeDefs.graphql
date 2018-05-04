@@ -197,6 +197,8 @@ type User {
   photo: Photo
   birthday: Birthdate
   age: Int
+  # returns true if this user is the currently-authenticated user
+  isSelf: Boolean!
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
