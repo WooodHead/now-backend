@@ -1,14 +1,12 @@
 /* eslint-disable import/prefer-default-export */
-import AWS from 'aws-sdk';
-import streamToPromise from 'stream-to-promise';
 import { createHash } from 'crypto';
 import sharp from 'sharp';
+import streamToPromise from 'stream-to-promise';
 
+import { NOW_IMAGE_BUCKET, s3 } from '../../s3';
 import { userIdFromContext } from '../util';
-import { putPhoto, getUser } from './User';
 
-const s3 = new AWS.S3({ apiVersion: '2006-03-01', region: 'us-east-1' });
-const NOW_IMAGE_BUCKET = 'nowimageresize-imagebucket-16vl6yhzklwuf';
+import { getUser, putPhoto } from './User';
 
 const setProfilePhoto = (root, { input: { photo } }, context) => {
   const userId = userIdFromContext(context);

@@ -1,22 +1,23 @@
-import express from 'express';
+import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
+import { apolloUploadExpress } from 'apollo-upload-server';
 import bodyParser from 'body-parser';
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
-import { get } from 'lodash';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
+import DataLoader from 'dataloader';
+import express from 'express';
+import jwt from 'express-jwt';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
-import DataLoader from 'dataloader';
-import morgan from 'morgan';
-import url from 'url';
 import { use as jsJodaUse } from 'js-joda';
 import jsJodaTimezone from 'js-joda-timezone';
-import { apolloUploadExpress } from 'apollo-upload-server';
-import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
+import { get } from 'lodash';
+import morgan from 'morgan';
 import sharp from 'sharp';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import url from 'url';
 
 import schema from './schema';
-import { getUserBatch, getByAuth0Id } from './schema/resolvers/User';
+import { getByAuth0Id, getUserBatch } from './schema/resolvers/User';
+import resizer from './resizer';
 
 jsJodaUse(jsJodaTimezone);
 
@@ -110,6 +111,8 @@ app.get(
     };
   })
 );
+
+app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
 
 const graphQLServer = createServer(app);
 graphQLServer.listen(PORT, () => {

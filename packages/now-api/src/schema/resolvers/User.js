@@ -119,7 +119,7 @@ const photo = ({ id, photoId, photoPreview }, args, { user }) => {
     return {
       id: photoId,
       preview: photoPreview,
-      baseUrl: 'https://dd116wbqbi5t0.cloudfront.net',
+      baseUrl: 'https://now.meetup.com/images', // TODO: figure out how to get the server url in here
       blocked: blockedUsers.includes(id),
     };
   }
