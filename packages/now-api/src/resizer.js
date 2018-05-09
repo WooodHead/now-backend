@@ -31,6 +31,7 @@ const streamObject = (res, params, data) => {
   res.set('Content-Length', data.ContentLength);
   res.set('Last-Modified', data.LastModified);
   res.set('ETag', data.ETag);
+  res.set('Cache-Control', 'public, max-age=31536000');
 
   // Pipe the s3 object to the response
   stream.pipe(res);
