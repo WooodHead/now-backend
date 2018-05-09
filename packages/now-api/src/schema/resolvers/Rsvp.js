@@ -123,9 +123,10 @@ export const getUserRsvps = ({ userId, first, last, after, before }) =>
       tableName: TABLES.RSVP,
       cursorId: 'eventId',
       queryParamsExtra: {
-        IndexName: 'userId-eventId-index',
+        IndexName: 'userId-createdAt-index',
         FilterExpression: '#a = :action',
         ExpressionAttributeNames: { '#a': 'action' },
+        ScanIndexForward: false,
       },
     },
     {
