@@ -9,17 +9,22 @@ COPY . .
 RUN apk --no-cache add vips-dev fftw-dev --update-cache --repository https://dl-3.alpinelinux.org/alpine/edge/testing/ \
   && apk --no-cache add  --virtual .build-dependencies g++ git make python2 \ 
   && yarn install \
-  && yarn build \
+  && yarn build:prod \
   && yarn install --modules-folder ../node_modules --prod \
   && yarn cache clean \
   && apk del .build-dependencies
 
 RUN cp dist/server.js ..
 WORKDIR /
+COPY package.json .
+COPY knexfile.js .
+COPY migrations migrations
+COPY bin/start.sh .
+
 RUN rm -rf build
 USER node
 
 EXPOSE 3000
 
 
-CMD ["node","server.js"]
+CMD ["./start.sh"]

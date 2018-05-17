@@ -3,53 +3,34 @@ import uuid from 'uuid/v4';
 
 import { computeAge, userIdFromContext } from '../util';
 import { getUserRsvps } from './Rsvp';
-import {
-  batchGet,
-  get,
-  put,
-  query,
-  update,
-  updateDynamic,
-  createSet,
-} from '../../db';
-import { TABLES } from '../../db/constants';
+import { SQL_TABLES } from '../../db/constants';
+import sql from '../../db/sql';
 import { getDevices } from './Device';
 import { updatePref as updateFcmPref } from '../../fcm';
 import { putInOrder } from '../../util';
+import { User } from '../../db/repos';
 
-const createUser = u => put(TABLES.USER, u, 'attribute_not_exists(id)');
+const createUser = u => sql(SQL_TABLES.USERS).insert(u);
 
 const putUser = ({ id, ...otherFields }) =>
-  updateDynamic(TABLES.USER, { id }, otherFields, 'attribute_exists(id)');
+  sql(SQL_TABLES.USERS)
+    .where({ id })
+    .update(otherFields);
+// updateDynamic(TABLES.USER, { id }, otherFields, 'attribute_exists(id)');
 
-export const putPhoto = (userId, photoId, preview) =>
-  update(
-    TABLES.USER,
-    { id: userId },
-    'set photoPreview=:photoPreview, photoId=:photoId, updatedAt=:updatedAt',
-    {
-      ':photoPreview': preview,
-      ':photoId': photoId,
-      ':updatedAt': new Date().toISOString(),
-    },
-    undefined,
-    'attribute_exists(id)' // prevent creating a row if the user doesn't exist
-  );
+export const putPhoto = (id, photoId, preview) =>
+  sql(SQL_TABLES.USERS)
+    .where({ id })
+    .update({
+      photoPreview: preview,
+      photoId,
+      updatedAt: new Date().toISOString(),
+    });
 
 export const blockUser = (blockerId, blockedId) =>
-  update(
-    TABLES.USER,
-    { id: blockerId },
-    'add #oldIds :newIds set updatedAt=:updatedAt',
-    {
-      ':newIds': createSet([blockedId]),
-      ':updatedAt': new Date().toISOString(),
-    },
-    {
-      '#oldIds': 'blockedUsers',
-    },
-    'attribute_exists(id)' // prevent creating a row if the user doesn't exist
-  );
+  sql(SQL_TABLES.BLOCKED_USERS)
+    .insert({ blockerId, blockedId })
+    .catch(() => null);
 
 /* Queries */
 export const userQuery = (root, { id }, context) => {
@@ -82,26 +63,30 @@ const filterAttributes = id => user => {
 };
 
 export const getUser = (id, currentUserId) =>
-  get(TABLES.USER, { id }).then(user => filterAttributes(currentUserId)(user));
+  sql(SQL_TABLES.USERS)
+    .where({ id })
+    .then(users => {
+      if (users.length === 1) {
+        return filterAttributes(currentUserId)(users[0]);
+      }
+      return null;
+    });
 
 export const getUserBatch = (ids, currentUserId) =>
-  batchGet(TABLES.USER, ids).then(users =>
+  User.batch(ids).then(users =>
     putInOrder(users, ids).map(filterAttributes(currentUserId))
   );
 
 export const getByAuth0Id = auth0Id =>
-  query({
-    TableName: TABLES.USER,
-    KeyConditionExpression: 'auth0Id = :auth0Id',
-    ExpressionAttributeValues: { ':auth0Id': auth0Id },
-    IndexName: 'auth0Id-index',
-  }).then(items => {
-    if (items.length === 0) return null;
-    else if (items.length === 1) return items[0];
-    return Promise.reject(
-      new Error(`unexpectedly got ${items.length} users from db`)
-    );
-  });
+  sql(SQL_TABLES.USERS)
+    .where({ auth0Id })
+    .then(items => {
+      if (items.length === 0) return null;
+      else if (items.length === 1) return items[0];
+      return Promise.reject(
+        new Error(`unexpectedly got ${items.length} users from db`)
+      );
+    });
 
 const currentUser = (root, vars, context) => {
   const id = userIdFromContext(context);
@@ -112,16 +97,20 @@ export const queries = { currentUser, user: userQuery };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });
-const photo = ({ id, photoId, photoPreview }, args, { user }) => {
-  const blockedUsers =
-    (user && user.blockedUsers && user.blockedUsers.values) || [];
+const photo = ({ id, photoId, photoPreview }, args, ctx) => {
+  const loggedInUserId = userIdFromContext(ctx);
   if (photoId) {
-    return {
-      id: photoId,
-      preview: photoPreview,
-      baseUrl: 'https://now.meetup.com/images', // TODO: figure out how to get the server url in here
-      blocked: blockedUsers.includes(id),
-    };
+    return sql(SQL_TABLES.BLOCKED_USERS)
+      .where({
+        blockerId: loggedInUserId,
+        blockedId: id,
+      })
+      .then(blocks => ({
+        id: photoId,
+        preview: photoPreview,
+        baseUrl: 'https://now.meetup.com/images', // TODO: figure out how to get the server url in here
+        blocked: blocks.length > 0,
+      }));
   }
   return null;
 };
@@ -199,7 +188,6 @@ const createUserMutation = (
     bio,
     location,
     preferences,
-    blockedUsers: createSet(['placeholder']),
     birthday: birthday.toString(),
     auth0Id: context.currentUserAuth0Id,
     createdAt: now,
@@ -228,19 +216,21 @@ const updateCurrentUser = (root, { input }, context) => {
   };
 
   context.loaders.members.clear(id);
-  return putUser(newUser).then(u => {
-    maybeUpdateFcm(input.preferences, id);
-    return {
-      user: filterAttributes(id)(u.Attributes),
-    };
-  });
+  return putUser(newUser)
+    .then(() => getUser(id))
+    .then(u => {
+      maybeUpdateFcm(input.preferences, id);
+      return {
+        user: u,
+      };
+    });
 };
 
 const blockUserMutation = (root, { input: { blockedUserId } }, context) => {
   const blockerId = userIdFromContext(context);
-  return blockUser(blockerId, blockedUserId).then(({ Attributes }) => ({
-    blockingUser: filterAttributes(blockerId)(Attributes),
-    blockedUser: getUser(blockedUserId),
+  return blockUser(blockerId, blockedUserId).then(() => ({
+    blockingUser: getUser(blockerId, blockerId),
+    blockedUser: getUser(blockedUserId, blockerId),
   }));
 };
 

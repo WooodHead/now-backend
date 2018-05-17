@@ -1,68 +1,102 @@
 import gql from 'graphql-tag';
+import uuid from 'uuid/v4';
 
-import { mocks, mockPromise, client } from '../db/mock';
+import { client, USER_ID } from '../db/mock';
+import factory from '../db/factory';
+import { SQL_TABLES } from '../db/constants';
+import sql from '../db/sql';
+import chat from '../fcm/chat';
+import { Message, Rsvp } from '../db/repos';
 
-const mockDynamoMessage1 = {
-  eventId: '1',
+jest.mock('../fcm/chat', () => jest.fn());
+
+const event = factory.build('event', {
+  id: '516f21b1-aff8-4ae0-be1f-e99b415f3652',
+});
+
+const user1 = factory.build('user', {
+  id: USER_ID,
+});
+
+const user2 = factory.build('user', {
+  id: 'e5380f3c-57c8-11e8-b397-7be415c41792',
+});
+
+const rsvp1 = factory.build('rsvp', {}, { event, user: user1 });
+
+const rsvp2 = factory.build('rsvp', {}, { event, user: user2 });
+
+const message1 = {
+  id: uuid(),
+  eventId: event.id,
   text: 'message text 1',
   ts: 1519765415755,
-  userId: '1',
+  userId: user1.id,
 };
 
-const mockDynamoMessage2 = {
-  eventId: '1',
+const message2 = {
+  id: uuid(),
+  eventId: event.id,
   text: 'message text 2',
   ts: 1519765415765,
-  userId: '2',
+  userId: user2.id,
 };
 
-const mockDynamoMessage3 = {
-  eventId: '1',
+const message3 = {
+  id: uuid(),
+  eventId: event.id,
   text: 'message text 3',
   ts: 1519765415775,
-  userId: '2',
+  userId: user2.id,
 };
 
-const mockDynamoMessage4 = {
-  eventId: '1',
+const message4 = {
+  id: uuid(),
+  eventId: event.id,
   text: 'message text 4',
   ts: 1519765415785,
-  userId: '2',
+  userId: user2.id,
 };
 
-const mockDynamoMessage5 = {
-  eventId: '1',
+const message5 = {
+  id: uuid(),
+  eventId: event.id,
   text: 'message text 5',
   ts: 1519765415795,
-  userId: '2',
+  userId: user2.id,
 };
-mocks.query = () =>
-  mockPromise([
-    mockDynamoMessage1,
-    mockDynamoMessage2,
-    mockDynamoMessage3,
-    mockDynamoMessage4,
-    mockDynamoMessage5,
+
+const truncateTables = () =>
+  Promise.all([
+    sql(SQL_TABLES.EVENTS).truncate(),
+    sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MESSAGES).truncate(),
+    sql(SQL_TABLES.RSVPS).truncate(),
   ]);
-mocks.queryRaw = () =>
-  mockPromise({
-    ScannedCount: 5,
-    Items: [
-      mockDynamoMessage1,
-      mockDynamoMessage2,
-      mockDynamoMessage3,
-      mockDynamoMessage4,
-      mockDynamoMessage5,
-    ],
-  });
-mocks.getEvent = () => mockPromise({ id: 1 });
 
 describe('message', () => {
+  beforeEach(() =>
+    truncateTables().then(() =>
+      Promise.all([
+        sql(SQL_TABLES.EVENTS).insert(event),
+        sql(SQL_TABLES.USERS).insert([user1, user2]),
+        sql(SQL_TABLES.RSVPS).insert([rsvp1, rsvp2]),
+        sql(SQL_TABLES.MESSAGES).insert([
+          message1,
+          message2,
+          message3,
+          message4,
+          message5,
+        ]),
+      ])
+    )
+  );
+  afterEach(() => truncateTables());
   it('returns eventMessages', async () => {
     const results = client.query({
       query: gql`
-        {
-          event(id: "1") {
+        query getEvent($id: ID!) {
+          event(id: $id) {
             messages {
               edges {
                 node {
@@ -80,6 +114,7 @@ describe('message', () => {
           }
         }
       `,
+      variables: { id: event.id },
     });
     const { data } = await results;
     expect(data).toMatchSnapshot();
@@ -87,8 +122,8 @@ describe('message', () => {
   it('returns first n results', async () => {
     const results = client.query({
       query: gql`
-        {
-          event(id: "1") {
+        query getEvent($id: ID!) {
+          event(id: $id) {
             messages(first: 2) {
               edges {
                 node {
@@ -106,6 +141,7 @@ describe('message', () => {
           }
         }
       `,
+      variables: { id: event.id },
     });
     const { data } = await results;
     expect(data).toMatchSnapshot();
@@ -113,8 +149,8 @@ describe('message', () => {
   it('returns last n results', async () => {
     const results = client.query({
       query: gql`
-        {
-          event(id: "1") {
+        query getEvent($id: ID!) {
+          event(id: $id) {
             messages(last: 2) {
               edges {
                 node {
@@ -132,8 +168,90 @@ describe('message', () => {
           }
         }
       `,
+      variables: { id: event.id },
     });
     const { data } = await results;
     expect(data).toMatchSnapshot();
+  });
+  describe('createMessage', () => {
+    it('send message', async () => {
+      const results = await client.mutate({
+        mutation: gql`
+          mutation message($input: CreateMessageInput!) {
+            createMessage(input: $input) {
+              edge {
+                node {
+                  id
+                  text
+                  ts
+                }
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: event.id, text: 'new message' } },
+      });
+      const { data } = results;
+      expect(data).toMatchObject({
+        createMessage: {
+          __typename: 'CreateMessagePayload',
+          edge: {
+            __typename: 'EventMessagesEdge',
+            node: {
+              __typename: 'Message',
+              id: expect.stringMatching(
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+              ),
+            },
+          },
+        },
+      });
+
+      const { id, ts } = data.createMessage.edge.node;
+      expect(chat).toBeCalledWith({
+        eventId: event.id,
+        id,
+        text: 'new message',
+        ts: Number(ts),
+        userId: USER_ID,
+      });
+
+      const dbMessage = await Message.byId(id);
+
+      expect(dbMessage).toMatchObject({
+        eventId: event.id,
+        id,
+        text: 'new message',
+        ts,
+        userId: USER_ID,
+      });
+    });
+
+    it('requires rsvp', async () => {
+      await Rsvp.delete({ id: rsvp1.id });
+      const results = client.mutate({
+        mutation: gql`
+          mutation message($input: CreateMessageInput!) {
+            createMessage(input: $input) {
+              edge {
+                node {
+                  id
+                  text
+                  ts
+                }
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: event.id, text: 'new message' } },
+      });
+
+      expect.assertions(1);
+      return expect(results).rejects.toEqual(
+        new Error(
+          'GraphQL error: You must have RSVPed before you can post a message.'
+        )
+      );
+    });
   });
 });

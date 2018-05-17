@@ -1,10 +1,8 @@
 import uuid from 'uuid';
-import { get } from 'lodash';
 import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
 
-import { scan, put, getActivity } from '../../db';
-import { paginatify } from '../util';
-import { TABLES } from '../../db/constants';
+import { sqlPaginatify } from '../util';
+import { Activity, Event } from '../../db/repos';
 
 const AVAILABILITY_HOUR = LocalTime.parse('21:00');
 
@@ -16,12 +14,9 @@ export const getToday = () => {
   ).toString();
 };
 
-const allActivities = () => scan(TABLES.ACTIVITY);
-const activityQuery = (root, { id }) => getActivity(id);
-const todayActivity = () =>
-  allActivities().then(activities =>
-    activities.find(t => get(t, 'activityDate') === getToday())
-  );
+const allActivities = () => Activity.all();
+const activityQuery = (root, { id }) => Activity.byId(id);
+const todayActivity = () => Activity.get({ activityDate: getToday() });
 
 export const queries = {
   todayActivity,
@@ -30,19 +25,17 @@ export const queries = {
 };
 
 export const getEvents = ({ id }, { first, last, after, before }) =>
-  paginatify(
-    {
-      expr: 'activityId = :activityId',
-      exprValues: { ':activityId': id },
-      tableName: TABLES.EVENT,
-      cursorId: 'id',
-    },
-    {
-      first,
-      last,
-      after,
-      before,
-    }
+  sqlPaginatify(
+    'id',
+    Event.all(
+      { activityId: id },
+      {
+        first,
+        last,
+        after,
+        before,
+      }
+    )
   );
 
 export const resolvers = {
@@ -64,8 +57,8 @@ const createActivity = (
     updatedAt: ISOString,
     emoji,
   };
-  return put(TABLES.ACTIVITY, newActivity).then(() => ({
-    activity: getActivity(newId),
+  return Activity.insert(newActivity).then(() => ({
+    activity: Activity.byId(newId),
   }));
 };
 

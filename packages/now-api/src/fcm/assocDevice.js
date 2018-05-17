@@ -1,6 +1,6 @@
 import { messaging } from './client';
 import { NEW_EVENTS_TOPIC } from './constants';
-import { get, TABLES } from '../db';
+import { getUser } from '../schema/resolvers/User';
 import { getDevices } from '../schema/resolvers/Device';
 
 const subOrUnsub = (newPref, tokens) => {
@@ -15,7 +15,7 @@ const subOrUnsub = (newPref, tokens) => {
 export const assocDevice = (token, { id, preferences }) => {
   const prefPromise = preferences
     ? Promise.resolve(preferences)
-    : get(TABLES.USER, { id }).then(user => user.preferences);
+    : getUser({ id }).then(user => user.preferences);
   return prefPromise
     .then(p => {
       // if the preference is true, or not present at all, subscribe. if it's

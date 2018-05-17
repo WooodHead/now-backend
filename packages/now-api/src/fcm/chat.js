@@ -1,23 +1,21 @@
 import { messaging } from './client';
 import { getTokensForEvent } from './tokens';
-import { get, getEvent, TABLES } from '../db';
 import { ellipsize } from '../util';
+import { Activity, Event, User } from '../db/repos';
 
 const getEventAndActivity = eventId =>
-  getEvent(eventId).then(event =>
-    get(TABLES.ACTIVITY, { id: event.activityId }).then(activity => ({
+  Event.byId(eventId).then(event =>
+    Activity.byId(event.activityId).then(activity => ({
       event,
       activity,
     }))
   );
 
-const getUser = userId => get(TABLES.USER, { id: userId });
-
 const sendChatNotif = ({ eventId, userId, text }) =>
   Promise.all([
     getTokensForEvent(eventId, 'messagesNotification', [userId]),
     getEventAndActivity(eventId),
-    getUser(userId),
+    User.byId(userId),
   ])
     .then(
       ([

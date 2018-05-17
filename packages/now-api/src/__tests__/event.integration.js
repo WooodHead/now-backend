@@ -1,26 +1,32 @@
 import gql from 'graphql-tag';
+import { omit } from 'lodash';
 
 import { mocks, mockPromise, client } from '../db/mock';
-import { TABLES } from '../db/constants';
+import { SQL_TABLES } from '../db/constants';
+import sql from '../db/sql';
+import factory from '../db/factory';
 
-const mockDynamoEvent = {
-  id: 'fa8a48e0-1043-11e8-b919-8f03cfc03e44',
-  activityId: 'fa7a48e0-1043-11e8-b919-8f03cfc03e44',
-  limit: 10,
-  createdAt: '2018-02-26T19:44:34.778Z',
-  time: '2018-02-27T19:44:34.778Z',
-  rsvps: [],
-  updatedAt: '2018-02-26T19:44:34.778Z',
-};
+const activity = factory.build('activity');
+const location = factory.build('location');
+const events = factory.buildList('event', 5, {}, { activity, location });
 
-const mockDynamoActivity = {
-  id: 'fa7a48e0-1043-11e8-b919-8f03cfc03e44',
-  title: 'My Great Activity',
-  description: 'We are going to do something really great!',
-  duration: 120,
-  updatedAt: '2018-02-26T19:44:34.778Z',
-  createdAt: '2018-02-26T19:44:34.778Z',
-};
+const truncateTables = () =>
+  Promise.all([
+    sql(SQL_TABLES.ACTIVITIES).truncate(),
+    sql(SQL_TABLES.EVENTS).truncate(),
+    sql(SQL_TABLES.LOCATIONS).truncate(),
+  ]);
+
+beforeAll(() =>
+  truncateTables().then(() =>
+    Promise.all([
+      sql(SQL_TABLES.ACTIVITIES).insert(activity),
+      sql(SQL_TABLES.EVENTS).insert(events),
+      sql(SQL_TABLES.LOCATIONS).insert(location),
+    ])
+  )
+);
+afterAll(() => truncateTables());
 
 const mockDynamoRsvp1 = {
   id: '1',
@@ -43,22 +49,6 @@ mocks.query = () => mockPromise([mockDynamoRsvp1, mockDynamoRsvp2]);
 mocks.queryRaw = () =>
   mockPromise({ ScannedCount: 2, Items: [mockDynamoRsvp1, mockDynamoRsvp2] });
 
-mocks.scan = table => {
-  switch (table) {
-    case TABLES.EVENT:
-      return mockPromise([mockDynamoEvent]);
-    default:
-      return null;
-  }
-};
-mocks.getActivity = id => {
-  if (id === 'fa7a48e0-1043-11e8-b919-8f03cfc03e44') {
-    return mockPromise(mockDynamoActivity);
-  }
-  throw Error(`activity ${id} not found`);
-};
-mocks.getEvent = () => mockPromise(mockDynamoEvent);
-
 describe('Event', () => {
   it('return allEvents', async () => {
     const results = client.query({
@@ -69,9 +59,9 @@ describe('Event', () => {
             limit
             activity {
               id
+              activityDate
               title
               description
-              duration
               createdAt
               updatedAt
             }
@@ -93,23 +83,45 @@ describe('Event', () => {
       `,
     });
     const { data } = await results;
-    expect(data).toMatchSnapshot();
+    expect(data).toMatchObject({
+      allEvents: expect.arrayContaining(
+        events.map(e =>
+          expect.objectContaining({
+            __typename: 'Event',
+            ...omit(e, ['locationId', 'activityId']),
+          })
+        )
+      ),
+    });
   });
 
   it('return event', async () => {
-    const results = client.query({
+    const results = await client.query({
       query: gql`
-        {
-          event(id: "fa8a48e0-1043-11e8-b919-8f03cfc03e44") {
+        query getEvent($id: ID!) {
+          event(id: $id) {
             id
             limit
             activity {
               id
               title
+              emoji
+              activityDate
               description
-              duration
-              createdAt
-              updatedAt
+            }
+            location {
+              id
+              foursquareVenueId
+              lat
+              lng
+              address
+              name
+              crossStreet
+              city
+              state
+              postalCode
+              country
+              neighborhood
             }
             rsvps {
               edges {
@@ -122,13 +134,18 @@ describe('Event', () => {
               }
             }
             time
-            createdAt
-            updatedAt
           }
         }
       `,
+      variables: { id: events[0].id },
     });
-    const { data } = await results;
-    expect(data).toMatchSnapshot();
+    const { data } = results;
+    expect(data).toMatchObject({
+      event: {
+        __typename: 'Event',
+        ...omit(events[0], ['locationId', 'activityId']),
+        activity,
+      },
+    });
   });
 });

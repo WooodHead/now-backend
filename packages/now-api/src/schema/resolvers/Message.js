@@ -1,51 +1,25 @@
 import { Instant } from 'js-joda';
 import uuid from 'uuid/v4';
 
-import { get, getEvent, put } from '../../db';
-import { userIdFromContext, paginatify, buildEdge } from '../util';
+import { userIdFromContext, buildEdge, sqlPaginatify } from '../util';
 import { getPubSub } from '../../subscriptions';
-import { TABLES } from '../../db/constants';
 import { userDidRsvp } from './Rsvp';
 import { sendChatNotif } from '../../fcm';
+import { Event, Message } from '../../db/repos';
 
 const MESSAGE_CURSOR_ID = 'ts';
 
 export const getMessages = (root, { eventId, first, last, after, before }) =>
-  paginatify(
-    {
-      expr: 'eventId = :eventId',
-      exprValues: { ':eventId': eventId },
-      tableName: TABLES.MESSAGE,
-      cursorId: MESSAGE_CURSOR_ID,
-      cursorDeserialize: Number,
-      queryParamsExtra: {
-        IndexName: 'eventId-ts-index',
-        ScanIndexForward: false,
-      },
-    },
-    {
-      first,
-      last,
-      after,
-      before,
-    }
-  );
+  sqlPaginatify(MESSAGE_CURSOR_ID, Message.all({ eventId }), {
+    cursorDeserialize: Number,
+    reverse: true,
+    first,
+    last,
+    after,
+    before,
+  });
 
 const topicName = eventId => `messages-${eventId}`;
-
-/* If trying to post a message failed because it already exists, see if it's
- * because the message was already posted recently. If so, idempotently
- * allow the same message to be returned.
- */
-const existingMessage = message =>
-  get(TABLES.MESSAGE, { id: message.id }).then(
-    dbMessage =>
-      message.eventId === dbMessage.eventId &&
-      message.userId === dbMessage.userId &&
-      message.text === dbMessage.text
-        ? dbMessage
-        : Promise.reject(new Error('Duplicate message ID'))
-  );
 
 const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
   const loggedInUserId = userIdFromContext(ctx);
@@ -67,25 +41,24 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
 
       return true;
     })
-    .then(() => put(TABLES.MESSAGE, newMessage, 'attribute_not_exists(id)'))
-    .then(() => {
-      getPubSub().publish(topicName(eventId), {
-        messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
-      });
-      sendChatNotif(newMessage);
-      return newMessage;
+    .then(() => Message.byId(newMessage.id))
+    .then(potentialMessage => {
+      if (!potentialMessage) {
+        return Message.insert(newMessage).then(() => {
+          getPubSub().publish(topicName(eventId), {
+            messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+          });
+          sendChatNotif(newMessage);
+          return newMessage;
+        });
+      }
+      return potentialMessage;
     })
-    .catch(
-      e =>
-        e.code === 'ConditionalCheckFailedException'
-          ? existingMessage(newMessage)
-          : Promise.reject(e)
-    )
     .then(message => ({ edge: buildEdge(MESSAGE_CURSOR_ID, message) }));
 };
 
 // TODO: cache the event data loader?
-const event = message => getEvent(message.eventId);
+const event = message => Event.byId(message.eventId);
 const user = ({ userId: id }, args, context) => {
   if (id) {
     return context.loaders.members.load(id);

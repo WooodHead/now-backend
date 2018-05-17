@@ -1,7 +1,5 @@
 import AWS from 'aws-sdk';
 import promisify from 'util.promisify';
-import { rsvpId } from '../schema/util';
-import { TABLES } from './constants';
 import { concatMapOfArrays, isDev, promiseDelay } from '../util';
 
 const dynamoOpts = {};
@@ -80,19 +78,6 @@ export const scan = (table, filter = undefined) =>
 export const queryRaw = params => pQuery(params);
 export const query = params => pQuery(params).then(response => response.Items);
 
-export const getUserRsvpByEvent = (userId, eventId) =>
-  get(TABLES.RSVP, { id: rsvpId(eventId, userId) });
-
-export const getActivity = id => get(TABLES.ACTIVITY, { id });
-
-export const getEvent = id =>
-  pQuery({
-    TableName: TABLES.EVENT,
-    KeyConditionExpression: 'id = :id',
-    ExpressionAttributeValues: { ':id': id },
-    IndexName: 'id-index',
-  }).then(response => response.Items[0]);
-
 const batchGetHelper = (params, delay = 50, accum = {}) =>
   pBatchGet(params).then(({ Responses, UnprocessedKeys }) => {
     const nextAccum = concatMapOfArrays(accum, Responses);
@@ -119,5 +104,3 @@ export const batchGet = (tableName, keys, keyName = 'id', opts = {}) => {
 };
 
 export const createSet = someArray => dynamoDb.createSet(someArray);
-
-export { TABLES };

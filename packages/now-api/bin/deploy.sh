@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e # exit on any errors
 # usage: ./deploy.sh staging f0478bd7c2f584b41a49405c91a439ce9d944657
 # license: public domain
 

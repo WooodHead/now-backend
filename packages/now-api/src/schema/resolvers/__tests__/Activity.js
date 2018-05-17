@@ -1,10 +1,19 @@
 import { use as jsJodaUse } from 'js-joda';
 import jsJodaTimezone from 'js-joda-timezone';
+
 import { getToday } from '../Activity';
+import sql from '../../../db/sql';
+import { SQL_TABLES } from '../../../db/constants';
+
+jsJodaUse(jsJodaTimezone);
+
+const truncateTables = () =>
+  Promise.all([sql(SQL_TABLES.ACTIVITIES).truncate()]);
+
+beforeEach(() => truncateTables());
+afterEach(() => truncateTables());
 
 describe('getToday', () => {
-  jsJodaUse(jsJodaTimezone);
-
   const RealDate = global.Date;
 
   const mockDate = isoDate => {

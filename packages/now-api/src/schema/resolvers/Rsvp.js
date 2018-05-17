@@ -1,58 +1,49 @@
 import { toNumber, isInteger } from 'lodash';
+import uuid from 'uuid/v4';
 
-import { userIdFromContext, paginatify, rsvpId } from '../util';
-import { get, update, getEvent } from '../../db';
+import { userIdFromContext, sqlPaginatify } from '../util';
+import { Event, Rsvp } from '../../db/repos';
 import { userQuery } from './User';
 import { notifyEventChange } from './Event';
-import { TABLES } from '../../db/constants';
 
-const getRsvp = id => get(TABLES.RSVP, { id });
-
-const putRsvp = r =>
-  update(
-    TABLES.RSVP,
-    { id: r.id },
-    'set eventId=:eventId, userId=:userId, #a=:a, createdAt=if_not_exists(createdAt,:createdAt), updatedAt=:updatedAt',
-    {
-      ':eventId': r.eventId,
-      ':userId': r.userId,
-      ':a': r.action,
-      ':createdAt': r.createdAt,
-      ':updatedAt': r.updatedAt,
-    },
-    { '#a': 'action' }
-  );
-
-const putRsvpTs = (id, ts) =>
-  update(TABLES.RSVP, { id }, 'set lastReadTs=:ts, updatedAt=:updatedAt', {
-    ':ts': ts,
-    ':updatedAt': new Date().toISOString(),
-  });
-
-const event = ({ eventId }) => getEvent(eventId);
+const event = ({ eventId }) => Event.byId(eventId);
 
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = (eventId, userId, action) => {
-  const id = rsvpId(eventId, userId);
-  const ISOString = new Date().toISOString();
-  const newRsvp = {
-    id,
-    eventId,
-    userId,
-    action,
-    createdAt: ISOString,
-    updatedAt: ISOString,
-  };
-  return putRsvp(newRsvp).then(r => {
-    notifyEventChange(eventId);
-    return {
-      rsvp: r.Attributes,
-      event: getEvent(eventId),
-    };
+const createRsvp = (eventId, userId, action) =>
+  Rsvp.get({ eventId, userId }).then(previousRsvp => {
+    let rsvpCall;
+    let id = uuid();
+    const ISOString = new Date().toISOString();
+    if (previousRsvp) {
+      ({ id } = previousRsvp);
+
+      const updatedRsvp = {
+        id,
+        action,
+        updatedAt: ISOString,
+      };
+      rsvpCall = Rsvp.update(updatedRsvp);
+    } else {
+      const newRsvp = {
+        id,
+        eventId,
+        userId,
+        action,
+        createdAt: ISOString,
+        updatedAt: ISOString,
+      };
+      rsvpCall = Rsvp.insert(newRsvp);
+    }
+    return rsvpCall.then(() => {
+      notifyEventChange(eventId);
+      return {
+        rsvp: Rsvp.byId(id),
+        event: Event.byId(eventId),
+      };
+    });
   });
-};
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
   createRsvp(eventId, userIdFromContext(ctx), 'add');
@@ -60,84 +51,46 @@ const addRsvp = (root, { input: { eventId } }, ctx) =>
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
   createRsvp(eventId, userIdFromContext(ctx), 'remove');
 
-const markEventChatRead = (root, { input: { eventId, ts } }, ctx) => {
-  const id = rsvpId(eventId, userIdFromContext(ctx));
-
-  return getRsvp(id)
-    .then(() => {
-      if (!isInteger(toNumber(ts))) {
-        throw new Error('ts must be an integer as a string');
-      }
-
-      return putRsvpTs(id, ts).then(({ Attributes }) => ({ rsvp: Attributes }));
-    })
-    .catch(() => {
+const markEventChatRead = (root, { input: { eventId, ts } }, ctx) =>
+  Rsvp.get({ eventId, userId: userIdFromContext(ctx) }).then(rsvp => {
+    if (!rsvp) {
       throw new Error('Rsvp not found');
-    });
-};
+    }
+    if (!isInteger(toNumber(ts))) {
+      throw new Error('ts must be an integer as a string');
+    }
+
+    const { id } = rsvp;
+
+    const updatedRsvp = {
+      id,
+      lastReadTs: ts,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return Rsvp.update(updatedRsvp).then(() => ({
+      rsvp: Rsvp.byId(id),
+    }));
+  });
 
 export const resolvers = { event, user };
 export const mutations = { addRsvp, removeRsvp, markEventChatRead };
 
-/* computes the query needed to get a list of RSVPs to an event, for
- * advanced use-cases */
-export const getEventRsvpsQuery = eventId => ({
-  KeyConditionExpression: 'eventId = :eventId',
-  ExpressionAttributeValues: { ':eventId': eventId, ':action': 'add' },
-  TableName: TABLES.RSVP,
-  IndexName: 'eventId-userId-index',
-  FilterExpression: '#a = :action',
-  ExpressionAttributeNames: { '#a': 'action' },
-});
-
-export const getEventRsvps = ({ eventId, first, last, after, before }) => {
-  const {
-    KeyConditionExpression,
-    ExpressionAttributeValues,
-    TableName,
-    ...otherParams
-  } = getEventRsvpsQuery(eventId);
-
-  return paginatify(
-    {
-      expr: KeyConditionExpression,
-      exprValues: ExpressionAttributeValues,
-      tableName: TableName,
-      cursorId: 'userId',
-      queryParamsExtra: otherParams,
-    },
-    {
-      first,
-      last,
-      after,
-      before,
-    }
-  );
-};
+export const getEventRsvps = ({ eventId, first, last, after, before }) =>
+  sqlPaginatify('userId', Rsvp.all({ action: 'add', eventId }), {
+    first,
+    last,
+    after,
+    before,
+  });
 
 export const getUserRsvps = ({ userId, first, last, after, before }) =>
-  paginatify(
-    {
-      expr: 'userId = :userId',
-      exprValues: { ':userId': userId, ':action': 'add' },
-      tableName: TABLES.RSVP,
-      cursorId: 'eventId',
-      queryParamsExtra: {
-        IndexName: 'userId-createdAt-index',
-        FilterExpression: '#a = :action',
-        ExpressionAttributeNames: { '#a': 'action' },
-        ScanIndexForward: false,
-      },
-    },
-    {
-      first,
-      last,
-      after,
-      before,
-    }
-  );
+  sqlPaginatify('eventId', Rsvp.all({ action: 'add', userId }), {
+    first,
+    last,
+    after,
+    before,
+  });
 
 export const userDidRsvp = ({ eventId, userId }) =>
-  get(TABLES.RSVP, { id: rsvpId(eventId, userId) }).then(
-    item => !!(item && item.action === 'add')
-  );
+  Rsvp.get({ eventId, userId }).then(item => !!(item && item.action === 'add'));

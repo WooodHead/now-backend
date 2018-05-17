@@ -1,7 +1,7 @@
 import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
 import { apolloUploadExpress } from 'apollo-upload-server';
 import bodyParser from 'body-parser';
-import DataLoader from 'dataloader';
+
 import express from 'express';
 import jwt from 'express-jwt';
 import { execute, subscribe } from 'graphql';
@@ -16,8 +16,9 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import url from 'url';
 
 import schema from './schema';
-import { getByAuth0Id, getUserBatch } from './schema/resolvers/User';
+import { getByAuth0Id } from './schema/resolvers/User';
 import resizer from './resizer';
+import loaders from './db/loaders';
 
 jsJodaUse(jsJodaTimezone);
 
@@ -28,11 +29,7 @@ const PORT = 3000;
 
 const app = express();
 
-const loaderContext = ({ currentUserId }) => ({
-  members: new DataLoader(ids => getUserBatch(ids, currentUserId), {
-    maxBatchSize: 100,
-  }),
-});
+const loaderContext = options => loaders(options);
 
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');
@@ -52,12 +49,12 @@ const buildUserForContext = (req, otherContext = {}) => {
   }
   return getByAuth0Id(currentUserAuth0Id).then(user => {
     if (user) {
-      const loaders = loaderContext({ currentUserId: user.id });
-      loaders.members.prime(user.id, user);
+      const loadersWithContext = loaderContext({ currentUserId: user.id });
+      loadersWithContext.members.prime(user.id, user);
       return {
         ...context,
         user,
-        loaders,
+        loaders: loadersWithContext,
       };
     }
     return context;

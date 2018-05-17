@@ -1,99 +1,225 @@
-import { paginatify } from '../util';
-import { mockPromise } from '../../db/mock';
-import { TABLES } from '../../db/constants';
+import { sortBy, orderBy } from 'lodash';
+import { sqlPaginatify } from '../util';
+import factory from '../../db/factory';
+import sql from '../../db/sql';
+import { User } from '../../db/repos';
+import { SQL_TABLES } from '../../db/constants';
 
-const mockDynamoRsvp1 = {
-  id: '1',
-  userId: '1',
-  action: 'add',
-  eventId: '3',
-  createdAt: '2018-02-26T19:44:34.778Z',
-  updatedAt: '2018-02-27T19:44:34.778Z',
-};
-const mockDynamoRsvp2 = {
-  id: '2',
-  userId: '2',
-  action: 'add',
-  eventId: '3',
-  createdAt: '2018-02-26T18:44:34.778Z',
-  updatedAt: '2018-02-26T18:44:34.778Z',
-};
-const mockDynamoRsvp3 = {
-  id: '3',
-  userId: '3',
-  action: 'add',
-  eventId: '3',
-  createdAt: '2018-02-26T18:41:34.778Z',
-  updatedAt: '2018-02-26T18:41:34.778Z',
-};
-const mockDynamoSettings = {
-  expr: 'eventId = :eventId',
-  exprValues: { ':eventId': '3' },
-  tableName: TABLES.RSVP,
-  cursorId: 'updatedAt',
-};
+describe('sql paginaitify', () => {
+  const userCount = 30;
+  const users = factory.buildList('user', userCount);
 
-jest.mock('../../db', () => ({
-  get: () => mockPromise({ id: 1 }),
-  query: () => mockPromise([mockDynamoRsvp1, mockDynamoRsvp2, mockDynamoRsvp3]),
-  queryRaw: () =>
-    mockPromise({
-      ScannedCount: 3,
-      Items: [mockDynamoRsvp1, mockDynamoRsvp2, mockDynamoRsvp3],
-    }),
-}));
+  const truncateTables = () => Promise.all([sql(SQL_TABLES.USERS).truncate()]);
 
-describe('paginatify basics', () => {
-  it('returns 3 objects when no arguments are set', async () => {
-    const data = await paginatify(mockDynamoSettings, {
-      first: undefined,
-      last: undefined,
-      after: undefined,
-      before: undefined,
+  beforeAll(() =>
+    truncateTables().then(() =>
+      Promise.all([sql(SQL_TABLES.USERS).insert(users)])
+    )
+  );
+  afterAll(() => truncateTables());
+  it('no arguments return basic page, defaults to 20', async () => {
+    const builder = User.all();
+
+    const results = await sqlPaginatify('id', builder);
+    expect(results).toMatchObject({
+      count: userCount,
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: true,
+      },
+      edges: expect.anything(),
     });
-    expect(data.edges.length).toEqual(3);
-  });
-  it('Is encoding cursor correctly', async () => {
-    const data = await paginatify(mockDynamoSettings, {
-      first: undefined,
-      last: undefined,
-      after: undefined,
-      before: undefined,
-    });
-    expect(Buffer.from(data.edges[0].cursor, 'base64').toString()).toEqual(
-      mockDynamoRsvp1.updatedAt
+
+    expect(results.edges.map(({ node }) => node.id)).toEqual(
+      sortBy(users, 'id')
+        .map(({ id }) => id)
+        .slice(0, 20)
     );
   });
-});
+  it('reversable', async () => {
+    const builder = User.all();
 
-describe('paginatify paging', () => {
-  it('returns first two objects', async () => {
-    const data = await paginatify(mockDynamoSettings, {
-      first: 2,
-      last: undefined,
-      after: undefined,
-      before: undefined,
+    const results = await sqlPaginatify('id', builder, { reverse: true });
+    expect(results).toMatchObject({
+      count: userCount,
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: true,
+      },
+      edges: expect.anything(),
     });
-    expect(data.edges.length).toEqual(2);
-    expect(data.edges[1].node.id).toEqual(mockDynamoRsvp2.id);
+
+    expect(results.edges.map(({ node }) => node.id)).toEqual(
+      orderBy(users, 'id', ['desc'])
+        .map(({ id }) => id)
+        .slice(0, 20)
+    );
   });
-  it('returns last two objects', async () => {
-    const data = await paginatify(mockDynamoSettings, {
-      first: undefined,
-      last: 2,
-      after: undefined,
-      before: undefined,
+
+  describe('first and last', () => {
+    it('first and last cannot be used together', async () => {
+      const builder = User.all();
+
+      const results = sqlPaginatify('id', builder, { first: 40, last: 40 });
+      expect(results).rejects.toEqual(
+        new Error('Use first or last, but not both together')
+      );
     });
-    expect(data.edges.length).toEqual(2);
-    expect(data.edges[0].node.id).toEqual(mockDynamoRsvp2.id);
+
+    it('first more than length returns all', async () => {
+      const builder = User.all();
+
+      const results = await sqlPaginatify('id', builder, { first: 40 });
+      expect(results).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: false,
+        },
+        edges: expect.anything(),
+      });
+
+      expect(results.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id').map(({ id }) => id)
+      );
+    });
+
+    it('first less than length returns first', async () => {
+      const builder = User.all();
+
+      const results = await sqlPaginatify('id', builder, { first: 10 });
+      expect(results).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: true,
+        },
+        edges: expect.anything(),
+      });
+
+      expect(results.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id')
+          .map(({ id }) => id)
+          .slice(0, 10)
+      );
+    });
+
+    it('last more than length returns all', async () => {
+      const builder = User.all();
+
+      const results = await sqlPaginatify('id', builder, { last: 40 });
+      expect(results).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: false,
+        },
+        edges: expect.anything(),
+      });
+
+      expect(results.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id').map(({ id }) => id)
+      );
+    });
+
+    it('last less than length returns last', async () => {
+      const builder = User.all();
+
+      const results = await sqlPaginatify('id', builder, { last: 10 });
+      expect(results).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: true,
+          hasNextPage: false,
+        },
+        edges: expect.anything(),
+      });
+
+      expect(results.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id')
+          .map(({ id }) => id)
+          .slice(-10)
+      );
+    });
   });
-  it('returns everything when last > total', async () => {
-    const data = await paginatify(mockDynamoSettings, {
-      first: undefined,
-      last: 6,
-      after: undefined,
-      before: undefined,
+
+  describe('before and after', () => {
+    it('returns rows after cursor', async () => {
+      const builder = User.all();
+
+      const first10 = await sqlPaginatify('id', builder, { first: 10 });
+      const { cursor } = first10.edges.pop();
+      const next10 = await sqlPaginatify('id', builder, {
+        first: 10,
+        after: cursor,
+      });
+      expect(next10).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: true,
+        },
+        edges: expect.anything(),
+      });
+      expect(next10.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id')
+          .map(({ id }) => id)
+          .slice(10, 20)
+      );
     });
-    expect(data.edges.length).toEqual(3);
+
+    it('reverse works with after cursor', async () => {
+      const builder = User.all();
+
+      const first10 = await sqlPaginatify('id', builder, {
+        first: 10,
+        reverse: true,
+      });
+      const { cursor } = first10.edges.pop();
+
+      const next10 = await sqlPaginatify('id', builder, {
+        first: 10,
+        after: cursor,
+        reverse: true,
+      });
+      expect(next10).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: false,
+          hasNextPage: true,
+        },
+        edges: expect.anything(),
+      });
+      expect(next10.edges.map(({ node }) => node.id)).toEqual(
+        orderBy(users, 'id', ['desc'])
+          .map(({ id }) => id)
+          .slice(10, 20)
+      );
+    });
+
+    it('returns rows before cursor', async () => {
+      const builder = User.all();
+
+      const last10 = await sqlPaginatify('id', builder, { last: 10 });
+      const { cursor } = last10.edges[0];
+
+      const previous10 = await sqlPaginatify('id', builder, {
+        last: 10,
+        before: cursor,
+      });
+      expect(previous10).toMatchObject({
+        count: userCount,
+        pageInfo: {
+          hasPreviousPage: true,
+          hasNextPage: false,
+        },
+        edges: expect.anything(),
+      });
+      expect(previous10.edges.map(({ node }) => node.id)).toEqual(
+        sortBy(users, 'id')
+          .map(({ id }) => id)
+          .slice(10, 20)
+      );
+    });
   });
 });

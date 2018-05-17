@@ -1,18 +1,14 @@
 import { ChronoUnit, Instant, ZonedDateTime } from 'js-joda';
 import uuid from 'uuid';
 
-import { scan, getEvent, put, getActivity, getUserRsvpByEvent } from '../../db';
 import { userIdFromContext } from '../util';
-import { getEventRsvps } from './Rsvp';
+import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
-import { TABLES } from '../../db/constants';
 import { getPubSub } from '../../subscriptions';
-
-const events = () => scan(TABLES.EVENT);
-const putEvent = e => put(TABLES.EVENT, e);
+import { Activity, Event, Location } from '../../db/repos';
 
 // Resolvers
-const activityResolver = ({ activityId }) => getActivity(activityId);
+const activityResolver = ({ activityId }) => Activity.byId(activityId);
 
 const rsvpsResolver = (root, args) =>
   getEventRsvps({
@@ -27,13 +23,11 @@ const messagesResolver = (root, args) =>
   });
 
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
-  getUserRsvpByEvent(userId || userIdFromContext(ctx), id).then(
-    item => item !== undefined && item.action === 'add'
-  );
+  userDidRsvp({ eventId: id, userId: userId || userIdFromContext(ctx) });
 
 // one day, this will be fancier.
 const stateResolver = ({ time }) => {
-  const eventTime = ZonedDateTime.parse(time).toInstant();
+  const eventTime = ZonedDateTime.parse(time.toISOString()).toInstant();
   const now = Instant.now();
 
   if (now.isBefore(eventTime)) return 'FUTURE';
@@ -41,17 +35,20 @@ const stateResolver = ({ time }) => {
   return 'PAST';
 };
 
+const locationResolver = ({ locationId }) => Location.byId(locationId);
+
 export const resolvers = {
   activity: activityResolver,
   rsvps: rsvpsResolver,
   messages: messagesResolver,
   isAttending: isAttendingResolver,
   state: stateResolver,
+  location: locationResolver,
 };
 
 // Queries
-const allEvents = () => events();
-const eventQuery = (root, { id }) => getEvent(id);
+const allEvents = () => Event.all();
+const eventQuery = (root, { id }) => Event.byId(id);
 
 export const queries = { event: eventQuery, allEvents };
 
@@ -72,7 +69,7 @@ const createEvent = (
     location,
   };
 
-  return putEvent(newEvent).then(() => ({ event: getEvent(newId) }));
+  return Event.update(newEvent).then(() => ({ event: Event.byId(newId) }));
 };
 
 export const mutations = {
@@ -86,7 +83,7 @@ export const notifyEventChange = eventId =>
 
 const eventSubscription = {
   subscribe: (root, { id }) => getPubSub().asyncIterator(topicName(id)),
-  resolve: (payload, { id }) => getEvent(id),
+  resolve: (payload, { id }) => Event.byId(id),
 };
 
 export const subscriptions = { event: eventSubscription };

@@ -1,10 +1,12 @@
-/* eslint-disable import/prefer-default-export  */
+/* eslint-disable import/prefer-default-export */
 
-export const TABLES = {
-  ACTIVITY: 'now_template',
-  DEVICE: 'now_device',
-  EVENT: 'now_event',
-  RSVP: 'now_rsvp',
-  MESSAGE: 'now_messages',
-  USER: 'now_user',
+export const SQL_TABLES = {
+  USERS: 'users',
+  BLOCKED_USERS: 'blockedUsers',
+  DEVICES: 'devices',
+  ACTIVITIES: 'activities',
+  LOCATIONS: 'locations',
+  EVENTS: 'events',
+  MESSAGES: 'messages',
+  RSVPS: 'rsvps',
 };
