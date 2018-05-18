@@ -111,6 +111,7 @@
     "transform": {
       "\\.(gql|graphql)$": "jest-transform-graphql",
       ".*": "babel-jest"
-    }
+    },
+    "setupTestFrameworkScriptFile": "<rootDir>/testsetup.js"
   }
 }
