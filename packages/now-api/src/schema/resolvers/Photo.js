@@ -30,18 +30,21 @@ const setProfilePhoto = (root, { input: { photo } }, context) => {
             .resize(40, 40)
             .toFormat('jpg')
             .toBuffer()
-            .then(preview => {
+            .then(preview =>
               putPhoto(
                 userId,
                 photoKey,
                 `data:image/jpg;base64,${preview.toString('base64')}`
-              );
+              )
+            )
+            .catch(e => {
+              console.error('error creating preview', e);
             });
         })
-        .then(() => getUser(userId, userId))
+        .then(() => ({ user: getUser(userId, userId) }))
     )
-    .catch(() => {
-      // TODO: log the actual error somewhere
+    .catch(e => {
+      console.error('error uploading photo', e);
       throw new Error('Error uploading photo');
     });
 };

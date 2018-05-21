@@ -87,6 +87,8 @@
     "eslint-plugin-jest": "21.7.0",
     "faker":
       "git+https://github.com/meetup/faker.js.git#3a4bb358614c1e1f5d73f4df45c13a1a7aa013d7",
+    "file":
+      "git+https://github.com/voodoohop/File.git#7fd39e89ea180ccc0d218ee7f8dbd41694275228",
     "flow-bin": "0.64.0",
     "graphql-tag": "^2.7.3",
     "husky": "^0.14.3",

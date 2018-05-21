@@ -2,12 +2,22 @@ import gql from 'graphql-tag';
 import { use as jsJodaUse } from 'js-joda';
 import jsJodaTimezone from 'js-joda-timezone';
 import uuid from 'uuid/v4';
+import fs from 'fs';
+import { pick } from 'lodash';
 
 import { USER_ID, client, newUserClient } from '../db/mock';
 import factory from '../db/factory';
 import { User } from '../db/repos';
 import sql from '../db/sql';
 import { SQL_TABLES } from '../db/constants';
+
+jest.mock('../s3', () => ({
+  s3: {
+    putObject: () => ({
+      promise: () => Promise.resolve(),
+    }),
+  },
+}));
 
 jsJodaUse(jsJodaTimezone);
 
@@ -102,5 +112,40 @@ describe('user', () => {
       preferences,
       birthday: expect.stringContaining(birthday),
     });
+  });
+
+  it('change user photo', async () => {
+    const file = fs.createReadStream(`${__dirname}/test.png`);
+    const photo = Promise.resolve({ stream: file });
+    const res = await client.mutate({
+      mutation: gql`
+        mutation photo($input: SetProfilePhotoInput) {
+          setProfilePhoto(input: $input) {
+            user {
+              id
+              preferences
+              photo {
+                id
+                preview
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        input: {
+          photo,
+        },
+      },
+    });
+
+    const {
+      data: { setProfilePhoto: { user: { id, photo: returnedPhoto } } },
+    } = res;
+
+    expect(pick(returnedPhoto, ['preview', '__typename'])).toMatchSnapshot();
+
+    const dbUser = await User.byId(id);
+    expect(pick(dbUser, ['photoPreview'])).toMatchSnapshot();
   });
 });
