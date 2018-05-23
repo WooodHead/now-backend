@@ -2,7 +2,7 @@
 
 const host = process.platform === 'linux' ? '/var/run/postgresql' : 'localhost';
 
-const build = connection => ({
+const build = (connection, opts = {}) => ({
   client: 'postgresql',
   connection,
   pool: {
@@ -12,6 +12,7 @@ const build = connection => ({
   migrations: {
     tableName: 'knex_migrations',
   },
+  ...opts,
 });
 
 module.exports = {

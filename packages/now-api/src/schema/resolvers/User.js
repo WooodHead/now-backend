@@ -10,6 +10,8 @@ import { updatePref as updateFcmPref } from '../../fcm';
 import { putInOrder } from '../../util';
 import { User } from '../../db/repos';
 
+const CURRENT_TOS_VERSION = '8.0';
+
 const createUser = u => sql(SQL_TABLES.USERS).insert(u);
 
 const putUser = ({ id, ...otherFields }) =>
@@ -56,7 +58,7 @@ const filterAttributes = id => user => {
   ];
   // some fields are available only to the currently-authenticated user
   if (id === user.id) {
-    fields.push('email', 'birthday', 'preferences');
+    fields.push('email', 'birthday', 'preferences', 'tosVersion');
   }
   // other fields (including, notably, auth0Id) are not available to API clients at all
   return pick(user, fields);
@@ -141,6 +143,9 @@ const fillInDefaultPreferences = (
 
 const isSelf = ({ id }, args, context) => id === userIdFromContext(context);
 
+const tosCurrent = ({ tosVersion }) =>
+  typeof tosVersion === 'string' ? tosVersion === CURRENT_TOS_VERSION : null;
+
 export const resolvers = {
   rsvps,
   photo,
@@ -148,6 +153,7 @@ export const resolvers = {
   devices,
   preferences: fillInDefaultPreferences,
   isSelf,
+  tosCurrent,
 };
 
 const maybeUpdateFcm = (preferences, userId, force = false) => {
@@ -192,6 +198,7 @@ const createUserMutation = (
     auth0Id: context.currentUserAuth0Id,
     createdAt: now,
     updatedAt: now,
+    tosVersion: CURRENT_TOS_VERSION,
   };
   return createUser(newUser).then(() => {
     maybeUpdateFcm(preferences, newId, true);

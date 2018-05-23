@@ -199,6 +199,7 @@ type User {
   age: Int
   # returns true if this user is the currently-authenticated user
   isSelf: Boolean!
+  tosCurrent: Boolean
   createdAt: GraphQLDateTime
   updatedAt: GraphQLDateTime
 }
