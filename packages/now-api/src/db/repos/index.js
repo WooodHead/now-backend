@@ -15,7 +15,7 @@ const buildRepo = table => {
         .where({ id })
         .update(otherFields),
     batch: ids =>
-      sql(table)
+      sql(table) // TODO: log batch savings
         .whereIn('id', ids)
         .then(batch => putInOrder(batch, ids)),
     delete: query =>

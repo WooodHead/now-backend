@@ -5,7 +5,7 @@ import { userIdFromContext, buildEdge, sqlPaginatify } from '../util';
 import { getPubSub } from '../../subscriptions';
 import { userDidRsvp } from './Rsvp';
 import { sendChatNotif } from '../../fcm';
-import { Event, Message } from '../../db/repos';
+import { Message } from '../../db/repos';
 
 const MESSAGE_CURSOR_ID = 'ts';
 
@@ -57,8 +57,8 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
     .then(message => ({ edge: buildEdge(MESSAGE_CURSOR_ID, message) }));
 };
 
-// TODO: cache the event data loader?
-const event = message => Event.byId(message.eventId);
+const event = (message, args, { loaders }) =>
+  loaders.events.load(message.eventId);
 const user = ({ userId: id }, args, context) => {
   if (id) {
     return context.loaders.members.load(id);

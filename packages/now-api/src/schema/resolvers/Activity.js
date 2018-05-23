@@ -15,7 +15,8 @@ export const getToday = () => {
 };
 
 const allActivities = () => Activity.all();
-const activityQuery = (root, { id }) => Activity.byId(id);
+const activityQuery = (root, { id }, { loaders }) =>
+  loaders.activities.load(id);
 const todayActivity = () => Activity.get({ activityDate: getToday() });
 
 export const queries = {
@@ -44,7 +45,8 @@ export const resolvers = {
 
 const createActivity = (
   root,
-  { input: { title, description, activityDate, emoji } }
+  { input: { title, description, activityDate, emoji } },
+  { loaders }
 ) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
@@ -57,8 +59,11 @@ const createActivity = (
     updatedAt: ISOString,
     emoji,
   };
+
+  loaders.activities.clear(newId);
+
   return Activity.insert(newActivity).then(() => ({
-    activity: Activity.byId(newId),
+    activity: loaders.activities.load(newId),
   }));
 };
 

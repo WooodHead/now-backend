@@ -2,16 +2,16 @@ import { toNumber, isInteger } from 'lodash';
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
-import { Event, Rsvp } from '../../db/repos';
+import { Rsvp } from '../../db/repos';
 import { userQuery } from './User';
 import { notifyEventChange } from './Event';
 
-const event = ({ eventId }) => Event.byId(eventId);
+const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = (eventId, userId, action) =>
+const createRsvp = (eventId, userId, action, loaders) =>
   Rsvp.get({ eventId, userId }).then(previousRsvp => {
     let rsvpCall;
     let id = uuid();
@@ -25,6 +25,7 @@ const createRsvp = (eventId, userId, action) =>
         updatedAt: ISOString,
       };
       rsvpCall = Rsvp.update(updatedRsvp);
+      loaders.rsvps.clear(id);
     } else {
       const newRsvp = {
         id,
@@ -39,17 +40,17 @@ const createRsvp = (eventId, userId, action) =>
     return rsvpCall.then(() => {
       notifyEventChange(eventId);
       return {
-        rsvp: Rsvp.byId(id),
-        event: Event.byId(eventId),
+        rsvp: loaders.rsvps.load(id),
+        event: loaders.events.load(eventId),
       };
     });
   });
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'add');
+  createRsvp(eventId, userIdFromContext(ctx), 'add', ctx.loaders);
 
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'remove');
+  createRsvp(eventId, userIdFromContext(ctx), 'remove', ctx.loaders);
 
 const markEventChatRead = (root, { input: { eventId, ts } }, ctx) =>
   Rsvp.get({ eventId, userId: userIdFromContext(ctx) }).then(rsvp => {
@@ -68,8 +69,10 @@ const markEventChatRead = (root, { input: { eventId, ts } }, ctx) =>
       updatedAt: new Date().toISOString(),
     };
 
+    ctx.loaders.rsvps.clear(id);
+
     return Rsvp.update(updatedRsvp).then(() => ({
-      rsvp: Rsvp.byId(id),
+      rsvp: ctx.loaders.rsvps.load(id),
     }));
   });
 

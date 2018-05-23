@@ -5,10 +5,11 @@ import { userIdFromContext } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
-import { Activity, Event, Location } from '../../db/repos';
+import { Event, Location } from '../../db/repos';
 
 // Resolvers
-const activityResolver = ({ activityId }) => Activity.byId(activityId);
+const activityResolver = ({ activityId }, args, { loaders }) =>
+  loaders.activities.load(activityId);
 
 const rsvpsResolver = (root, args) =>
   getEventRsvps({
@@ -48,13 +49,14 @@ export const resolvers = {
 
 // Queries
 const allEvents = () => Event.all();
-const eventQuery = (root, { id }) => Event.byId(id);
+const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
 
 export const queries = { event: eventQuery, allEvents };
 
 const createEvent = (
   root,
-  { input: { time, activityId, limit, location } }
+  { input: { time, activityId, limit, location } },
+  { loaders }
 ) => {
   const newId = uuid.v1();
   const ISOString = new Date().toISOString();
@@ -69,7 +71,11 @@ const createEvent = (
     location,
   };
 
-  return Event.update(newEvent).then(() => ({ event: Event.byId(newId) }));
+  loaders.events.clear(newId);
+
+  return Event.update(newEvent).then(() => ({
+    event: loaders.events.load(newId),
+  }));
 };
 
 export const mutations = {
@@ -83,7 +89,7 @@ export const notifyEventChange = eventId =>
 
 const eventSubscription = {
   subscribe: (root, { id }) => getPubSub().asyncIterator(topicName(id)),
-  resolve: (payload, { id }) => Event.byId(id),
+  resolve: (payload, { id }, { loaders }) => loaders.events(id),
 };
 
 export const subscriptions = { event: eventSubscription };
