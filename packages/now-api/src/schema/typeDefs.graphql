@@ -1,8 +1,6 @@
-scalar GraphQLDate
+scalar LocalDate
 
-scalar GraphQLTime
-
-scalar GraphQLDateTime
+scalar ZonedDateTime
 
 scalar GraphQLJSON
 
@@ -100,7 +98,7 @@ type BlockUserPayload {
 
 input CreateEventInput {
   activityId: String!
-  time: GraphQLDateTime!
+  time: ZonedDateTime!
   limit: Int!
   location: LocationInput!
 }
@@ -160,7 +158,7 @@ input CreateActivityInput {
   title: String!
   description: String!
   emoji: String!
-  activityDate: GraphQLDate!
+  activityDate: LocalDate!
 }
 
 type CreateActivityPayload {
@@ -200,8 +198,8 @@ type User {
   # returns true if this user is the currently-authenticated user
   isSelf: Boolean!
   tosCurrent: Boolean
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
 }
 
 type Photo {
@@ -225,7 +223,7 @@ type UserRsvpsEdge implements Edge {
 
 type Event implements Node {
   id: ID!
-  time: GraphQLDateTime
+  time: ZonedDateTime
   activity: Activity
   rsvps(
     first: Int
@@ -243,8 +241,8 @@ type Event implements Node {
   limit: Int
   instigator: User
   location: Location!
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
   state: EventState!
 }
 
@@ -268,21 +266,8 @@ type Location {
   country: String
   neighborhood: String
   isFuzzed: Boolean
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
-}
-
-enum ReminderType {
-  oneHour
-  tenMinutes
-}
-
-type Reminder {
-  type: ReminderType
-  sent: Boolean
-  sentDate: GraphQLDateTime
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
 }
 
 type Activity {
@@ -291,9 +276,9 @@ type Activity {
   slug: String
   description: String
   duration: String
-  activityDate: GraphQLDate
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  activityDate: LocalDate
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
   emoji: String
   events(
     first: Int
@@ -309,8 +294,8 @@ type Rsvp implements Node {
   event: Event
   action: RsvpAction
   lastReadTs: String
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
 }
 
 enum RsvpAction {
@@ -322,7 +307,7 @@ enum RsvpAction {
 type RsvpLog {
   user: User
   event: Event
-  time: GraphQLDateTime
+  time: ZonedDateTime
   action: RsvpAction
 }
 
@@ -376,8 +361,8 @@ type Device {
   token: ID!
   type: DeviceType
   model: String
-  createdAt: GraphQLDateTime
-  updatedAt: GraphQLDateTime
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
   user: User
 }
 

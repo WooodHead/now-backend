@@ -1,6 +1,4 @@
 import gql from 'graphql-tag';
-import { use as jsJodaUse } from 'js-joda';
-import jsJodaTimezone from 'js-joda-timezone';
 
 import { client } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
@@ -8,7 +6,6 @@ import sql from '../db/sql';
 import factory from '../db/factory';
 import { Activity } from '../db/repos';
 
-jsJodaUse(jsJodaTimezone);
 const activities = factory.buildList('activity', 3);
 const todayActivity = factory.build('todayActivity');
 const event = factory.build('event', {}, { activity: todayActivity });
@@ -163,7 +160,7 @@ describe('activity', () => {
     const { data: { createActivity: { activity: { id } } } } = res;
 
     const dbActivity = await Activity.byId(id);
-    dbActivity.activityDate = dbActivity.activityDate.toISOString();
+    dbActivity.activityDate = dbActivity.activityDate.toString();
 
     expect(dbActivity).toMatchObject({
       id,

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { uniqBy, omit } from 'lodash';
 import uuid from 'uuid/v4';
 

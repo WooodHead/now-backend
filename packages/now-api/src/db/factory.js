@@ -3,7 +3,7 @@ import { Factory } from 'rosie';
 import uuid from 'uuid/v4';
 import { address, name, date, internet, random, lorem, hacker } from 'faker';
 import randomEmoji from 'random-emoji';
-import { LocalDate } from 'js-joda';
+import { LocalDate, ZoneId } from 'js-joda';
 
 const md5 = () =>
   random
@@ -83,7 +83,8 @@ Factory.define('event')
         activityDate.atTime4(23, 59, 59, 999)
       )
       .toISOString();
-  });
+  })
+  .attr('timezone', () => random.arrayElement(ZoneId.getAvailableZoneIds()));
 
 Factory.define('location')
   .attr('id', uuid)

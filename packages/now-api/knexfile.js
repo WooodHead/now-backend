@@ -8,6 +8,9 @@ const build = (connection, opts = {}) => ({
   pool: {
     min: 2,
     max: 10,
+    afterCreate: (conn, done) => {
+      conn.query('SET timezone="UTC";', err => done(err, conn));
+    },
   },
   migrations: {
     tableName: 'knex_migrations',

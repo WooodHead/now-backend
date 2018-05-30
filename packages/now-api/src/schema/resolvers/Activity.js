@@ -54,7 +54,7 @@ const createActivity = (
     id: newId,
     title,
     description,
-    activityDate: activityDate.toISOString().substring(0, 10),
+    activityDate: activityDate.toString(),
     createdAt: ISOString,
     updatedAt: ISOString,
     emoji,

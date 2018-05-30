@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { omit } from 'lodash';
 
-import { mocks, mockPromise, client } from '../db/mock';
+import { client } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -9,6 +9,8 @@ import factory from '../db/factory';
 const activity = factory.build('activity');
 const location = factory.build('location');
 const events = factory.buildList('event', 5, {}, { activity, location });
+events[0].time = '2018-05-30 20:00:00+00';
+events[0].timezone = 'Asia/Calcutta';
 
 const truncateTables = () =>
   Promise.all([
@@ -27,27 +29,6 @@ beforeAll(() =>
   )
 );
 afterAll(() => truncateTables());
-
-const mockDynamoRsvp1 = {
-  id: '1',
-  userId: '1',
-  action: 'add',
-  eventId: 'fa8a48e0-1043-11e8-b919-8f03cfc03e44',
-  createdAt: '2018-02-26T19:44:34.778Z',
-  updatedAt: '2018-02-27T19:44:34.778Z',
-};
-
-const mockDynamoRsvp2 = {
-  id: '2',
-  userId: '1',
-  action: 'add',
-  eventId: 'fa8a48e0-1043-11e8-b919-8f03cfc03e44',
-  createdAt: '2018-02-26T19:44:34.778Z',
-  updatedAt: '2018-02-27T19:44:34.778Z',
-};
-mocks.query = () => mockPromise([mockDynamoRsvp1, mockDynamoRsvp2]);
-mocks.queryRaw = () =>
-  mockPromise({ ScannedCount: 2, Items: [mockDynamoRsvp1, mockDynamoRsvp2] });
 
 describe('Event', () => {
   it('return allEvents', async () => {
@@ -75,7 +56,6 @@ describe('Event', () => {
                 }
               }
             }
-            time
             createdAt
             updatedAt
           }
@@ -88,7 +68,7 @@ describe('Event', () => {
         events.map(e =>
           expect.objectContaining({
             __typename: 'Event',
-            ...omit(e, ['locationId', 'activityId']),
+            ...omit(e, ['locationId', 'activityId', 'timezone', 'time']),
           })
         )
       ),
@@ -133,7 +113,6 @@ describe('Event', () => {
                 }
               }
             }
-            time
           }
         }
       `,
@@ -143,9 +122,26 @@ describe('Event', () => {
     expect(data).toMatchObject({
       event: {
         __typename: 'Event',
-        ...omit(events[0], ['locationId', 'activityId']),
+        ...omit(events[0], ['locationId', 'activityId', 'timezone', 'time']),
         activity,
       },
     });
+  });
+
+  it('deals with time', async () => {
+    const { id } = events[0];
+    const result = await client.query({
+      query: gql`
+        query getEventTime($id: ID!) {
+          event(id: $id) {
+            id
+            time
+          }
+        }
+      `,
+      variables: { id },
+    });
+    const foundTime = result.data.event.time;
+    expect(foundTime).toEqual('2018-05-31T01:30+05:30');
   });
 });

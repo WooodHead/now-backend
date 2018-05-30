@@ -1,6 +1,4 @@
 import gql from 'graphql-tag';
-import { use as jsJodaUse } from 'js-joda';
-import jsJodaTimezone from 'js-joda-timezone';
 import uuid from 'uuid/v4';
 import fs from 'fs';
 import { pick } from 'lodash';
@@ -18,8 +16,6 @@ jest.mock('../s3', () => ({
     }),
   },
 }));
-
-jsJodaUse(jsJodaTimezone);
 
 const truncateTables = () => Promise.all([sql(SQL_TABLES.USERS).truncate()]);
 
@@ -100,7 +96,7 @@ describe('user', () => {
     const { data: { createUser: { user: { id } } } } = res;
 
     const dbUser = await User.byId(id);
-    dbUser.birthday = dbUser.birthday.toISOString();
+    dbUser.birthday = dbUser.birthday.toString();
 
     expect(dbUser).toMatchObject({
       id,

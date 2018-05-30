@@ -1,4 +1,4 @@
-import { ChronoUnit, Instant, ZonedDateTime } from 'js-joda';
+import { ChronoUnit, Instant, ZoneId } from 'js-joda';
 import uuid from 'uuid';
 
 import { userIdFromContext } from '../util';
@@ -28,7 +28,7 @@ const isAttendingResolver = ({ id }, { userId }, ctx) =>
 
 // one day, this will be fancier.
 const stateResolver = ({ time }) => {
-  const eventTime = ZonedDateTime.parse(time.toISOString()).toInstant();
+  const eventTime = time.toInstant();
   const now = Instant.now();
 
   if (now.isBefore(eventTime)) return 'FUTURE';
@@ -38,6 +38,12 @@ const stateResolver = ({ time }) => {
 
 const locationResolver = ({ locationId }) => Location.byId(locationId);
 
+const timeResolver = ({ time, timezone }) =>
+  time
+    .withZoneSameInstant(ZoneId.of(timezone))
+    .truncatedTo(ChronoUnit.SECONDS)
+    .withFixedOffsetZone();
+
 export const resolvers = {
   activity: activityResolver,
   rsvps: rsvpsResolver,
@@ -45,6 +51,7 @@ export const resolvers = {
   isAttending: isAttendingResolver,
   state: stateResolver,
   location: locationResolver,
+  time: timeResolver,
 };
 
 // Queries

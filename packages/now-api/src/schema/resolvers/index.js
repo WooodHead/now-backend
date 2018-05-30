@@ -1,4 +1,3 @@
-import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import { GraphQLUpload } from 'apollo-upload-server';
 import GraphQLJSON from 'graphql-type-json';
 import * as Device from './Device';
@@ -9,6 +8,7 @@ import * as Message from './Message';
 import * as Rsvp from './Rsvp';
 import * as Photo from './Photo';
 import * as Report from './Report';
+import { LocalDate, ZonedDateTime } from './joda';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
@@ -45,9 +45,8 @@ export default wrapResolvers({
       ...root.node,
     }),
   },
-  GraphQLDate,
-  GraphQLTime,
-  GraphQLDateTime,
+  LocalDate,
+  ZonedDateTime,
   GraphQLJSON,
   Upload: GraphQLUpload,
   Name,
