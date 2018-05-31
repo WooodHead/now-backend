@@ -15,7 +15,7 @@ const subOrUnsub = (newPref, tokens) => {
 export const assocDevice = (token, { id, preferences }) => {
   const prefPromise = preferences
     ? Promise.resolve(preferences)
-    : getUser({ id }).then(user => user.preferences);
+    : getUser(id, id).then(user => user.preferences);
   return prefPromise
     .then(p => {
       // if the preference is true, or not present at all, subscribe. if it's

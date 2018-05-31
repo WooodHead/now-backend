@@ -202,7 +202,7 @@ const createUserMutation = (
   };
   return createUser(newUser).then(() => {
     maybeUpdateFcm(preferences, newId, true);
-    return { user: getUser(newId) };
+    return { user: getUser(newId, newId) };
   });
 };
 
@@ -224,7 +224,7 @@ const updateCurrentUser = (root, { input }, context) => {
 
   context.loaders.members.clear(id);
   return putUser(newUser)
-    .then(() => getUser(id))
+    .then(() => context.loaders.members.load(id))
     .then(u => {
       maybeUpdateFcm(input.preferences, id);
       return {
