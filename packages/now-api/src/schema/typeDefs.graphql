@@ -1,3 +1,5 @@
+directive @admin on FIELD_DEFINITION
+
 scalar LocalDate
 
 scalar ZonedDateTime
@@ -26,9 +28,9 @@ interface Connection {
 }
 
 type Query {
-  allEvents: [Event!]!
+  allEvents: [Event!]! @admin
   activity(id: ID!): Activity
-  allActivities: [Activity!]!
+  allActivities: [Activity!]! @admin
   todayActivity: Activity
   event(id: ID!): Event
   rsvp(id: ID!): Rsvp

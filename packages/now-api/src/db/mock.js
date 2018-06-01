@@ -16,15 +16,22 @@ export const mocks = {
 
 const apolloCache = new InMemoryCache();
 
+let isAdmin = false;
+
+export const setAdmin = b => {
+  isAdmin = b;
+};
+
 export const client = new ApolloClient({
   cache: apolloCache,
   link: new SchemaLink({
     schema,
-    context: {
+    context: () => ({
       token: null,
       user: { id: USER_ID },
       loaders: loaders({ currentUserId: USER_ID }),
-    },
+      scopes: isAdmin ? ['admin'] : [],
+    }),
   }),
 });
 

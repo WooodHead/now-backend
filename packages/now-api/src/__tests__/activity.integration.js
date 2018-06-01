@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-import { client } from '../db/mock';
+import { client, setAdmin } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -24,22 +24,36 @@ beforeAll(() =>
     ])
   )
 );
-afterAll(() => truncateTables());
+afterAll(() => {
+  setAdmin(false);
+  return truncateTables();
+});
+
+const ALL_ACTIVITIES_QUERY = gql`
+  {
+    allActivities {
+      id
+      title
+      emoji
+      description
+      activityDate
+    }
+  }
+`;
 
 describe('activity', () => {
-  it('return allActivities', async () => {
+  it("won't do allActivities by default", async () => {
+    const results = client.query({ query: ALL_ACTIVITIES_QUERY });
+    expect.assertions(1);
+    return expect(results).rejects.toEqual(
+      new Error('GraphQL error: You must be an admin.')
+    );
+  });
+
+  it('return allActivities when admin', async () => {
+    setAdmin(true);
     const results = client.query({
-      query: gql`
-        {
-          allActivities {
-            id
-            title
-            emoji
-            description
-            activityDate
-          }
-        }
-      `,
+      query: ALL_ACTIVITIES_QUERY,
     });
     const { data } = await results;
     expect(data).toHaveProperty('allActivities');

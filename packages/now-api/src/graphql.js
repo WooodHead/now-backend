@@ -38,11 +38,13 @@ app.use(morgan('tiny'));
 
 const buildUserForContext = (req, otherContext = {}) => {
   const currentUserAuth0Id = get(req, ['user', 'sub']);
+  const scope = get(req, ['user', 'scope']) || '';
   const context = {
     ...otherContext,
     currentUserAuth0Id,
     user: undefined,
     loaders: loaderContext({ currentUserId: null }),
+    scopes: [],
   };
   if (!currentUserAuth0Id) {
     return Promise.resolve(context);
@@ -55,6 +57,7 @@ const buildUserForContext = (req, otherContext = {}) => {
         ...context,
         user,
         loaders: loadersWithContext,
+        scopes: scope.split(' '),
       };
     }
     return context;

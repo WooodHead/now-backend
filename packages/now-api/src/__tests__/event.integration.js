@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { omit } from 'lodash';
 
-import { client } from '../db/mock';
+import { client, setAdmin } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -28,10 +28,14 @@ beforeAll(() =>
     ])
   )
 );
-afterAll(() => truncateTables());
+afterAll(() => {
+  setAdmin(false);
+  return truncateTables();
+});
 
 describe('Event', () => {
   it('return allEvents', async () => {
+    setAdmin(true);
     const results = client.query({
       query: gql`
         {
