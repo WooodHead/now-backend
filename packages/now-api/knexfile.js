@@ -14,6 +14,7 @@ const build = (connection, opts = {}) => ({
   },
   migrations: {
     tableName: 'knex_migrations',
+    stub: 'src/db/migration.stub',
   },
   ...opts,
 });

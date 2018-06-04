@@ -1,0 +1,49 @@
+type Query {
+  invitation(code: String!): Invitation
+  openAppInvitations(input: AdminInput): AppInvitationConnection @admin
+}
+
+type Mutation {
+  createAppInvitation(
+    input: CreateAppInvitationInput!
+  ): CreateAppInvitationPayload @admin
+}
+
+interface Invitation {
+  id: ID!
+  code: String!
+  inviter: User
+  expiresAt: ZonedDateTime
+  usedAt: ZonedDateTime
+  createdAt: ZonedDateTime
+}
+
+type AppInvitation implements Invitation & Node {
+  id: ID!
+  code: String!
+  inviter: User
+  expiresAt: ZonedDateTime
+  usedAt: ZonedDateTime
+  createdAt: ZonedDateTime!
+  notes: String
+}
+
+input CreateAppInvitationInput {
+  notes: String
+  expiresAt: ZonedDateTime
+}
+
+type CreateAppInvitationPayload {
+  invitation: Invitation
+}
+
+type AppInvitationConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [AppInvitationEdge!]!
+}
+
+type AppInvitationEdge implements Edge {
+  cursor: String!
+  node: AppInvitation!
+}

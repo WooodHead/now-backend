@@ -13,4 +13,5 @@ module.exports = makeExecutableSchema({
   resolverValidationOptions: {
     requireResolversForResolveType: false,
   },
+  inheritResolversFromInterfaces: true,
 });

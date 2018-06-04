@@ -9,6 +9,7 @@ import * as Rsvp from './Rsvp';
 import * as Photo from './Photo';
 import * as Report from './Report';
 import * as Location from './Location';
+import * as Invitation from './Invitation';
 import { LocalDate, ZonedDateTime } from './joda';
 import Name from './Name';
 import Birthdate from './Birthdate';
@@ -21,6 +22,7 @@ export default wrapResolvers({
     ...Event.queries,
     ...Message.queries,
     ...Location.queries,
+    ...Invitation.queries,
   },
   Subscription: {
     ...Event.subscriptions,
@@ -35,6 +37,7 @@ export default wrapResolvers({
     ...Photo.mutations,
     ...User.mutations,
     ...Report.mutations,
+    ...Invitation.mutations,
   },
   Activity: Activity.resolvers,
   Device: Device.resolvers,
@@ -42,6 +45,7 @@ export default wrapResolvers({
   Message: Message.resolvers,
   Rsvp: Rsvp.resolvers,
   User: User.resolvers,
+  Invitation: Invitation.resolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,

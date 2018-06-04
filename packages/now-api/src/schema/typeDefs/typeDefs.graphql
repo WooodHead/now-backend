@@ -30,7 +30,6 @@ interface Connection {
 type Query {
   allUsers(input: AdminInput): RootUsersConnection! @admin
   user(id: ID!): User
-
   currentUser: User!
 }
 
@@ -96,6 +95,7 @@ input CreateUserInput {
   location: String
   preferences: GraphQLJSON
   birthday: Birthdate!
+  invitationCode: String
 }
 
 type CreateUserPayload {

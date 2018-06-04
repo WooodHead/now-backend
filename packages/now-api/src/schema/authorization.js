@@ -27,7 +27,7 @@ const wrapEntries = (entries, ...invalidUserOk) =>
  */
 export const wrapResolvers = schema => ({
   ...schema,
-  Query: wrapEntries(schema.Query),
+  Query: wrapEntries(schema.Query, 'invitation'),
   Mutation: wrapEntries(schema.Mutation, 'createUser'),
   Subscription: schema.Subscription,
 });

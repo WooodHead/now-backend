@@ -9,4 +9,5 @@ export const SQL_TABLES = {
   EVENTS: 'events',
   MESSAGES: 'messages',
   RSVPS: 'rsvps',
+  INVITATIONS: 'invitations',
 };

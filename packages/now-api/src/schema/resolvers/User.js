@@ -9,10 +9,11 @@ import { getDevices } from './Device';
 import { updatePref as updateFcmPref } from '../../fcm';
 import { putInOrder } from '../../util';
 import { User } from '../../db/repos';
+import { consumeInvitation, findValidCode } from './Invitation';
+import RunTimeFlags from '../../RunTimeFlags';
 
 const CURRENT_TOS_VERSION = '8.0';
-
-const createUser = u => sql(SQL_TABLES.USERS).insert(u);
+const PRE_LOGGED_IN_AUTH0_ID = 'CUV6mTWPcyKmfHTw0DppzuVkb45RRCVN@clients';
 
 const putUser = ({ id, ...otherFields }) =>
   sql(SQL_TABLES.USERS)
@@ -168,7 +169,7 @@ const maybeUpdateFcm = (preferences, userId, force = false) => {
 };
 
 /* Mutations */
-const createUserMutation = (
+const createUserMutation = async (
   root,
   {
     input: {
@@ -179,16 +180,29 @@ const createUserMutation = (
       location,
       preferences = {},
       birthday,
+      invitationCode,
     },
   },
   context
 ) => {
+  if (context.currentUserAuth0Id === PRE_LOGGED_IN_AUTH0_ID) {
+    throw new Error('No.');
+  }
   if (userIdFromContext(context)) {
     throw new Error('User has already been created.');
   }
 
+  const invitation = invitationCode
+    ? await findValidCode(invitationCode)
+    : null;
+  if (!invitation) {
+    const required = await RunTimeFlags.get('require-invite');
+    if (required) {
+      throw new Error('A valid invitation code is required.');
+    }
+  }
+
   const newId = uuid();
-  const now = new Date().toISOString();
   const newUser = {
     id: newId,
     email,
@@ -199,14 +213,22 @@ const createUserMutation = (
     preferences,
     birthday: birthday.toString(),
     auth0Id: context.currentUserAuth0Id,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: sql.raw('now()'),
+    updatedAt: sql.raw('now()'),
     tosVersion: CURRENT_TOS_VERSION,
   };
-  return createUser(newUser).then(() => {
-    maybeUpdateFcm(preferences, newId, true);
-    return { user: getUser(newId, newId) };
+
+  await sql.transaction(async trx => {
+    await trx(SQL_TABLES.USERS).insert(newUser);
+    if (invitation) {
+      await consumeInvitation(invitation.id, trx);
+      // TODO: any invitation-type-specific stuff, like maybe RSVPing the new
+      // user to the Meetup they were invited to.
+    }
   });
+
+  maybeUpdateFcm(preferences, newId, true);
+  return { user: getUser(newId, newId) };
 };
 
 const updateCurrentUser = (root, { input }, context) => {
@@ -217,12 +239,11 @@ const updateCurrentUser = (root, { input }, context) => {
 
   const { birthday } = input;
 
-  const now = new Date().toISOString();
   const newUser = {
     id,
     ...pick(input, ['firstName', 'lastName', 'bio', 'preferences']),
     ...(birthday ? { birthday: birthday.toString() } : {}),
-    updatedAt: now,
+    updatedAt: sql.raw('now()'),
   };
 
   context.loaders.members.clear(id);
