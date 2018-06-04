@@ -2,6 +2,7 @@ import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
 import { apolloUploadExpress } from 'apollo-upload-server';
 import bodyParser from 'body-parser';
 
+import cors from 'cors';
 import express from 'express';
 import jwt from 'express-jwt';
 import { execute, subscribe } from 'graphql';
@@ -19,6 +20,7 @@ import schema from './schema';
 import { getByAuth0Id } from './schema/resolvers/User';
 import resizer from './resizer';
 import loaders from './db/loaders';
+import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 
 jsJodaUse(jsJodaTimezone);
 
@@ -34,6 +36,9 @@ const loaderContext = options => loaders(options);
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');
 
+if (process.env.NODE_ENV === 'development') {
+  app.use(cors());
+}
 app.use(morgan('tiny'));
 
 const buildUserForContext = (req, otherContext = {}) => {
@@ -113,6 +118,22 @@ app.get(
 );
 
 app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
+
+app.get('/admin/?:path(*)', ({ params: { path } }, res) => {
+  const params = { Bucket: NOW_ADMIN_BUCKET, Key: path || 'index.html' };
+  s3
+    .headObject(params)
+    .promise()
+    .catch(e => {
+      res.send(e.statusCode);
+      return undefined;
+    })
+    .then(data => {
+      if (data) {
+        streamObject(res, params, data);
+      }
+    });
+});
 
 const graphQLServer = createServer(app);
 graphQLServer.listen(PORT, () => {

@@ -1,7 +1,7 @@
 import { pick } from 'lodash';
 import uuid from 'uuid/v4';
 
-import { computeAge, userIdFromContext } from '../util';
+import { computeAge, userIdFromContext, sqlPaginatify } from '../util';
 import { getUserRsvps } from './Rsvp';
 import { SQL_TABLES } from '../../db/constants';
 import sql from '../../db/sql';
@@ -35,6 +35,9 @@ export const blockUser = (blockerId, blockedId) =>
     .catch(() => null);
 
 /* Queries */
+const allUsers = (root, { input: { orderBy = 'id', ...pageParams } }) =>
+  sqlPaginatify(orderBy, User.all({}), pageParams);
+
 export const userQuery = (root, { id }, context) => {
   if (id) {
     return context.loaders.members.load(id);
@@ -95,7 +98,7 @@ const currentUser = (root, vars, context) => {
   return context.loaders.members.load(id);
 };
 
-export const queries = { currentUser, user: userQuery };
+export const queries = { currentUser, user: userQuery, allUsers };
 
 /* Resolvers */
 const rsvps = (root, args) => getUserRsvps({ userId: root.id, ...args });

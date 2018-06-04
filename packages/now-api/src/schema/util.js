@@ -1,4 +1,4 @@
-import { get, slice } from 'lodash';
+import { get, slice, isInteger } from 'lodash';
 import { ChronoUnit, LocalDate, ZoneId } from 'js-joda';
 
 export const userIdFromContext = context => get(context, ['user', 'id']);
@@ -23,6 +23,7 @@ export const sqlPaginatify = async (
     before,
     cursorDeserialize = identity,
     reverse = false,
+    offset = undefined,
   } = {}
 ) => {
   const pageInfo = {
@@ -37,20 +38,24 @@ export const sqlPaginatify = async (
     throw new Error('Use first or last, but not both together');
   }
 
-  if (after) {
-    pagedQuery.where(
-      cursorId,
-      reverse ? '<' : '>',
-      cursorDeserialize(fromBase64(after))
-    );
-  }
+  if (offset && isInteger(offset)) {
+    pagedQuery.offset(offset);
+  } else {
+    if (after) {
+      pagedQuery.where(
+        cursorId,
+        reverse ? '<' : '>',
+        cursorDeserialize(fromBase64(after))
+      );
+    }
 
-  if (before) {
-    pagedQuery.where(
-      cursorId,
-      reverse ? '>' : '<',
-      cursorDeserialize(fromBase64(before))
-    );
+    if (before) {
+      pagedQuery.where(
+        cursorId,
+        reverse ? '>' : '<',
+        cursorDeserialize(fromBase64(before))
+      );
+    }
   }
 
   // if after, default first, if before default last, otherwise default first

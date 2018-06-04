@@ -1,0 +1,229 @@
+directive @admin on FIELD_DEFINITION
+
+scalar LocalDate
+
+scalar ZonedDateTime
+
+scalar GraphQLJSON
+
+scalar Upload
+
+scalar Name
+
+scalar Birthdate
+
+interface Node {
+  id: ID!
+}
+
+interface Edge {
+  cursor: String!
+  node: Node!
+}
+
+interface Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [Edge!]!
+}
+
+type Query {
+  allUsers(input: AdminInput): RootUsersConnection! @admin
+  user(id: ID!): User
+
+  currentUser: User!
+}
+
+type Mutation {
+  markEventChatRead(input: MarkEventChatReadInput!): MarkEventChatReadPayload
+  createMessage(input: CreateMessageInput): CreateMessagePayload
+  setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
+  createUser(input: CreateUserInput): CreateUserPayload
+  updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
+  registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
+  createReport(input: ReportInput!): ReportInputPayload
+  blockUser(input: BlockUserInput): BlockUserPayload
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+input ReportInput {
+  data: GraphQLJSON!
+}
+
+input AdminInput {
+  first: Int
+  last: Int
+  after: String
+  before: String
+  offset: Int
+  orderBy: String
+  reverse: Boolean
+}
+
+type ReportInputPayload {
+  data: GraphQLJSON!
+}
+
+input MarkEventChatReadInput {
+  eventId: ID!
+  ts: String!
+}
+
+type MarkEventChatReadPayload {
+  rsvp: Rsvp
+}
+
+input BlockUserInput {
+  blockedUserId: ID!
+}
+
+type BlockUserPayload {
+  blockedUser: User
+  blockingUser: User
+}
+
+input CreateUserInput {
+  email: String!
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name!
+  lastName: Name!
+  bio: String
+  location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate!
+}
+
+type CreateUserPayload {
+  user: User
+}
+
+input UpdateCurrentUserInput {
+  email: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name
+  lastName: Name
+  bio: String
+  location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate
+}
+
+type UpdateCurrentUserPayload {
+  user: User
+}
+
+input CreateMessageInput {
+  text: String!
+  eventId: ID!
+  id: ID
+}
+
+type CreateMessagePayload {
+  edge: EventMessagesEdge
+}
+
+type User implements Node {
+  id: ID!
+  email: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name
+  lastName: Name
+  bio: String
+  location: String
+  rsvps(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): UserRsvpsConnection!
+  devices: [Device!]
+  preferences: GraphQLJSON
+  photo: Photo
+  birthday: Birthdate
+  age: Int
+  # returns true if this user is the currently-authenticated user
+  isSelf: Boolean!
+  tosCurrent: Boolean
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type RootUsersConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootUsersEdge!]!
+}
+
+type RootUsersEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+type Photo {
+  id: ID!
+  baseUrl: String
+  type: String @deprecated
+  preview: String
+  blocked: Boolean
+}
+
+type UserRsvpsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [UserRsvpsEdge!]!
+}
+
+type UserRsvpsEdge implements Edge {
+  cursor: String!
+  node: Rsvp!
+}
+
+type Message implements Node {
+  id: ID!
+  text: String
+  user: User
+  event: Event
+  ts: String
+}
+
+enum DeviceType {
+  android
+  ios
+}
+
+type Device {
+  token: ID!
+  type: DeviceType
+  model: String
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+  user: User
+}
+
+input RegisterDeviceInput {
+  token: ID!
+  type: DeviceType
+  model: String
+}
+
+type RegisterDevicePayload {
+  device: Device
+}
+
+input SetProfilePhotoInput {
+  photo: Upload!
+  main: Boolean
+  syncPhoto: Boolean
+}
+
+type CreatePhotoPayload {
+  photo: Photo
+  user: User
+}

@@ -1,0 +1,89 @@
+type Query {
+  allEvents(input: AdminInput): RootEventsConnection! @admin
+  manyEvents(ids: [ID!]!): [Event!]
+  event(id: ID!): Event
+}
+
+type Mutation {
+  createEvent(input: CreateEventInput!): CreateEventPayload @admin
+}
+
+type Subscription {
+  messageAdded(eventId: ID!): EventMessagesEdge
+  event(id: ID!): Event
+}
+
+input CreateEventInput {
+  activityId: String!
+  time: ZonedDateTime!
+  limit: Int!
+  location: LocationInput!
+}
+
+type CreateEventPayload {
+  event: Event
+}
+
+type Event implements Node {
+  id: ID!
+  time: ZonedDateTime
+  activity: Activity
+  rsvps(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): EventRsvpsConnection!
+  messages(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): EventMessagesConnection!
+  isAttending(userId: ID): Boolean
+  limit: Int
+  instigator: User
+  location: Location!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+  state: EventState!
+}
+
+type RootEventsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootEventsEdge!]!
+}
+
+type RootEventsEdge implements Edge {
+  cursor: String!
+  node: Event!
+}
+
+enum EventState {
+  PAST
+  PRESENT
+  FUTURE
+}
+
+type EventRsvpsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [EventRsvpsEdge!]!
+}
+
+type EventRsvpsEdge implements Edge {
+  cursor: String!
+  node: Rsvp!
+}
+
+type EventMessagesConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [EventMessagesEdge!]!
+}
+
+type EventMessagesEdge implements Edge {
+  cursor: String!
+  node: Message!
+}

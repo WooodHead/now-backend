@@ -1,0 +1,53 @@
+type Query {
+  rsvp(id: ID!): Rsvp
+  manyRsvps(ids: [ID!]!): [Rsvp!]
+  allRsvps(input: AdminInput): RootRsvpsConnection! @admin
+}
+
+type Mutation {
+  addRsvp(input: CreateRsvpInput!): CreateRsvpPayload
+  removeRsvp(input: CreateRsvpInput!): CreateRsvpPayload
+}
+
+type Rsvp implements Node {
+  id: ID!
+  user: User
+  event: Event
+  action: RsvpAction
+  lastReadTs: String
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+enum RsvpAction {
+  add
+  remove
+  flake
+}
+
+type RsvpLog {
+  user: User
+  event: Event
+  time: ZonedDateTime
+  action: RsvpAction
+}
+
+type RootRsvpsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootRsvpsEdge!]!
+}
+
+type RootRsvpsEdge implements Edge {
+  cursor: String!
+  node: Rsvp!
+}
+
+input CreateRsvpInput {
+  eventId: ID!
+}
+
+type CreateRsvpPayload {
+  rsvp: Rsvp
+  event: Event
+}

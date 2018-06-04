@@ -1,11 +1,11 @@
 import { ChronoUnit, Instant, ZoneId } from 'js-joda';
 import uuid from 'uuid';
 
-import { userIdFromContext } from '../util';
+import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
-import { Event, Location } from '../../db/repos';
+import { Event } from '../../db/repos';
 
 // Resolvers
 const activityResolver = ({ activityId }, args, { loaders }) =>
@@ -36,7 +36,8 @@ const stateResolver = ({ time }) => {
   return 'PAST';
 };
 
-const locationResolver = ({ locationId }) => Location.byId(locationId);
+const locationResolver = ({ locationId }, args, { loaders }) =>
+  loaders.locations.load(locationId);
 
 const timeResolver = ({ time, timezone }) =>
   time
@@ -55,10 +56,16 @@ export const resolvers = {
 };
 
 // Queries
-const allEvents = () => Event.all();
+const allEvents = (root, { input }) => {
+  const { orderBy = 'id', ...pageParams } = input || {};
+  return sqlPaginatify(orderBy, Event.all({}), pageParams);
+};
+
+const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
+
 const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
 
-export const queries = { event: eventQuery, allEvents };
+export const queries = { event: eventQuery, allEvents, manyEvents };
 
 const createEvent = (
   root,

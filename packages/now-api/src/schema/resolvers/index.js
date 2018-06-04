@@ -8,6 +8,7 @@ import * as Message from './Message';
 import * as Rsvp from './Rsvp';
 import * as Photo from './Photo';
 import * as Report from './Report';
+import * as Location from './Location';
 import { LocalDate, ZonedDateTime } from './joda';
 import Name from './Name';
 import Birthdate from './Birthdate';
@@ -19,6 +20,7 @@ export default wrapResolvers({
     ...Activity.queries,
     ...Event.queries,
     ...Message.queries,
+    ...Location.queries,
   },
   Subscription: {
     ...Event.subscriptions,

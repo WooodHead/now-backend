@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 
-import { NOW_IMAGE_BUCKET, s3 } from './s3';
+import { NOW_IMAGE_BUCKET, s3, streamObject } from './s3';
 
 const scaleImage = (width, height, originalKey, scaledKey) =>
   s3
@@ -23,20 +23,6 @@ const scaleImage = (width, height, originalKey, scaledKey) =>
         .promise()
     );
 
-const streamObject = (res, params, data) => {
-  const stream = s3.getObject(params).createReadStream();
-
-  stream.on('error', res.send);
-
-  res.set('Content-Length', data.ContentLength);
-  res.set('Last-Modified', data.LastModified);
-  res.set('ETag', data.ETag);
-  res.set('Cache-Control', 'public, max-age=31536000');
-
-  // Pipe the s3 object to the response
-  stream.pipe(res);
-};
-
 const resizer = ({ params: { width, height, originalKey } }, res) => {
   const scaledKey = `${width}x${height}/${originalKey}`;
   const scaledParams = { Bucket: NOW_IMAGE_BUCKET, Key: scaledKey };
@@ -57,7 +43,7 @@ const resizer = ({ params: { width, height, originalKey } }, res) => {
     })
     .then(data => {
       if (data) {
-        streamObject(res, scaledParams, data);
+        streamObject(res, scaledParams, data, 'public, max-age=31536000');
       }
     });
 };

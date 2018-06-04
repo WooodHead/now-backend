@@ -32,11 +32,15 @@ afterAll(() => {
 const ALL_ACTIVITIES_QUERY = gql`
   {
     allActivities {
-      id
-      title
-      emoji
-      description
-      activityDate
+      edges {
+        node {
+          id
+          title
+          description
+          activityDate
+          emoji
+        }
+      }
     }
   }
 `;
@@ -58,18 +62,22 @@ describe('activity', () => {
     const { data } = await results;
     expect(data).toHaveProperty('allActivities');
 
-    expect(data.allActivities).toHaveLength(4);
-    expect(data.allActivities).toEqual(
+    expect(data.allActivities.edges).toHaveLength(4);
+    expect(data.allActivities.edges).toEqual(
       expect.arrayContaining(
         [...activities, todayActivity].map(a =>
           expect.objectContaining({
-            __typename: 'Activity',
-            [Symbol('id')]: `Activity:${a.id}`,
-            id: a.id,
-            activityDate: a.activityDate,
-            description: a.description,
-            emoji: a.emoji,
-            title: a.title,
+            __typename: 'RootActivitiesEdge',
+            [Symbol('id')]: expect.anything(),
+            node: expect.objectContaining({
+              __typename: 'Activity',
+              [Symbol('id')]: `Activity:${a.id}`,
+              id: a.id,
+              activityDate: a.activityDate,
+              description: a.description,
+              emoji: a.emoji,
+              title: a.title,
+            }),
           })
         )
       )

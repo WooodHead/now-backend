@@ -1,0 +1,61 @@
+type Query {
+  todayActivity: Activity
+  activity(id: ID!): Activity
+  manyActivities(ids: [ID!]!): [Activity!]
+  allActivities(input: AdminInput): RootActivitiesConnection! @admin
+}
+
+type Mutation {
+  createActivity(input: CreateActivityInput): CreateActivityPayload @admin
+}
+
+type Activity implements Node {
+  id: ID!
+  title: String
+  slug: String
+  description: String
+  duration: String
+  activityDate: LocalDate
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+  emoji: String
+  events(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): ActivityEventsConnection!
+}
+
+type RootActivitiesConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootActivitiesEdge!]!
+}
+
+type RootActivitiesEdge implements Edge {
+  cursor: String!
+  node: Activity!
+}
+
+input CreateActivityInput {
+  title: String!
+  description: String!
+  emoji: String!
+  activityDate: LocalDate!
+}
+
+type CreateActivityPayload {
+  activity: Activity
+}
+
+type ActivityEventsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [ActivityEventsEdge!]!
+}
+
+type ActivityEventsEdge implements Edge {
+  cursor: String!
+  node: Event!
+}

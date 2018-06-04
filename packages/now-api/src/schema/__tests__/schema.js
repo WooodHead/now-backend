@@ -1,6 +1,6 @@
 import { makeExecutableSchema } from 'graphql-tools';
 
-import typeDefs from '../typeDefs.graphql';
+import typeDefs from '../typeDefs';
 
 describe('typeDefs.graphql', () => {
   it('validates', () => {

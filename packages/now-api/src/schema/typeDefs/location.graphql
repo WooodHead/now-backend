@@ -1,0 +1,49 @@
+type Query {
+  location(id: ID!): Location
+  manyLocations(ids: [ID!]!): [Location!]
+  allLocations(input: AdminInput): RootLocationsConnection! @admin
+}
+
+type Location implements Node {
+  id: ID!
+  foursquareVenueId: String
+  lat: Float!
+  lng: Float!
+  address: String
+  name: String
+  crossStreet: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  neighborhood: String
+  isFuzzed: Boolean
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type RootLocationsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootLocationsEdge!]!
+}
+
+type RootLocationsEdge implements Edge {
+  cursor: String!
+  node: Location!
+}
+
+input LocationInput {
+  foursquareVenueId: String
+  lat: Float!
+  lng: Float!
+  address: String
+  name: String
+  crossStreet: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  neighborhood: String
+  isFuzzed: Boolean
+}

@@ -40,39 +40,47 @@ describe('Event', () => {
       query: gql`
         {
           allEvents {
-            id
-            limit
-            activity {
-              id
-              activityDate
-              title
-              description
-              createdAt
-              updatedAt
-            }
-            rsvps {
-              edges {
-                node {
-                  event {
-                    id
-                  }
+            edges {
+              node {
+                id
+                limit
+                activity {
+                  id
+                  activityDate
+                  title
+                  description
+                  createdAt
                   updatedAt
                 }
+                rsvps {
+                  edges {
+                    node {
+                      event {
+                        id
+                      }
+                      updatedAt
+                    }
+                  }
+                }
+                createdAt
+                updatedAt
               }
             }
-            createdAt
-            updatedAt
           }
         }
       `,
     });
     const { data } = await results;
-    expect(data).toMatchObject({
-      allEvents: expect.arrayContaining(
+    expect(data.allEvents).toMatchObject({
+      edges: expect.arrayContaining(
         events.map(e =>
           expect.objectContaining({
-            __typename: 'Event',
-            ...omit(e, ['locationId', 'activityId', 'timezone', 'time']),
+            __typename: 'RootEventsEdge',
+            [Symbol('id')]: expect.anything(),
+            node: expect.objectContaining({
+              __typename: 'Event',
+              ...omit(e, ['locationId', 'activityId', 'timezone', 'time']),
+            }),
           })
         )
       ),

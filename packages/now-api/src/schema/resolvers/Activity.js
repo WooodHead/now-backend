@@ -14,30 +14,33 @@ export const getToday = () => {
   ).toString();
 };
 
-const allActivities = () => Activity.all();
+const allActivities = (root, { input }) => {
+  const { orderBy = 'id', ...pageParams } = input || {};
+  return sqlPaginatify(orderBy, Activity.all({}), pageParams);
+};
+
+const manyActivities = (root, { ids }, { loaders }) =>
+  loaders.activities.loadMany(ids);
+
 const activityQuery = (root, { id }, { loaders }) =>
   loaders.activities.load(id);
+
 const todayActivity = () => Activity.get({ activityDate: getToday() });
 
 export const queries = {
   todayActivity,
   activity: activityQuery,
   allActivities,
+  manyActivities,
 };
 
 export const getEvents = ({ id }, { first, last, after, before }) =>
-  sqlPaginatify(
-    'id',
-    Event.all(
-      { activityId: id },
-      {
-        first,
-        last,
-        after,
-        before,
-      }
-    )
-  );
+  sqlPaginatify('id', Event.all({ activityId: id }), {
+    first,
+    last,
+    after,
+    before,
+  });
 
 export const resolvers = {
   events: getEvents,
