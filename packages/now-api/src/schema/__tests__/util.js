@@ -14,13 +14,13 @@ describe('sql paginaitify', () => {
   beforeAll(() =>
     truncateTables().then(() =>
       Promise.all([sql(SQL_TABLES.USERS).insert(users)])
-    )
-  );
+    ));
   afterAll(() => truncateTables());
   it('no arguments return basic page, defaults to 20', async () => {
     const builder = User.all();
 
     const results = await sqlPaginatify('id', builder);
+    results.count = await results.count();
     expect(results).toMatchObject({
       count: userCount,
       pageInfo: {
@@ -40,6 +40,7 @@ describe('sql paginaitify', () => {
     const builder = User.all();
 
     const results = await sqlPaginatify('id', builder, { reverse: true });
+    results.count = await results.count();
     expect(results).toMatchObject({
       count: userCount,
       pageInfo: {
@@ -70,6 +71,7 @@ describe('sql paginaitify', () => {
       const builder = User.all();
 
       const results = await sqlPaginatify('id', builder, { first: 40 });
+      results.count = await results.count();
       expect(results).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -88,6 +90,7 @@ describe('sql paginaitify', () => {
       const builder = User.all();
 
       const results = await sqlPaginatify('id', builder, { first: 10 });
+      results.count = await results.count();
       expect(results).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -108,6 +111,7 @@ describe('sql paginaitify', () => {
       const builder = User.all();
 
       const results = await sqlPaginatify('id', builder, { last: 40 });
+      results.count = await results.count();
       expect(results).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -126,6 +130,7 @@ describe('sql paginaitify', () => {
       const builder = User.all();
 
       const results = await sqlPaginatify('id', builder, { last: 10 });
+      results.count = await results.count();
       expect(results).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -153,6 +158,7 @@ describe('sql paginaitify', () => {
         first: 10,
         after: cursor,
       });
+      next10.count = await next10.count();
       expect(next10).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -182,6 +188,7 @@ describe('sql paginaitify', () => {
         after: cursor,
         reverse: true,
       });
+      next10.count = await next10.count();
       expect(next10).toMatchObject({
         count: userCount,
         pageInfo: {
@@ -207,6 +214,7 @@ describe('sql paginaitify', () => {
         last: 10,
         before: cursor,
       });
+      previous10.count = await previous10.count();
       expect(previous10).toMatchObject({
         count: userCount,
         pageInfo: {

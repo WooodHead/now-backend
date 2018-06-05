@@ -30,8 +30,11 @@ export const sqlPaginatify = async (
     hasPreviousPage: false,
     hasNextPage: false,
   };
-  const [{ count: stringCount }] = await builder.clone().count(cursorId);
-  const count = Number(stringCount);
+  const builderForCount = builder.clone();
+  const count = () =>
+    builderForCount
+      .count(cursorId)
+      .then(([{ count: stringCount }]) => Number(stringCount));
   const pagedQuery = builder.clone();
 
   if (first !== undefined && last !== undefined) {
