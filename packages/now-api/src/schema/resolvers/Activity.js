@@ -3,6 +3,7 @@ import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
+import sql from '../../db/sql';
 
 const AVAILABILITY_HOUR = LocalTime.parse('21:00');
 
@@ -14,10 +15,8 @@ export const getToday = () => {
   ).toString();
 };
 
-const allActivities = (root, { input }) => {
-  const { orderBy = 'id', ...pageParams } = input || {};
-  return sqlPaginatify(orderBy, Activity.all({}), pageParams);
-};
+const allActivities = (root, { input, orderBy = 'id' }) =>
+  sqlPaginatify(orderBy, Activity.all({}), input);
 
 const manyActivities = (root, { ids }, { loaders }) =>
   loaders.activities.loadMany(ids);
@@ -48,18 +47,18 @@ export const resolvers = {
 
 const createActivity = (
   root,
-  { input: { title, description, activityDate, emoji } },
+  { input: { title, description, activityDate, emoji, pushNotification } },
   { loaders }
 ) => {
   const newId = uuid.v1();
-  const ISOString = new Date().toISOString();
   const newActivity = {
     id: newId,
     title,
+    pushNotification,
     description,
     activityDate: activityDate.toString(),
-    createdAt: ISOString,
-    updatedAt: ISOString,
+    createdAt: sql.raw('now()'),
+    updatedAt: sql.raw('now()'),
     emoji,
   };
 
@@ -70,4 +69,26 @@ const createActivity = (
   }));
 };
 
-export const mutations = { createActivity };
+const updateActivity = (
+  root,
+  { input: { id, title, description, activityDate, emoji, pushNotification } },
+  { loaders }
+) => {
+  const updatedActivity = {
+    id,
+    title,
+    pushNotification,
+    description,
+    activityDate: activityDate.toString(),
+    updatedAt: sql.raw('now()'),
+    emoji,
+  };
+
+  loaders.activities.clear(id);
+
+  return Activity.update(updatedActivity).then(() => ({
+    activity: loaders.activities.load(id),
+  }));
+};
+
+export const mutations = { createActivity, updateActivity };

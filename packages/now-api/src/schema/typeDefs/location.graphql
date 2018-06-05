@@ -1,7 +1,10 @@
 type Query {
   location(id: ID!): Location
   manyLocations(ids: [ID!]!): [Location!]
-  allLocations(input: AdminInput): RootLocationsConnection! @admin
+  allLocations(
+    input: AdminInput
+    orderBy: LocationOrder
+  ): RootLocationsConnection! @admin
 }
 
 type Location implements Node {
@@ -20,6 +23,22 @@ type Location implements Node {
   isFuzzed: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+}
+
+enum LocationOrder {
+  id
+  lat
+  lng
+  address
+  name
+  crossStreet
+  city
+  state
+  postalCode
+  country
+  neighborhood
+  createdAt
+  updatedAt
 }
 
 type RootLocationsConnection implements Connection {

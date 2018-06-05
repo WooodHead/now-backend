@@ -1,6 +1,9 @@
 type Query {
   invitation(code: String!): Invitation
-  openAppInvitations(input: AdminInput): AppInvitationConnection @admin
+  openAppInvitations(
+    input: AdminInput
+    orderBy: InvitationOrder
+  ): AppInvitationConnection @admin
 }
 
 type Mutation {
@@ -26,6 +29,15 @@ type AppInvitation implements Invitation & Node {
   usedAt: ZonedDateTime
   createdAt: ZonedDateTime!
   notes: String
+}
+
+enum InvitationOrder {
+  id
+  code
+  expiresAt
+  usedAt
+  createdAt
+  notes
 }
 
 input CreateAppInvitationInput {

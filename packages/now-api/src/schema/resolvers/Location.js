@@ -1,10 +1,8 @@
 import { Location } from '../../db/repos';
 import { sqlPaginatify } from '../util';
 // Queries
-const allLocations = (root, { input }) => {
-  const { orderBy = 'id', ...pageParams } = input || {};
-  return sqlPaginatify(orderBy, Location.all({}), pageParams);
-};
+const allLocations = (root, { input, orderBy = 'id' }) =>
+  sqlPaginatify(orderBy, Location.all({}), input);
 
 const manyLocations = (root, { ids }, { loaders }) =>
   loaders.locations.loadMany(ids);

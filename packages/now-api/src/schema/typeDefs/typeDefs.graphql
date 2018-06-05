@@ -59,7 +59,6 @@ input AdminInput {
   after: String
   before: String
   offset: Int
-  orderBy: String
   reverse: Boolean
 }
 

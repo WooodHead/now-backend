@@ -1,7 +1,7 @@
 type Query {
   rsvp(id: ID!): Rsvp
   manyRsvps(ids: [ID!]!): [Rsvp!]
-  allRsvps(input: AdminInput): RootRsvpsConnection! @admin
+  allRsvps(input: AdminInput, orderBy: RsvpOrder): RootRsvpsConnection! @admin
 }
 
 type Mutation {
@@ -17,6 +17,14 @@ type Rsvp implements Node {
   lastReadTs: String
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+}
+
+enum RsvpOrder {
+  id
+  action
+  lastReadTs
+  createdAt
+  updatedAt
 }
 
 enum RsvpAction {

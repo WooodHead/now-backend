@@ -2,11 +2,15 @@ type Query {
   todayActivity: Activity
   activity(id: ID!): Activity
   manyActivities(ids: [ID!]!): [Activity!]
-  allActivities(input: AdminInput): RootActivitiesConnection! @admin
+  allActivities(
+    input: AdminInput
+    orderBy: ActivityOrder
+  ): RootActivitiesConnection! @admin
 }
 
 type Mutation {
   createActivity(input: CreateActivityInput): CreateActivityPayload @admin
+  updateActivity(input: UpdateActivityInput): CreateActivityPayload @admin
 }
 
 type Activity implements Node {
@@ -27,6 +31,15 @@ type Activity implements Node {
   ): ActivityEventsConnection!
 }
 
+enum ActivityOrder {
+  id
+  title
+  description
+  emoji
+  pushNotification
+  activityDate
+}
+
 type RootActivitiesConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
@@ -42,6 +55,16 @@ input CreateActivityInput {
   title: String!
   description: String!
   emoji: String!
+  pushNotification: String
+  activityDate: LocalDate!
+}
+
+input UpdateActivityInput {
+  id: ID!
+  title: String!
+  description: String!
+  emoji: String!
+  pushNotification: String
   activityDate: LocalDate!
 }
 

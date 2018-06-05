@@ -6,6 +6,7 @@ import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event } from '../../db/repos';
+import sql from '../../db/sql';
 
 // Resolvers
 const activityResolver = ({ activityId }, args, { loaders }) =>
@@ -56,10 +57,8 @@ export const resolvers = {
 };
 
 // Queries
-const allEvents = (root, { input }) => {
-  const { orderBy = 'id', ...pageParams } = input || {};
-  return sqlPaginatify(orderBy, Event.all({}), pageParams);
-};
+const allEvents = (root, { input, orderBy = 'id' }) =>
+  sqlPaginatify(orderBy, Event.all({}), input);
 
 const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
 
@@ -69,20 +68,18 @@ export const queries = { event: eventQuery, allEvents, manyEvents };
 
 const createEvent = (
   root,
-  { input: { time, activityId, limit, location } },
+  { input: { time, activityId, limit, locationId } },
   { loaders }
 ) => {
   const newId = uuid.v1();
-  const ISOString = new Date().toISOString();
   const newEvent = {
     id: newId,
-    limit,
+    locationId,
     activityId,
-    createdAt: ISOString,
-    updatedAt: ISOString,
-    rsvps: [],
-    time: time.toISOString(),
-    location,
+    limit,
+    time: time.toString(),
+    createdAt: sql.raw('now()'),
+    updatedAt: sql.raw('now()'),
   };
 
   loaders.events.clear(newId);
@@ -92,8 +89,31 @@ const createEvent = (
   }));
 };
 
+const updateEvent = (
+  root,
+  { input: { id, time, activityId, limit, locationId } },
+  { loaders }
+) => {
+  const updatedEvent = {
+    id,
+    locationId,
+    activityId,
+    limit,
+    time: time.toString(),
+    createdAt: sql.raw('now()'),
+    updatedAt: sql.raw('now()'),
+  };
+
+  loaders.events.clear(id);
+
+  return Event.update(updatedEvent).then(() => ({
+    event: loaders.events.load(id),
+  }));
+};
+
 export const mutations = {
   createEvent,
+  updateEvent,
 };
 
 const topicName = eventId => `event-changes-${eventId}`;

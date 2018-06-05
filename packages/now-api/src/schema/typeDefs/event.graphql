@@ -1,11 +1,13 @@
 type Query {
-  allEvents(input: AdminInput): RootEventsConnection! @admin
+  allEvents(input: AdminInput, orderBy: EventOrder): RootEventsConnection!
+    @admin
   manyEvents(ids: [ID!]!): [Event!]
   event(id: ID!): Event
 }
 
 type Mutation {
   createEvent(input: CreateEventInput!): CreateEventPayload @admin
+  updateEvent(input: UpdateEventInput!): CreateEventPayload @admin
 }
 
 type Subscription {
@@ -13,11 +15,29 @@ type Subscription {
   event(id: ID!): Event
 }
 
+enum EventOrder {
+  id
+  time
+  activity
+  limit
+  createdAt
+  updatedAt
+  state
+}
+
 input CreateEventInput {
-  activityId: String!
+  activityId: ID!
   time: ZonedDateTime!
   limit: Int!
-  location: LocationInput!
+  locationId: ID!
+}
+
+input UpdateEventInput {
+  id: ID!
+  activityId: ID!
+  time: ZonedDateTime!
+  limit: Int!
+  locationId: ID!
 }
 
 type CreateEventPayload {
