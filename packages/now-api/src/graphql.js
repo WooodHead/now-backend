@@ -22,6 +22,8 @@ import resizer from './resizer';
 import loaders from './db/loaders';
 import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 jsJodaUse(jsJodaTimezone);
 
 // http://sharp.pixelplumbing.com/en/stable/install/#alpine-linux
@@ -36,7 +38,7 @@ const loaderContext = options => loaders(options);
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');
 
-if (process.env.NODE_ENV === 'development') {
+if (isDev) {
   app.use(cors());
 }
 app.use(morgan('common'));
@@ -94,6 +96,9 @@ app.use(
     return buildUserForContext(req, { http: true }).then(context => ({
       schema,
       context,
+      debug: isDev,
+      tracing: isDev,
+      logFunction: isDev || process.env.VERBOSE ? console.log : () => {},
     }));
   })
 );
