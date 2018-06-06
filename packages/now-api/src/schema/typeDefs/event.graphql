@@ -28,6 +28,7 @@ enum EventOrder {
 input CreateEventInput {
   activityId: ID!
   time: ZonedDateTime!
+  timezone: ZoneId!
   limit: Int!
   locationId: ID!
 }
@@ -36,6 +37,7 @@ input UpdateEventInput {
   id: ID!
   activityId: ID!
   time: ZonedDateTime!
+  timezone: ZoneId!
   limit: Int!
   locationId: ID!
 }
@@ -67,6 +69,7 @@ type Event implements Node {
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
   state: EventState!
+  timezone: ZoneId
 }
 
 type RootEventsConnection implements Connection {

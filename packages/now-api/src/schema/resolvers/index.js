@@ -10,7 +10,7 @@ import * as Photo from './Photo';
 import * as Report from './Report';
 import * as Location from './Location';
 import * as Invitation from './Invitation';
-import { LocalDate, ZonedDateTime } from './joda';
+import { LocalDate, ZonedDateTime, ZoneId } from './joda';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
@@ -53,6 +53,7 @@ export default wrapResolvers({
   },
   LocalDate,
   ZonedDateTime,
+  ZoneId,
   GraphQLJSON,
   Upload: GraphQLUpload,
   Name,

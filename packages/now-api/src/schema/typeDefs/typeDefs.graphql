@@ -4,6 +4,8 @@ scalar LocalDate
 
 scalar ZonedDateTime
 
+scalar ZoneId
+
 scalar GraphQLJSON
 
 scalar Upload

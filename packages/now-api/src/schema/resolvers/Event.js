@@ -68,7 +68,7 @@ export const queries = { event: eventQuery, allEvents, manyEvents };
 
 const createEvent = (
   root,
-  { input: { time, activityId, limit, locationId } },
+  { input: { time, timezone, activityId, limit, locationId } },
   { loaders }
 ) => {
   const newId = uuid.v1();
@@ -78,20 +78,21 @@ const createEvent = (
     activityId,
     limit,
     time: time.toString(),
+    timezone: timezone.id(),
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
 
   loaders.events.clear(newId);
 
-  return Event.update(newEvent).then(() => ({
+  return Event.insert(newEvent).then(() => ({
     event: loaders.events.load(newId),
   }));
 };
 
 const updateEvent = (
   root,
-  { input: { id, time, activityId, limit, locationId } },
+  { input: { id, time, timezone, activityId, limit, locationId } },
   { loaders }
 ) => {
   const updatedEvent = {
@@ -100,6 +101,7 @@ const updateEvent = (
     activityId,
     limit,
     time: time.toString(),
+    timezone: timezone.id(),
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
