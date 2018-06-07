@@ -221,7 +221,7 @@ const createUserMutation = async (
   await sql.transaction(async trx => {
     await trx(SQL_TABLES.USERS).insert(newUser);
     if (invitation) {
-      await consumeInvitation(invitation.id, trx);
+      await consumeInvitation(invitation.id, newId, trx);
       // TODO: any invitation-type-specific stuff, like maybe RSVPing the new
       // user to the Meetup they were invited to.
     }

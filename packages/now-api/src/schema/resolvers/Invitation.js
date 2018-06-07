@@ -79,9 +79,10 @@ const createAppInvitation = async (
   };
 };
 
-export const consumeInvitation = (id, trx) =>
+export const consumeInvitation = (id, userId, trx) =>
   valid(Invitation.withTransaction(trx).all({ id }))
     .update({
+      inviteeId: userId,
       usedAt: trx.raw('now()'),
       updatedAt: trx.raw('now()'),
     })
