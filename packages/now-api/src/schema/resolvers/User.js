@@ -35,6 +35,12 @@ export const blockUser = (blockerId, blockedId) =>
     .insert({ blockerId, blockedId })
     .catch(() => null);
 
+export const unblockUser = (blockerId, blockedId) =>
+  sql(SQL_TABLES.BLOCKED_USERS)
+    .where({ blockerId, blockedId })
+    .delete()
+    .catch(() => null);
+
 /* Queries */
 const allUsers = (root, { input: { orderBy = 'id', ...pageParams } }) =>
   sqlPaginatify(orderBy, User.all({}), pageParams);
@@ -265,8 +271,17 @@ const blockUserMutation = (root, { input: { blockedUserId } }, context) => {
   }));
 };
 
+const unblockUserMutation = (root, { input: { blockedUserId } }, context) => {
+  const blockerId = userIdFromContext(context);
+  return unblockUser(blockerId, blockedUserId).then(() => ({
+    unblockingUser: getUser(blockerId, blockerId),
+    unblockedUser: getUser(blockedUserId, blockerId),
+  }));
+};
+
 export const mutations = {
   createUser: createUserMutation,
   updateCurrentUser,
   blockUser: blockUserMutation,
+  unblockUser: unblockUserMutation,
 };

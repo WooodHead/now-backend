@@ -29,21 +29,12 @@ interface Connection {
   edges: [Edge!]!
 }
 
-type Query {
-  allUsers(input: AdminInput): RootUsersConnection! @admin
-  user(id: ID!): User
-  currentUser: User!
-}
-
 type Mutation {
   markEventChatRead(input: MarkEventChatReadInput!): MarkEventChatReadPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
-  createUser(input: CreateUserInput): CreateUserPayload
-  updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
   createReport(input: ReportInput!): ReportInputPayload
-  blockUser(input: BlockUserInput): BlockUserPayload
 }
 
 type PageInfo {
@@ -77,48 +68,6 @@ type MarkEventChatReadPayload {
   rsvp: Rsvp
 }
 
-input BlockUserInput {
-  blockedUserId: ID!
-}
-
-type BlockUserPayload {
-  blockedUser: User
-  blockingUser: User
-}
-
-input CreateUserInput {
-  email: String!
-  meetupId: String @deprecated
-  slackId: String @deprecated
-  firstName: Name!
-  lastName: Name!
-  bio: String
-  location: String
-  preferences: GraphQLJSON
-  birthday: Birthdate!
-  invitationCode: String
-}
-
-type CreateUserPayload {
-  user: User
-}
-
-input UpdateCurrentUserInput {
-  email: String
-  meetupId: String @deprecated
-  slackId: String @deprecated
-  firstName: Name
-  lastName: Name
-  bio: String
-  location: String
-  preferences: GraphQLJSON
-  birthday: Birthdate
-}
-
-type UpdateCurrentUserPayload {
-  user: User
-}
-
 input CreateMessageInput {
   text: String!
   eventId: ID!
@@ -129,61 +78,12 @@ type CreateMessagePayload {
   edge: EventMessagesEdge
 }
 
-type User implements Node {
-  id: ID!
-  email: String
-  meetupId: String @deprecated
-  slackId: String @deprecated
-  firstName: Name
-  lastName: Name
-  bio: String
-  location: String
-  rsvps(
-    first: Int
-    last: Int
-    after: String
-    before: String
-  ): UserRsvpsConnection!
-  devices: [Device!]
-  preferences: GraphQLJSON
-  photo: Photo
-  birthday: Birthdate
-  age: Int
-  # returns true if this user is the currently-authenticated user
-  isSelf: Boolean!
-  tosCurrent: Boolean
-  createdAt: ZonedDateTime
-  updatedAt: ZonedDateTime
-}
-
-type RootUsersConnection implements Connection {
-  pageInfo: PageInfo!
-  count: Int
-  edges: [RootUsersEdge!]!
-}
-
-type RootUsersEdge implements Edge {
-  cursor: String!
-  node: User!
-}
-
 type Photo {
   id: ID!
   baseUrl: String
   type: String @deprecated
   preview: String
   blocked: Boolean
-}
-
-type UserRsvpsConnection implements Connection {
-  pageInfo: PageInfo!
-  count: Int
-  edges: [UserRsvpsEdge!]!
-}
-
-type UserRsvpsEdge implements Edge {
-  cursor: String!
-  node: Rsvp!
 }
 
 type Message implements Node {

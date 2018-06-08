@@ -1,0 +1,108 @@
+type Query {
+  allUsers(input: AdminInput): RootUsersConnection! @admin
+  user(id: ID!): User
+  currentUser: User!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput): CreateUserPayload
+  updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
+  blockUser(input: BlockUserInput): BlockUserPayload
+  unblockUser(input: BlockUserInput): UnblockUserPayload
+}
+
+type User implements Node {
+  id: ID!
+  email: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name
+  lastName: Name
+  bio: String
+  location: String
+  rsvps(
+    first: Int
+    last: Int
+    after: String
+    before: String
+  ): UserRsvpsConnection!
+  devices: [Device!]
+  preferences: GraphQLJSON
+  photo: Photo
+  birthday: Birthdate
+  age: Int
+  # returns true if this user is the currently-authenticated user
+  isSelf: Boolean!
+  tosCurrent: Boolean
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type RootUsersConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [RootUsersEdge!]!
+}
+
+type RootUsersEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+type UserRsvpsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [UserRsvpsEdge!]!
+}
+
+type UserRsvpsEdge implements Edge {
+  cursor: String!
+  node: Rsvp!
+}
+
+input BlockUserInput {
+  blockedUserId: ID!
+}
+
+type BlockUserPayload {
+  blockedUser: User
+  blockingUser: User
+}
+
+type UnblockUserPayload {
+  unblockedUser: User
+  unblockingUser: User
+}
+
+input CreateUserInput {
+  email: String!
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name!
+  lastName: Name!
+  bio: String
+  location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate!
+  invitationCode: String
+}
+
+type CreateUserPayload {
+  user: User
+}
+
+input UpdateCurrentUserInput {
+  email: String
+  meetupId: String @deprecated
+  slackId: String @deprecated
+  firstName: Name
+  lastName: Name
+  bio: String
+  location: String
+  preferences: GraphQLJSON
+  birthday: Birthdate
+}
+
+type UpdateCurrentUserPayload {
+  user: User
+}

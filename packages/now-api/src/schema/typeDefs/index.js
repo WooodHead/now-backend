@@ -6,7 +6,11 @@ import event from './event.graphql';
 import rsvp from './rsvp.graphql';
 import location from './location.graphql';
 import invitation from './invitation.graphql';
+import user from './user.graphql';
 
-export default mergeTypes([base, activity, event, rsvp, location, invitation], {
-  all: true,
-});
+export default mergeTypes(
+  [base, activity, event, rsvp, location, invitation, user],
+  {
+    all: true,
+  }
+);
