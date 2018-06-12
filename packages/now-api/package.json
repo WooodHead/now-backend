@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "start": "npm-run-all --parallel server build:watch",
-    "server": "nodemon dist/server.js",
+    "server": "NODE_ENV=development AWS_PROFILE=prod AWS_REGION=us-east-1 nodemon dist/server.js localhost 3000",
+    "server:debug": "DEBUG=* NODE_ENV=development AWS_PROFILE=prod AWS_REGION=us-east-1 nodemon dist/server.js localhost 3000",
     "stop": "pm2 stop pm2.dev.json",
     "build": "webpack-cli --config webpack.config.dev.js",
     "build:prod": "webpack-cli --config webpack.config.js",

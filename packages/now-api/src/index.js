@@ -1,7 +1,7 @@
 import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
 import { apolloUploadExpress } from 'apollo-upload-server';
 import bodyParser from 'body-parser';
-
+import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import jwt from 'express-jwt';
@@ -124,21 +124,27 @@ app.get(
 
 app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
 
-app.get('/admin/?:path(*)', ({ params: { path } }, res) => {
-  const params = { Bucket: NOW_ADMIN_BUCKET, Key: path || 'index.html' };
-  s3
-    .headObject(params)
-    .promise()
-    .catch(e => {
-      res.send(e.statusCode);
-      return undefined;
-    })
-    .then(data => {
-      if (data) {
-        streamObject(res, params, data);
-      }
-    });
-});
+if (isDev) {
+  const ADMIN_ROOT = path.join(process.cwd(), '../now-admin/dist');
+  console.log(`Serving admin from ${ADMIN_ROOT}`);
+  app.use('/admin', express.static(ADMIN_ROOT));
+} else {
+  console.log(`Serving admin from s3://${NOW_ADMIN_BUCKET}`);
+  app.get('/admin/?:path(*)', ({ params: { path: filePath } }, res) => {
+    const params = { Bucket: NOW_ADMIN_BUCKET, Key: filePath || 'index.html' };
+    s3.headObject(params)
+      .promise()
+      .catch(e => {
+        res.send(e.statusCode);
+        return undefined;
+      })
+      .then(data => {
+        if (data) {
+          streamObject(res, params, data);
+        }
+      });
+  });
+}
 
 const graphQLServer = createServer(app);
 graphQLServer.listen(PORT, () => {
