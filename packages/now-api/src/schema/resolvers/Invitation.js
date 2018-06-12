@@ -30,7 +30,17 @@ export const resolvers = {
   inviter: resolveInviter,
 };
 
-const invitationQuery = (root, { code }) => findValidCode(code);
+const invitationQuery = (root, { code, id }) => {
+  if (code) {
+    return findValidCode(code).then(
+      candidate => (id && candidate.id !== id ? null : candidate)
+    );
+  }
+  if (id) {
+    return Invitation.byId(id);
+  }
+  return null;
+};
 
 const openAppInvitations = (root, { input }) => {
   const { orderBy = 'id', ...pageParams } = input || {};
