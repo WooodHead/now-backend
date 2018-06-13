@@ -88,12 +88,22 @@ export const getEventRsvps = ({ eventId, first, last, after, before }) =>
   });
 
 export const getUserRsvps = ({ userId, first, last, after, before }) =>
-  sqlPaginatify('eventId', Rsvp.all({ action: 'add', userId }), {
-    first,
-    last,
-    after,
-    before,
-  });
+  sqlPaginatify(
+    'events.time',
+    Rsvp.all({ action: 'add', userId }).innerJoin(
+      'events',
+      'events.id',
+      'rsvps.eventId'
+    ),
+    {
+      first,
+      last,
+      after,
+      before,
+      reverse: true,
+      select: 'rsvps.*',
+    }
+  );
 
 export const userDidRsvp = ({ eventId, userId }) =>
   Rsvp.get({ eventId, userId }).then(item => !!(item && item.action === 'add'));

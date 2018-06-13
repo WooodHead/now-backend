@@ -24,6 +24,7 @@ export const sqlPaginatify = async (
     cursorDeserialize = identity,
     reverse = false,
     offset = undefined,
+    select = '*',
   } = {}
 ) => {
   const pageInfo = {
@@ -35,7 +36,7 @@ export const sqlPaginatify = async (
     builderForCount
       .count(cursorId)
       .then(([{ count: stringCount }]) => Number(stringCount));
-  const pagedQuery = builder.clone();
+  const pagedQuery = builder.clone().select(select);
 
   if (first !== undefined && last !== undefined) {
     throw new Error('Use first or last, but not both together');
@@ -100,7 +101,6 @@ export const sqlPaginatify = async (
     const serverData = await pagedQuery
       .from(subquery.as('inner'))
       .orderBy(cursorId, reverse ? 'desc' : 'asc');
-
     const maxLast =
       actualLast > serverData.length ? serverData.length : actualLast;
     data = slice(serverData, -maxLast);
