@@ -20,7 +20,9 @@ const sendChatNotif = ({ eventId, userId, text }) =>
     .then(
       ([
         tokens,
-        { activity: { title: activityTitle, emoji } },
+        {
+          activity: { title: activityTitle, emoji },
+        },
         { firstName },
       ]) => {
         if (tokens.length === 0) {
@@ -32,6 +34,9 @@ const sendChatNotif = ({ eventId, userId, text }) =>
               activityTitle,
               20
             )} @${firstName}: ${text}`,
+          },
+          data: {
+            uri: `meetupnow://now/eventDetails/${eventId}/chat`,
           },
         });
       }
