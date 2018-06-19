@@ -1,6 +1,5 @@
 import { messaging } from './client';
 import { getTokensForEvent } from './tokens';
-import { ellipsize } from '../util';
 import { Activity, Event, User } from '../db/repos';
 
 const getEventAndActivity = eventId =>
@@ -17,30 +16,20 @@ const sendChatNotif = ({ eventId, userId, text }) =>
     getEventAndActivity(eventId),
     User.byId(userId),
   ])
-    .then(
-      ([
-        tokens,
-        {
-          activity: { title: activityTitle, emoji },
-        },
-        { firstName },
-      ]) => {
-        if (tokens.length === 0) {
-          return Promise.resolve();
-        }
-        return messaging.sendToDevice(tokens, {
-          notification: {
-            body: `${emoji} ${ellipsize(
-              activityTitle,
-              20
-            )} @${firstName}: ${text}`,
-          },
-          data: {
-            uri: `meetupnow://now/eventDetails/${eventId}/chat`,
-          },
-        });
+    .then(([tokens, { activity: { title: activityTitle } }, { firstName }]) => {
+      if (tokens.length === 0) {
+        return Promise.resolve();
       }
-    )
+      return messaging.sendToDevice(tokens, {
+        notification: {
+          title: activityTitle,
+          body: `${firstName}: ${text}`,
+        },
+        data: {
+          uri: `meetupnow://now/eventDetails/${eventId}/chat`,
+        },
+      });
+    })
     .catch(console.warn);
 
 export default sendChatNotif;
