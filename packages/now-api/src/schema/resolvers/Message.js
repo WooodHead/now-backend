@@ -4,6 +4,7 @@ import uuid from 'uuid/v4';
 import { userIdFromContext, buildEdge, sqlPaginatify } from '../util';
 import { getPubSub } from '../../subscriptions';
 import { userDidRsvp } from './Rsvp';
+import { notifyEventChange } from './Event';
 import { sendChatNotif } from '../../fcm';
 import { Message } from '../../db/repos';
 
@@ -48,6 +49,7 @@ const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
           getPubSub().publish(topicName(eventId), {
             messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
           });
+          notifyEventChange(eventId);
           sendChatNotif(newMessage);
           return newMessage;
         });

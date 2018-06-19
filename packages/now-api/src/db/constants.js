@@ -10,4 +10,5 @@ export const SQL_TABLES = {
   MESSAGES: 'messages',
   RSVPS: 'rsvps',
   INVITATIONS: 'invitations',
+  EVENT_USER_METADATA: 'eventUserMetadata',
 };

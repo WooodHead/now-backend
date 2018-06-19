@@ -1,12 +1,18 @@
 import { ChronoUnit, Instant, ZoneId } from 'js-joda';
-import uuid from 'uuid';
+import uuid from 'uuid/v4';
+import { toNumber, isInteger } from 'lodash';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
-import { Event } from '../../db/repos';
+import { Event, EventUserMetadata, Rsvp, Message } from '../../db/repos';
 import sql from '../../db/sql';
+
+const topicName = eventId => `event-changes-${eventId}`;
+
+export const notifyEventChange = eventId =>
+  getPubSub().publish(topicName(eventId), true);
 
 // Resolvers
 const activityResolver = ({ activityId }, args, { loaders }) =>
@@ -18,11 +24,33 @@ const rsvpsResolver = (root, args) =>
     ...args,
   });
 
-const messagesResolver = (root, args) =>
-  getMessages(root, {
-    eventId: root.id,
-    ...args,
-  });
+const messagesResolver = async (root, args, ctx) => {
+  const userId = userIdFromContext(ctx);
+  const eventId = root.id;
+
+  const [eventMessageConnection, metadata] = await Promise.all([
+    getMessages(root, {
+      eventId,
+      ...args,
+    }),
+    EventUserMetadata.get({ eventId, userId }),
+  ]);
+
+  let unreadCount = eventMessageConnection.count;
+
+  if (metadata) {
+    unreadCount = () =>
+      Message.all({ eventId })
+        .where('ts', '>', Number(metadata.lastReadTs))
+        .count('ts')
+        .then(([{ count: stringCount }]) => Number(stringCount));
+  }
+
+  return {
+    ...eventMessageConnection,
+    unreadCount,
+  };
+};
 
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
   userDidRsvp({ eventId: id, userId: userId || userIdFromContext(ctx) });
@@ -71,7 +99,7 @@ const createEvent = (
   { input: { time, timezone, activityId, limit, locationId } },
   { loaders }
 ) => {
-  const newId = uuid.v1();
+  const newId = uuid();
   const newEvent = {
     id: newId,
     locationId,
@@ -113,19 +141,48 @@ const updateEvent = (
   }));
 };
 
+const markEventChatRead = async (root, { input: { eventId, ts } }, ctx) => {
+  if (!isInteger(toNumber(ts))) {
+    throw new Error('ts must be an integer as a string');
+  }
+  const userId = userIdFromContext(ctx);
+  const potentialMetadata = await EventUserMetadata.get({ eventId, userId });
+  let metadata = potentialMetadata;
+  if (!metadata) {
+    metadata = {
+      id: uuid(),
+      eventId,
+      userId,
+      createdAt: sql.raw('now()'),
+    };
+    await EventUserMetadata.insert(metadata);
+  }
+
+  const { id } = metadata;
+
+  const updatedMetadata = {
+    id,
+    lastReadTs: ts,
+    updatedAt: sql.raw('now()'),
+  };
+
+  ctx.loaders.events.clear(eventId);
+
+  return EventUserMetadata.update(updatedMetadata).then(() => ({
+    rsvp: () => Rsvp.get({ eventId, userId }),
+    event: () => ctx.loaders.events.load(eventId),
+  }));
+};
+
 export const mutations = {
   createEvent,
   updateEvent,
+  markEventChatRead,
 };
-
-const topicName = eventId => `event-changes-${eventId}`;
-
-export const notifyEventChange = eventId =>
-  getPubSub().publish(topicName(eventId), true);
 
 const eventSubscription = {
   subscribe: (root, { id }) => getPubSub().asyncIterator(topicName(id)),
-  resolve: (payload, { id }, { loaders }) => loaders.events(id),
+  resolve: (payload, { id }, { loaders }) => loaders.events.load(id),
 };
 
 export const subscriptions = { event: eventSubscription };

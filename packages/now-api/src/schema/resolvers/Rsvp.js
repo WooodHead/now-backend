@@ -1,4 +1,3 @@
-import { toNumber, isInteger } from 'lodash';
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
@@ -52,32 +51,8 @@ const addRsvp = (root, { input: { eventId } }, ctx) =>
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
   createRsvp(eventId, userIdFromContext(ctx), 'remove', ctx.loaders);
 
-const markEventChatRead = (root, { input: { eventId, ts } }, ctx) =>
-  Rsvp.get({ eventId, userId: userIdFromContext(ctx) }).then(rsvp => {
-    if (!rsvp) {
-      throw new Error('Rsvp not found');
-    }
-    if (!isInteger(toNumber(ts))) {
-      throw new Error('ts must be an integer as a string');
-    }
-
-    const { id } = rsvp;
-
-    const updatedRsvp = {
-      id,
-      lastReadTs: ts,
-      updatedAt: new Date().toISOString(),
-    };
-
-    ctx.loaders.rsvps.clear(id);
-
-    return Rsvp.update(updatedRsvp).then(() => ({
-      rsvp: ctx.loaders.rsvps.load(id),
-    }));
-  });
-
 export const resolvers = { event, user };
-export const mutations = { addRsvp, removeRsvp, markEventChatRead };
+export const mutations = { addRsvp, removeRsvp };
 
 export const getEventRsvps = ({ eventId, first, last, after, before }) =>
   sqlPaginatify('userId', Rsvp.all({ action: 'add', eventId }), {

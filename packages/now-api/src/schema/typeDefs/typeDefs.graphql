@@ -30,7 +30,6 @@ interface Connection {
 }
 
 type Mutation {
-  markEventChatRead(input: MarkEventChatReadInput!): MarkEventChatReadPayload
   createMessage(input: CreateMessageInput): CreateMessagePayload
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
@@ -57,15 +56,6 @@ input AdminInput {
 
 type ReportInputPayload {
   data: GraphQLJSON!
-}
-
-input MarkEventChatReadInput {
-  eventId: ID!
-  ts: String!
-}
-
-type MarkEventChatReadPayload {
-  rsvp: Rsvp
 }
 
 input CreateMessageInput {

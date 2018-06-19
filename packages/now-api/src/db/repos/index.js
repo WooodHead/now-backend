@@ -54,3 +54,4 @@ export const Location = new Repo(SQL_TABLES.LOCATIONS);
 export const Rsvp = new Repo(SQL_TABLES.RSVPS);
 export const Message = new Repo(SQL_TABLES.MESSAGES);
 export const Invitation = new Repo(SQL_TABLES.INVITATIONS);
+export const EventUserMetadata = new Repo(SQL_TABLES.EVENT_USER_METADATA);

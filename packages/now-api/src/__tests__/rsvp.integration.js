@@ -28,8 +28,7 @@ beforeEach(() =>
       sql(SQL_TABLES.LOCATIONS).insert(location),
       sql(SQL_TABLES.USERS).insert(user),
     ])
-  )
-);
+  ));
 afterEach(() => truncateTables());
 
 describe('Rsvp', () => {
@@ -180,109 +179,6 @@ describe('Rsvp', () => {
           ],
         },
       },
-    });
-  });
-
-  describe('markEventChatRead', () => {
-    it('update read time', async () => {
-      const rsvp = factory.build('rsvp', {
-        eventId: event.id,
-        userId: USER_ID,
-      });
-      await Rsvp.insert(rsvp);
-
-      const results = await client.mutate({
-        mutation: gql`
-          mutation rsvp($input: MarkEventChatReadInput!) {
-            markEventChatRead(input: $input) {
-              rsvp {
-                id
-                lastReadTs
-              }
-            }
-          }
-        `,
-        variables: { input: { eventId: event.id, ts: '123456' } },
-      });
-      const { data } = results;
-      expect(data).toMatchObject({
-        markEventChatRead: {
-          __typename: 'MarkEventChatReadPayload',
-          rsvp: {
-            __typename: 'Rsvp',
-            id: rsvp.id,
-            lastReadTs: '123456',
-          },
-        },
-      });
-
-      const dbRsvp = await Rsvp.byId(rsvp.id);
-
-      expect(dbRsvp).toMatchObject({
-        id: rsvp.id,
-        userId: USER_ID,
-        eventId: event.id,
-        lastReadTs: '123456',
-      });
-    });
-
-    it('requires ts as number', async () => {
-      const rsvp = factory.build('rsvp', {
-        eventId: event.id,
-        userId: USER_ID,
-      });
-      await Rsvp.insert(rsvp);
-      const results = client.mutate({
-        mutation: gql`
-          mutation rsvp($input: MarkEventChatReadInput!) {
-            markEventChatRead(input: $input) {
-              rsvp {
-                id
-                lastReadTs
-              }
-            }
-          }
-        `,
-        variables: { input: { eventId: event.id, ts: 'not a number' } },
-        errorPolicy: 'none',
-      });
-
-      expect.assertions(1);
-      return expect(results).rejects.toEqual(
-        new Error('GraphQL error: ts must be an integer as a string')
-      );
-    });
-
-    it('rsvp must exist', async () => {
-      const rsvp = factory.build('rsvp', {
-        eventId: event.id,
-        userId: USER_ID,
-      });
-      await Rsvp.insert(rsvp);
-      const results = client.mutate({
-        mutation: gql`
-          mutation rsvp($input: MarkEventChatReadInput!) {
-            markEventChatRead(input: $input) {
-              rsvp {
-                id
-                lastReadTs
-              }
-            }
-          }
-        `,
-        variables: {
-          input: {
-            eventId: 'd6053268-593c-11e8-87f3-f7f40ede39cf',
-            ts: '123456',
-          },
-        },
-        errorPolicy: 'none',
-      });
-
-      expect.assertions(1);
-      return expect(results).rejects.toEqual(
-        new Error('GraphQL error: Rsvp not found')
-      );
     });
   });
 });

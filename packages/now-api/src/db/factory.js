@@ -104,6 +104,7 @@ Factory.define('message')
   .attr('id', uuid)
   .attr('ts', () => date.recent(1).getTime())
   .attr('text', hacker.phrase)
-  .attr('eventId', ['event'], ({ id }) => id);
+  .attr('eventId', ['event'], ({ id }) => id)
+  .attr('userId', ['user'], ({ id }) => id);
 
 export default Factory;

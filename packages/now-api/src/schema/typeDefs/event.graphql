@@ -8,6 +8,7 @@ type Query {
 type Mutation {
   createEvent(input: CreateEventInput!): CreateEventPayload @admin
   updateEvent(input: UpdateEventInput!): CreateEventPayload @admin
+  markEventChatRead(input: MarkEventChatReadInput!): MarkEventChatReadPayload
 }
 
 type Subscription {
@@ -89,6 +90,16 @@ enum EventState {
   FUTURE
 }
 
+input MarkEventChatReadInput {
+  eventId: ID!
+  ts: String!
+}
+
+type MarkEventChatReadPayload {
+  rsvp: Rsvp @deprecated
+  event: Event
+}
+
 type EventRsvpsConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
@@ -103,6 +114,7 @@ type EventRsvpsEdge implements Edge {
 type EventMessagesConnection implements Connection {
   pageInfo: PageInfo!
   count: Int
+  unreadCount: Int!
   edges: [EventMessagesEdge!]!
 }
 
