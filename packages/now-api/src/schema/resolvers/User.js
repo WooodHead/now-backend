@@ -279,9 +279,21 @@ const unblockUserMutation = (root, { input: { blockedUserId } }, context) => {
   }));
 };
 
+const deleteCurrentUser = (root, { id: inputId }, context) => {
+  const id = userIdFromContext(context);
+  if (inputId && inputId !== id) {
+    throw new Error('You can’t delete other users’ accounts!');
+  }
+
+  // TODO: delete account
+
+  return id;
+};
+
 export const mutations = {
   createUser: createUserMutation,
   updateCurrentUser,
   blockUser: blockUserMutation,
   unblockUser: unblockUserMutation,
+  deleteCurrentUser,
 };

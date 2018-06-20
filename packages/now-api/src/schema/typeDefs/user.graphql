@@ -9,6 +9,7 @@ type Mutation {
   updateCurrentUser(input: UpdateCurrentUserInput): UpdateCurrentUserPayload
   blockUser(input: BlockUserInput): BlockUserPayload
   unblockUser(input: BlockUserInput): UnblockUserPayload
+  deleteCurrentUser(id: ID): ID!
 }
 
 type User implements Node {
