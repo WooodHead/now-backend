@@ -81,7 +81,13 @@ describe('Event', () => {
             [Symbol('id')]: expect.anything(),
             node: expect.objectContaining({
               __typename: 'Event',
-              ...omit(e, ['locationId', 'activityId', 'timezone', 'time']),
+              ...omit(e, [
+                'locationId',
+                'activityId',
+                'timezone',
+                'time',
+                'going',
+              ]),
             }),
           })
         )
@@ -136,7 +142,13 @@ describe('Event', () => {
     expect(data).toMatchObject({
       event: {
         __typename: 'Event',
-        ...omit(event, ['locationId', 'activityId', 'timezone', 'time']),
+        ...omit(event, [
+          'locationId',
+          'activityId',
+          'timezone',
+          'time',
+          'going',
+        ]),
         activity,
       },
     });

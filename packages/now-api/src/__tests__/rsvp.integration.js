@@ -4,11 +4,11 @@ import { client, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
-import { Rsvp } from '../db/repos';
+import { Event, Rsvp } from '../db/repos';
 
 const activity = factory.build('activity');
 const location = factory.build('location');
-const event = factory.build('event', {}, { activity, location });
+const event = factory.build('event', { limit: 5 }, { activity, location });
 const user = factory.build('user', { id: USER_ID });
 
 const truncateTables = () =>
@@ -89,11 +89,47 @@ describe('Rsvp', () => {
       eventId: event.id,
       action: 'add',
     });
+
+    const dbEvent = await Event.byId(event.id);
+
+    expect(dbEvent.going).toEqual(1);
+  });
+
+  it("Doesn't rsvp to full event", async () => {
+    await Event.update({ id: event.id, going: 5 });
+
+    const results = client.mutate({
+      mutation: gql`
+        mutation rsvp($input: CreateRsvpInput!) {
+          addRsvp(input: $input) {
+            rsvp {
+              id
+              user {
+                id
+              }
+              event {
+                id
+                isAttending
+              }
+            }
+            event {
+              id
+            }
+          }
+        }
+      `,
+      variables: { input: { eventId: event.id } },
+    });
+    expect.assertions(1);
+    await expect(results).rejects.toEqual(
+      new Error(`GraphQL error: Event ${event.id} full`)
+    );
   });
 
   it('unrsvp from event', async () => {
     const rsvp = factory.build('rsvp', { eventId: event.id, userId: USER_ID });
     await Rsvp.insert(rsvp);
+    await Event.update({ id: event.id, going: 1 });
 
     const results = await client.mutate({
       mutation: gql`
@@ -133,6 +169,10 @@ describe('Rsvp', () => {
       eventId: event.id,
       action: 'remove',
     });
+
+    const dbEvent = await Event.byId(event.id);
+
+    expect(dbEvent.going).toEqual(0);
   });
 
   it('get user rsvps', async () => {

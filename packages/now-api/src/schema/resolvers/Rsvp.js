@@ -1,7 +1,8 @@
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
-import { Rsvp } from '../../db/repos';
+import { Event, Rsvp } from '../../db/repos';
+import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange } from './Event';
 
@@ -10,8 +11,21 @@ const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = (eventId, userId, action, loaders) =>
-  Rsvp.get({ eventId, userId }).then(previousRsvp => {
+const createRsvp = async (eventId, userId, action, loaders) =>
+  sql.transaction(async trx => {
+    const rsvpEvent = await Event.byId(eventId)
+      .transacting(trx)
+      .forUpdate();
+    if (!rsvpEvent) {
+      throw new Error(`Event ${eventId} not found`);
+    }
+
+    if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
+      throw new Error(`Event ${eventId} full`);
+    }
+
+    const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
+
     let rsvpCall;
     let id = uuid();
     const ISOString = new Date().toISOString();
@@ -36,13 +50,20 @@ const createRsvp = (eventId, userId, action, loaders) =>
       };
       rsvpCall = Rsvp.insert(newRsvp);
     }
-    return rsvpCall.then(() => {
-      notifyEventChange(eventId);
-      return {
-        rsvp: loaders.rsvps.load(id),
-        event: loaders.events.load(eventId),
-      };
-    });
+
+    const going =
+      action === 'add' ? rsvpEvent.going + 1 : Math.max(0, rsvpEvent.going - 1);
+
+    await rsvpCall.transacting(trx);
+    await Event.byId(eventId)
+      .transacting(trx)
+      .update({ going });
+    notifyEventChange(eventId);
+
+    return {
+      rsvp: () => loaders.rsvps.load(id),
+      event: () => loaders.events.load(eventId),
+    };
   });
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
