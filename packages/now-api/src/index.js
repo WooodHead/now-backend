@@ -122,6 +122,10 @@ app.get(
   })
 );
 
+app.get('/invite', (req, res) => {
+  res.redirect('https://meetupinc.typeform.com/to/WkZJW0');
+});
+
 app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
 
 if (isDev) {
