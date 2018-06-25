@@ -34,6 +34,7 @@ type User implements Node {
   age: Int
   # returns true if this user is the currently-authenticated user
   isSelf: Boolean!
+  isDeleted: Boolean
   tosCurrent: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime

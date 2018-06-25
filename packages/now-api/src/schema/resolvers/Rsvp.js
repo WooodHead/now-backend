@@ -12,59 +12,68 @@ const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
 const createRsvp = async (eventId, userId, action, loaders) =>
-  sql.transaction(async trx => {
-    const rsvpEvent = await Event.byId(eventId)
-      .transacting(trx)
-      .forUpdate();
-    if (!rsvpEvent) {
-      throw new Error(`Event ${eventId} not found`);
-    }
+  sql
+    .transaction(async trx => {
+      const rsvpEvent = await Event.byId(eventId)
+        .transacting(trx)
+        .forUpdate();
+      if (!rsvpEvent) {
+        throw new Error(`Event ${eventId} not found`);
+      }
 
-    if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
-      throw new Error(`Event ${eventId} full`);
-    }
+      if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
+        throw new Error(`Event ${eventId} full`);
+      }
 
-    const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
+      const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
 
-    let rsvpCall;
-    let id = uuid();
-    const ISOString = new Date().toISOString();
-    if (previousRsvp) {
-      ({ id } = previousRsvp);
+      let rsvpCall;
+      let id = uuid();
+      const ISOString = new Date().toISOString();
+      if (previousRsvp) {
+        ({ id } = previousRsvp);
 
-      const updatedRsvp = {
-        id,
-        action,
-        updatedAt: ISOString,
+        const updatedRsvp = {
+          id,
+          action,
+          updatedAt: ISOString,
+        };
+        rsvpCall = Rsvp.update(updatedRsvp);
+        loaders.rsvps.clear(id);
+      } else {
+        const newRsvp = {
+          id,
+          eventId,
+          userId,
+          action,
+          createdAt: ISOString,
+          updatedAt: ISOString,
+        };
+        rsvpCall = Rsvp.insert(newRsvp);
+      }
+
+      const going =
+        action === 'add'
+          ? rsvpEvent.going + 1
+          : Math.max(0, rsvpEvent.going - 1);
+
+      await Promise.all([
+        rsvpCall.transacting(trx),
+        Event.byId(eventId)
+          .transacting(trx)
+          .update({ going }),
+      ]);
+
+      return id;
+    })
+    .then(id => {
+      notifyEventChange(eventId);
+
+      return {
+        rsvp: () => loaders.rsvps.load(id),
+        event: () => loaders.events.load(eventId),
       };
-      rsvpCall = Rsvp.update(updatedRsvp);
-      loaders.rsvps.clear(id);
-    } else {
-      const newRsvp = {
-        id,
-        eventId,
-        userId,
-        action,
-        createdAt: ISOString,
-        updatedAt: ISOString,
-      };
-      rsvpCall = Rsvp.insert(newRsvp);
-    }
-
-    const going =
-      action === 'add' ? rsvpEvent.going + 1 : Math.max(0, rsvpEvent.going - 1);
-
-    await rsvpCall.transacting(trx);
-    await Event.byId(eventId)
-      .transacting(trx)
-      .update({ going });
-    notifyEventChange(eventId);
-
-    return {
-      rsvp: () => loaders.rsvps.load(id),
-      event: () => loaders.events.load(eventId),
-    };
-  });
+    });
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
   createRsvp(eventId, userIdFromContext(ctx), 'add', ctx.loaders);

@@ -11,3 +11,4 @@ admin.initializeApp({
 });
 
 export const messaging = admin.messaging();
+export const instanceId = admin.instanceId();

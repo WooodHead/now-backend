@@ -71,6 +71,7 @@ type Event implements Node {
   updatedAt: ZonedDateTime
   state: EventState!
   timezone: ZoneId
+  deletedUsers: Int
 }
 
 type RootEventsConnection implements Connection {

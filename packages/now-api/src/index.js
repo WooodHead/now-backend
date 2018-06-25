@@ -21,6 +21,7 @@ import { getByAuth0Id } from './schema/resolvers/User';
 import resizer from './resizer';
 import loaders from './db/loaders';
 import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
+import { endpoint as auth0Endpoint } from './auth0';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -76,11 +77,11 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: 'https://meetupnow.auth0.com/.well-known/jwks.json',
+    jwksUri: `${auth0Endpoint}/.well-known/jwks.json`,
   }),
   credentialsRequired: true,
   audience: 'https://now.meetup.com/graphql',
-  issuer: 'https://meetupnow.auth0.com/',
+  issuer: `${auth0Endpoint}/`,
   algorithms: ['RS256'],
 });
 
