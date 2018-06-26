@@ -2,6 +2,7 @@ import { GraphQLUpload } from 'apollo-upload-server';
 import GraphQLJSON from 'graphql-type-json';
 import * as Device from './Device';
 import * as Event from './Event';
+import * as EventMessagesConnection from './EventMessagesConnection';
 import * as User from './User';
 import * as Activity from './Activity';
 import * as Message from './Message';
@@ -20,6 +21,7 @@ export default wrapResolvers({
     ...User.queries,
     ...Activity.queries,
     ...Event.queries,
+    ...EventMessagesConnection.queries,
     ...Message.queries,
     ...Location.queries,
     ...Invitation.queries,
@@ -46,6 +48,7 @@ export default wrapResolvers({
   Rsvp: Rsvp.resolvers,
   User: User.resolvers,
   Invitation: Invitation.resolvers,
+  EventMessagesConnection: EventMessagesConnection.resolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,

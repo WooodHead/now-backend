@@ -12,7 +12,6 @@ type Mutation {
 }
 
 type Subscription {
-  messageAdded(eventId: ID!): EventMessagesEdge
   event(id: ID!): Event
 }
 
@@ -110,16 +109,4 @@ type EventRsvpsConnection implements Connection {
 type EventRsvpsEdge implements Edge {
   cursor: String!
   node: Rsvp!
-}
-
-type EventMessagesConnection implements Connection {
-  pageInfo: PageInfo!
-  count: Int
-  unreadCount: Int!
-  edges: [EventMessagesEdge!]!
-}
-
-type EventMessagesEdge implements Edge {
-  cursor: String!
-  node: Message!
 }

@@ -1,0 +1,42 @@
+type Query {
+  messages(eventId: ID!): EventMessagesConnection!
+}
+
+type Mutation {
+  createMessage(input: CreateMessageInput): CreateMessagePayload
+}
+
+type Subscription {
+  messageAdded(eventId: ID!): EventMessagesEdge
+  messages(eventId: ID!): EventMessagesConnection!
+}
+
+type Message implements Node {
+  id: ID!
+  text: String
+  user: User
+  event: Event
+  ts: String
+}
+
+input CreateMessageInput {
+  text: String!
+  eventId: ID!
+  id: ID
+}
+
+type CreateMessagePayload {
+  edge: EventMessagesEdge
+}
+
+type EventMessagesConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  unreadCount: Int!
+  edges: [EventMessagesEdge!]!
+}
+
+type EventMessagesEdge implements Edge {
+  cursor: String!
+  node: Message!
+}

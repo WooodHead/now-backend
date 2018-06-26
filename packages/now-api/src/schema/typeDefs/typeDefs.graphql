@@ -30,7 +30,6 @@ interface Connection {
 }
 
 type Mutation {
-  createMessage(input: CreateMessageInput): CreateMessagePayload
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
   createReport(input: ReportInput!): ReportInputPayload
@@ -58,30 +57,12 @@ type ReportInputPayload {
   data: GraphQLJSON!
 }
 
-input CreateMessageInput {
-  text: String!
-  eventId: ID!
-  id: ID
-}
-
-type CreateMessagePayload {
-  edge: EventMessagesEdge
-}
-
 type Photo {
   id: ID!
   baseUrl: String
   type: String @deprecated
   preview: String
   blocked: Boolean
-}
-
-type Message implements Node {
-  id: ID!
-  text: String
-  user: User
-  event: Event
-  ts: String
 }
 
 enum DeviceType {

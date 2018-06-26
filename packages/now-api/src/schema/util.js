@@ -1,4 +1,4 @@
-import { get, slice, isInteger } from 'lodash';
+import { get, slice, isInteger, memoize } from 'lodash';
 import { ChronoUnit, LocalDate, ZoneId } from 'js-joda';
 
 export const userIdFromContext = context => get(context, ['user', 'id']);
@@ -27,90 +27,90 @@ export const sqlPaginatify = async (
     select = '*',
   } = {}
 ) => {
-  const pageInfo = {
-    hasPreviousPage: false,
-    hasNextPage: false,
-  };
   const builderForCount = builder.clone();
   const count = () =>
     builderForCount
       .count(cursorId)
       .then(([{ count: stringCount }]) => Number(stringCount));
-  const pagedQuery = builder.clone().select(select);
 
-  if (first !== undefined && last !== undefined) {
-    throw new Error('Use first or last, but not both together');
-  }
+  const lazy = memoize(async () => {
+    const pageInfo = {
+      hasPreviousPage: false,
+      hasNextPage: false,
+    };
+    const pagedQuery = builder.clone().select(select);
 
-  if (offset && isInteger(offset)) {
-    pagedQuery.offset(offset);
-  } else {
-    if (after) {
-      pagedQuery.where(
-        cursorId,
-        reverse ? '<' : '>',
-        cursorDeserialize(fromBase64(after))
-      );
+    if (first !== undefined && last !== undefined) {
+      throw new Error('Use first or last, but not both together');
     }
 
-    if (before) {
-      pagedQuery.where(
-        cursorId,
-        reverse ? '>' : '<',
-        cursorDeserialize(fromBase64(before))
-      );
+    if (offset && isInteger(offset)) {
+      pagedQuery.offset(offset);
+    } else {
+      if (after) {
+        pagedQuery.where(
+          cursorId,
+          reverse ? '<' : '>',
+          cursorDeserialize(fromBase64(after))
+        );
+      }
+
+      if (before) {
+        pagedQuery.where(
+          cursorId,
+          reverse ? '>' : '<',
+          cursorDeserialize(fromBase64(before))
+        );
+      }
     }
-  }
 
-  // if after, default first, if before default last, otherwise default first
-  let actualFirst = first;
-  let actualLast = last;
+    // if after, default first, if before default last, otherwise default first
+    let actualFirst = first;
+    let actualLast = last;
 
-  if (before && last === undefined) {
-    actualLast = DEFAULT_PAGE_SIZE;
-  } else if (first === undefined && last === undefined) {
-    actualFirst = DEFAULT_PAGE_SIZE;
-  }
+    if (before && last === undefined) {
+      actualLast = DEFAULT_PAGE_SIZE;
+    } else if (first === undefined && last === undefined) {
+      actualFirst = DEFAULT_PAGE_SIZE;
+    }
 
-  /*
-   * Fetch max page size + 1 so we know if there is more
-   */
-  const limit =
-    Math.max(
-      actualFirst || DEFAULT_PAGE_SIZE,
-      actualLast || DEFAULT_PAGE_SIZE
-    ) + 1;
-  let data = [];
+    // Fetch max page size + 1 so we know if there is more
+    const limit = Math.max(actualFirst || 0, actualLast || 0) + 1;
+    let data = [];
+    let serverData = [];
 
-  if (actualFirst <= 0) {
-    throw new Error('first must be greater than 0');
-  } else if (actualFirst !== undefined) {
-    const serverData = await pagedQuery
-      .limit(limit)
-      .orderBy(cursorId, reverse ? 'desc' : 'asc');
-    data = slice(serverData, 0, actualFirst);
-    pageInfo.hasNextPage = data.length < serverData.length;
-  }
-  if (actualLast <= 0) {
-    throw new Error('last must be greater than 0');
-  } else if (actualLast !== undefined) {
-    const subquery = pagedQuery
-      .clone()
-      .limit(limit)
-      .orderBy(cursorId, reverse ? 'asc' : 'desc');
-    const serverData = await pagedQuery
-      .from(subquery.as('inner'))
-      .orderBy(cursorId, reverse ? 'desc' : 'asc');
-    const maxLast =
-      actualLast > serverData.length ? serverData.length : actualLast;
-    data = slice(serverData, -maxLast);
-    pageInfo.hasPreviousPage = data.length < serverData.length;
-  }
+    if (actualFirst <= 0) {
+      throw new Error('first must be greater than 0');
+    } else if (actualFirst !== undefined) {
+      serverData = await pagedQuery
+        .limit(limit)
+        .orderBy(cursorId, reverse ? 'desc' : 'asc');
+      data = slice(serverData, 0, actualFirst);
+      pageInfo.hasNextPage = data.length < serverData.length;
+    }
+    if (actualLast <= 0) {
+      throw new Error('last must be greater than 0');
+    } else if (actualLast !== undefined) {
+      const subquery = pagedQuery
+        .clone()
+        .limit(limit)
+        .orderBy(cursorId, reverse ? 'asc' : 'desc');
+      serverData = await pagedQuery
+        .from(subquery.as('inner'))
+        .orderBy(cursorId, reverse ? 'desc' : 'asc');
+      const maxLast =
+        actualLast > serverData.length ? serverData.length : actualLast;
+      data = slice(serverData, -maxLast);
+      pageInfo.hasPreviousPage = data.length < serverData.length;
+    }
+    return { data, pageInfo };
+  });
 
   return {
-    pageInfo,
+    pageInfo: () => lazy().then(({ pageInfo }) => pageInfo),
     count,
-    edges: data.map(d => buildEdge(cursorId, d)),
+    edges: () =>
+      lazy().then(({ data }) => data.map(d => buildEdge(cursorId, d))),
   };
 };
 

@@ -6,7 +6,7 @@ import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
-import { Event, EventUserMetadata, Rsvp, Message } from '../../db/repos';
+import { Event, EventUserMetadata, Rsvp } from '../../db/repos';
 import sql from '../../db/sql';
 
 const topicName = eventId => `event-changes-${eventId}`;
@@ -24,32 +24,15 @@ const rsvpsResolver = (root, args) =>
     ...args,
   });
 
-const messagesResolver = async (root, args, ctx) => {
-  const userId = userIdFromContext(ctx);
+const messagesResolver = async (root, args) => {
   const eventId = root.id;
 
-  const [eventMessageConnection, metadata] = await Promise.all([
-    getMessages(root, {
-      eventId,
-      ...args,
-    }),
-    EventUserMetadata.get({ eventId, userId }),
-  ]);
+  const eventMessageConnection = await getMessages(root, {
+    eventId,
+    ...args,
+  });
 
-  let unreadCount = eventMessageConnection.count;
-
-  if (metadata) {
-    unreadCount = () =>
-      Message.all({ eventId })
-        .where('ts', '>', Number(metadata.lastReadTs))
-        .count('ts')
-        .then(([{ count: stringCount }]) => Number(stringCount));
-  }
-
-  return {
-    ...eventMessageConnection,
-    unreadCount,
-  };
+  return { eventId, ...eventMessageConnection };
 };
 
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
