@@ -22,8 +22,7 @@ beforeAll(() =>
       sql(SQL_TABLES.ACTIVITIES).insert([...activities, todayActivity]),
       sql(SQL_TABLES.EVENTS).insert(event),
     ])
-  )
-);
+  ));
 afterAll(() => {
   setAdmin(false);
   return truncateTables();
@@ -114,6 +113,10 @@ describe('activity', () => {
     const res = client.query({
       query: gql`
         {
+          serverMessages {
+            noActivityTitle
+            noActivityMessage
+          }
           todayActivity {
             id
             title
@@ -134,6 +137,11 @@ describe('activity', () => {
 
     const { data } = await res;
     expect(data).toMatchObject({
+      serverMessages: {
+        noActivityTitle: 'Sorry, no Meetup today!',
+        noActivityMessage:
+          "We're either on vacay or planning something extra special for you.",
+      },
       todayActivity: {
         __typename: 'Activity',
         [Symbol('id')]: `Activity:${todayActivity.id}`,
@@ -179,7 +187,13 @@ describe('activity', () => {
       },
     });
 
-    const { data: { createActivity: { activity: { id } } } } = res;
+    const {
+      data: {
+        createActivity: {
+          activity: { id },
+        },
+      },
+    } = res;
 
     const dbActivity = await Activity.byId(id);
     dbActivity.activityDate = dbActivity.activityDate.toString();

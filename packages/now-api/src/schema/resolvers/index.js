@@ -25,6 +25,11 @@ export default wrapResolvers({
     ...Message.queries,
     ...Location.queries,
     ...Invitation.queries,
+    serverMessages: () => ({
+      noActivityTitle: 'Sorry, no Meetup today!',
+      noActivityMessage:
+        "We're either on vacay or planning something extra special for you.",
+    }),
   },
   Subscription: {
     ...Event.subscriptions,

@@ -29,6 +29,10 @@ interface Connection {
   edges: [Edge!]!
 }
 
+type Query {
+  serverMessages: ServerMessages
+}
+
 type Mutation {
   setProfilePhoto(input: SetProfilePhotoInput): CreatePhotoPayload
   registerDevice(input: RegisterDeviceInput): RegisterDevicePayload
@@ -51,6 +55,11 @@ input AdminInput {
   before: String
   offset: Int
   reverse: Boolean
+}
+
+type ServerMessages {
+  noActivityTitle: String
+  noActivityMessage: String
 }
 
 type ReportInputPayload {
