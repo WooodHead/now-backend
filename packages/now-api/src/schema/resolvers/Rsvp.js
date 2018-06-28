@@ -20,12 +20,16 @@ const createRsvp = async (eventId, userId, action, loaders) =>
       if (!rsvpEvent) {
         throw new Error(`Event ${eventId} not found`);
       }
+      const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
+
+      // idempotent
+      if (previousRsvp && previousRsvp.action === action) {
+        return previousRsvp.id;
+      }
 
       if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
         throw new Error(`Event ${eventId} full`);
       }
-
-      const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
 
       let rsvpCall;
       let id = uuid();

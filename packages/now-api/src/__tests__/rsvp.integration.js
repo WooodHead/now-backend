@@ -94,6 +94,73 @@ describe('Rsvp', () => {
 
     expect(dbEvent.going).toEqual(1);
   });
+  it('rsvp to event twice', async () => {
+    const addRsvp = () =>
+      client.mutate({
+        mutation: gql`
+          mutation rsvp($input: CreateRsvpInput!) {
+            addRsvp(input: $input) {
+              rsvp {
+                id
+                user {
+                  id
+                }
+                event {
+                  id
+                  isAttending
+                }
+              }
+              event {
+                id
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: event.id } },
+      });
+
+    await addRsvp();
+    const results = await addRsvp();
+
+    const { data } = results;
+    expect(data).toMatchObject({
+      addRsvp: {
+        __typename: 'CreateRsvpPayload',
+        event: {
+          __typename: 'Event',
+          id: event.id,
+        },
+        rsvp: {
+          __typename: 'Rsvp',
+          id: expect.stringMatching(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          ),
+          event: {
+            __typename: 'Event',
+            id: event.id,
+            isAttending: true,
+          },
+          user: {
+            __typename: 'User',
+            id: USER_ID,
+          },
+        },
+      },
+    });
+
+    const dbRsvp = await Rsvp.byId(data.addRsvp.rsvp.id);
+
+    expect(dbRsvp).toMatchObject({
+      id: data.addRsvp.rsvp.id,
+      userId: USER_ID,
+      eventId: event.id,
+      action: 'add',
+    });
+
+    const dbEvent = await Event.byId(event.id);
+
+    expect(dbEvent.going).toEqual(1);
+  });
 
   it("Doesn't rsvp to full event", async () => {
     await Event.update({ id: event.id, going: 5 });
