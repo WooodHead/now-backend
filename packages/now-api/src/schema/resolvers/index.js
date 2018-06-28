@@ -1,5 +1,7 @@
+import { LocalDate, ZonedDateTime, ZoneId } from 'graphql-joda-types';
 import { GraphQLUpload } from 'apollo-upload-server';
 import GraphQLJSON from 'graphql-type-json';
+
 import * as Device from './Device';
 import * as Event from './Event';
 import * as EventMessagesConnection from './EventMessagesConnection';
@@ -11,7 +13,6 @@ import * as Photo from './Photo';
 import * as Report from './Report';
 import * as Location from './Location';
 import * as Invitation from './Invitation';
-import { LocalDate, ZonedDateTime, ZoneId } from './joda';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';

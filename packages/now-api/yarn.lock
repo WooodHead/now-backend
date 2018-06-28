@@ -4091,6 +4091,12 @@ graphql-extensions@^0.0.x:
     core-js "^2.5.3"
     source-map-support "^0.5.1"
 
+graphql-joda-types@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/graphql-joda-types/-/graphql-joda-types-1.0.0.tgz#33005f1797ae1b8aa969a9ba3acdbaece252acfd"
+  dependencies:
+    js-joda "^1.8.2"
+
 graphql-redis-subscriptions@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/graphql-redis-subscriptions/-/graphql-redis-subscriptions-1.5.0.tgz#53c9be28ee69f61ffbfe808f8f82f7e718254acf"
