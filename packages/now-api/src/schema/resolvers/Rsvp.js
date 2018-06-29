@@ -1,7 +1,7 @@
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
-import { Event, Rsvp } from '../../db/repos';
+import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange } from './Event';
@@ -63,6 +63,7 @@ const createRsvp = async (eventId, userId, action, loaders) =>
 
       await Promise.all([
         rsvpCall.transacting(trx),
+        RsvpLog.insert({ eventId, userId, action }).transacting(trx),
         Event.byId(eventId)
           .transacting(trx)
           .update({ going }),

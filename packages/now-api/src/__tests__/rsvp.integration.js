@@ -4,7 +4,7 @@ import { client, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
-import { Event, Rsvp } from '../db/repos';
+import { Event, Rsvp, RsvpLog } from '../db/repos';
 
 const activity = factory.build('activity');
 const location = factory.build('location');
@@ -17,6 +17,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.RSVPS).truncate(),
+    sql(SQL_TABLES.RSVP_LOG).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
   ]);
 
@@ -160,6 +161,13 @@ describe('Rsvp', () => {
     const dbEvent = await Event.byId(event.id);
 
     expect(dbEvent.going).toEqual(1);
+    const rsvpLog = await RsvpLog.all({ eventId: event.id, userId: USER_ID });
+    expect(rsvpLog.length).toEqual(1);
+    expect(rsvpLog[0]).toMatchObject({
+      userId: USER_ID,
+      eventId: event.id,
+      action: 'add',
+    });
   });
 
   it("Doesn't rsvp to full event", async () => {
@@ -240,6 +248,14 @@ describe('Rsvp', () => {
     const dbEvent = await Event.byId(event.id);
 
     expect(dbEvent.going).toEqual(0);
+
+    const rsvpLog = await RsvpLog.all({ eventId: event.id, userId: USER_ID });
+    expect(rsvpLog.length).toEqual(1);
+    expect(rsvpLog[0]).toMatchObject({
+      userId: USER_ID,
+      eventId: event.id,
+      action: 'remove',
+    });
   });
 
   it('get user rsvps', async () => {

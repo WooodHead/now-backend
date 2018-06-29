@@ -11,6 +11,7 @@ import {
   EventUserMetadata,
   Message,
   Rsvp,
+  RsvpLog,
   User,
 } from '../../../db/repos';
 import { notifyEventChange } from '../Event';
@@ -53,6 +54,9 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
           await Promise.all([
             EventUserMetadata.withTransaction(trx).delete({ userId }),
             Rsvp.withTransaction(trx).delete({ userId }),
+            RsvpLog.withTransaction(trx)
+              .all({ userId })
+              .update({ userId: DELETED_USER_ID }),
             Message.withTransaction(trx)
               .all({ userId })
               .update({ userId: DELETED_USER_ID }),
