@@ -119,9 +119,12 @@ const updateEvent = (
 
   loaders.events.clear(id);
 
-  return Event.update(updatedEvent).then(() => ({
-    event: loaders.events.load(id),
-  }));
+  return Event.update(updatedEvent).then(() => {
+    notifyEventChange(id);
+    return {
+      event: loaders.events.load(id),
+    };
+  });
 };
 
 const markEventChatRead = async (root, { input: { eventId, ts } }, ctx) => {

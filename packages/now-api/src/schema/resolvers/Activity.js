@@ -4,6 +4,7 @@ import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
+import { notifyEventChange } from './Event';
 
 const AVAILABILITY_HOUR = LocalTime.parse('21:00');
 
@@ -69,7 +70,7 @@ const createActivity = (
   }));
 };
 
-const updateActivity = (
+const updateActivity = async (
   root,
   { input: { id, title, description, activityDate, emoji, pushNotification } },
   { loaders }
@@ -86,9 +87,16 @@ const updateActivity = (
 
   loaders.activities.clear(id);
 
-  return Activity.update(updatedActivity).then(() => ({
+  await Activity.update(updatedActivity);
+  const activityEvents = await Event.all({ activityId: id });
+
+  activityEvents.forEach(({ id: eventId }) => {
+    notifyEventChange(eventId);
+  });
+
+  return {
     activity: loaders.activities.load(id),
-  }));
+  };
 };
 
 export const mutations = { createActivity, updateActivity };
