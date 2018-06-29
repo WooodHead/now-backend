@@ -2,12 +2,14 @@ import gql from 'graphql-tag';
 import uuid from 'uuid/v4';
 import fs from 'fs';
 import { pick } from 'lodash';
+import { ZonedDateTime } from 'js-joda';
 
 import { USER_ID, client, newUserClient } from '../db/mock';
 import factory from '../db/factory';
-import { User } from '../db/repos';
+import { Invitation, User } from '../db/repos';
 import sql from '../db/sql';
 import { SQL_TABLES } from '../db/constants';
+import { mutations as InviteMutations } from '../schema/resolvers/Invitation';
 
 jest.mock('../s3', () => ({
   s3: {
@@ -17,13 +19,18 @@ jest.mock('../s3', () => ({
   },
 }));
 
-const truncateTables = () => Promise.all([sql(SQL_TABLES.USERS).truncate()]);
+const truncateTables = () =>
+  Promise.all([
+    sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.INVITATIONS).truncate(),
+  ]);
 
 const user = factory.build('user', { id: USER_ID });
 
 beforeEach(() =>
-  truncateTables().then(() => Promise.all([sql(SQL_TABLES.USERS).insert(user)]))
-);
+  truncateTables().then(() =>
+    Promise.all([sql(SQL_TABLES.USERS).insert(user)])
+  ));
 afterEach(() => truncateTables());
 
 describe('user', () => {
@@ -61,6 +68,14 @@ describe('user', () => {
     const userClient = newUserClient(authId);
     const newUser = factory.build('user');
     const { email, firstName, lastName, bio, location, birthday } = newUser;
+    const invitationCodeResult = await InviteMutations.createAppInvitation(
+      {},
+      { input: { notes: 'test', expiresAt: ZonedDateTime.now().plusHours(1) } },
+      { user: { id: '00000000-0000-0000-0000-000000000000' } }
+    );
+    const invitation = await invitationCodeResult.invitation;
+    const { code: invitationCode } = invitation;
+
     const preferences = {
       pref1: 2,
       pref3: 'A',
@@ -89,11 +104,18 @@ describe('user', () => {
           location,
           preferences,
           birthday,
+          invitationCode,
         },
       },
     });
 
-    const { data: { createUser: { user: { id } } } } = res;
+    const {
+      data: {
+        createUser: {
+          user: { id },
+        },
+      },
+    } = res;
 
     const dbUser = await User.byId(id);
     dbUser.birthday = dbUser.birthday.toString();
@@ -108,6 +130,11 @@ describe('user', () => {
       preferences,
       birthday: expect.stringContaining(birthday),
     });
+
+    const dbInvititation = await Invitation.get({ id: invitation.id });
+    expect(dbInvititation.code).toEqual(invitationCode);
+    expect(dbInvititation.usedAt).toBeTruthy();
+    expect(dbInvititation.inviteeId).toEqual(dbUser.id);
   });
 
   it('change user photo', async () => {
@@ -136,7 +163,11 @@ describe('user', () => {
     });
 
     const {
-      data: { setProfilePhoto: { user: { id, photo: returnedPhoto } } },
+      data: {
+        setProfilePhoto: {
+          user: { id, photo: returnedPhoto },
+        },
+      },
     } = res;
 
     expect(pick(returnedPhoto, ['preview', '__typename'])).toMatchSnapshot();
