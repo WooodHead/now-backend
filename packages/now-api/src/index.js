@@ -129,6 +129,14 @@ app.get('/invite', (req, res) => {
 
 app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
 
+app.use('/public', express.static('public'));
+app.use('^/$', (req, res) => {
+  res.sendFile(path.join(process.cwd(), '/public/index.html'));
+});
+app.use('^/favicon.ico$', (req, res) => {
+  res.sendFile(path.join(process.cwd(), '/public/favicon.ico'));
+});
+
 if (isDev) {
   const ADMIN_ROOT = path.join(process.cwd(), '../now-admin/dist');
   console.log(`Serving admin from ${ADMIN_ROOT}`);

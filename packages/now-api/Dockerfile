@@ -14,7 +14,7 @@ RUN apk --no-cache add vips-dev fftw-dev --update-cache --repository https://dl-
   && yarn cache clean \
   && apk del .build-dependencies
 
-RUN cp dist/server.js ..
+RUN cp -R dist ..
 WORKDIR /
 COPY package.json .
 COPY knexfile.js .
