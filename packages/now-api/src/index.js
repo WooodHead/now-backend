@@ -124,7 +124,7 @@ app.get(
 );
 
 app.get('/invite', (req, res) => {
-  res.redirect('https://meetupinc.typeform.com/to/WkZJW0');
+  res.redirect('https://meetupinc.typeform.com/to/mYMKbB');
 });
 
 app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
