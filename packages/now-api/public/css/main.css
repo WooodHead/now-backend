@@ -60,6 +60,10 @@ a:active {
   margin: 0 auto;
 }
 
+.stores {
+  margin-bottom: 32px;
+}
+
 .stores img {
   width: 120px;
   height: 35.5px;
@@ -71,7 +75,20 @@ a:active {
 }
 
 .invite {
+  margin-top: 32px;
+  margin-bottom: 80px;
+}
+
+.invite a {
+  display: inline-block;
   margin-top: 24px;
+  border-radius: 4px;
+  background-color: #6666ff;
+  box-shadow: 0 16px 50px 0 rgba(47, 66, 77, 0.2);
+  font-size: 16px;
+  color: white;
+  text-decoration: none;
+  padding: 10px 24px;
 }
 
 .content {

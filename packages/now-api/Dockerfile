@@ -19,6 +19,7 @@ WORKDIR /
 COPY package.json .
 COPY knexfile.js .
 COPY migrations migrations
+COPY public public
 COPY bin/start.sh .
 
 RUN rm -rf build
