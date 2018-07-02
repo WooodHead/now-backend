@@ -138,9 +138,8 @@ describe('activity', () => {
     const { data } = await res;
     expect(data).toMatchObject({
       serverMessages: {
-        noActivityTitle: 'Sorry, no Meetup today!',
-        noActivityMessage:
-          "We're either on vacay or planning something extra special for you.",
+        noActivityTitle: expect.any(String),
+        noActivityMessage: expect.any(String),
       },
       todayActivity: {
         __typename: 'Activity',
