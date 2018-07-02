@@ -7,6 +7,7 @@ import { userDidRsvp } from './Rsvp';
 import { notifyEventChange } from './Event';
 import { sendChatNotif } from '../../fcm';
 import { Message } from '../../db/repos';
+import { NOW_BOT_USER_ID } from '../../db/constants';
 
 const MESSAGE_CURSOR_ID = 'ts';
 
@@ -22,41 +23,69 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
 
 const topicName = eventId => `messages-${eventId}`;
 
-const createMessage = (root, { input: { eventId, text, id } }, ctx) => {
+const newMessageObject = ({ id, eventId, userId, text }) => ({
+  eventId,
+  userId,
+  text,
+  ts: Instant.now().toEpochMilli(),
+  id: id || uuid(),
+});
+
+const sendMessage = async (newMessage, sendNotification = false) => {
+  const potentialMessage = await Message.byId(newMessage.id);
+  if (!potentialMessage) {
+    const { eventId } = newMessage;
+    await Message.insert(newMessage);
+
+    getPubSub().publish(topicName(eventId), {
+      messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+    });
+    notifyEventChange(eventId);
+
+    if (sendNotification) {
+      sendChatNotif(newMessage);
+    }
+
+    return newMessage;
+  }
+  return potentialMessage;
+};
+
+const createBotMessage = (root, { input: { eventId, text, id } }) => {
+  const newMessage = newMessageObject({
+    eventId,
+    userId: NOW_BOT_USER_ID,
+    text,
+    id,
+  });
+
+  return sendMessage(newMessage, true).then(message => ({
+    edge: buildEdge(MESSAGE_CURSOR_ID, message),
+  }));
+};
+
+const createUserMessage = async (
+  root,
+  { input: { eventId, text, id } },
+  ctx
+) => {
   const loggedInUserId = userIdFromContext(ctx);
-  const ts = Instant.now().toEpochMilli();
-  const newMessage = {
+  const newMessage = newMessageObject({
     eventId,
     userId: loggedInUserId,
     text,
-    ts,
-    id: id || uuid(),
-  };
+    id,
+  });
 
-  return userDidRsvp({ eventId, userId: loggedInUserId })
-    .then(didRsvp => {
-      if (!didRsvp)
-        return Promise.reject(
-          new Error('You must have RSVPed before you can post a message.')
-        );
+  const didRsvp = await userDidRsvp({ eventId, userId: loggedInUserId });
+  if (!didRsvp)
+    return Promise.reject(
+      new Error('You must have RSVPed before you can post a message.')
+    );
 
-      return true;
-    })
-    .then(() => Message.byId(newMessage.id))
-    .then(potentialMessage => {
-      if (!potentialMessage) {
-        return Message.insert(newMessage).then(() => {
-          getPubSub().publish(topicName(eventId), {
-            messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
-          });
-          notifyEventChange(eventId);
-          sendChatNotif(newMessage);
-          return newMessage;
-        });
-      }
-      return potentialMessage;
-    })
-    .then(message => ({ edge: buildEdge(MESSAGE_CURSOR_ID, message) }));
+  const sentMessage = await sendMessage(newMessage, true);
+
+  return { edge: buildEdge(MESSAGE_CURSOR_ID, sentMessage) };
 };
 
 const event = (message, args, { loaders }) =>
@@ -73,6 +102,6 @@ const messageAdded = {
 };
 
 export const queries = {};
-export const mutations = { createMessage };
+export const mutations = { createMessage: createUserMessage, createBotMessage };
 export const resolvers = { event, user };
 export const subscriptions = { messageAdded };

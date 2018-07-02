@@ -3,15 +3,13 @@ import { pick } from 'lodash';
 import { getUserRsvps } from '../Rsvp';
 import { getDevices } from '../Device';
 import { computeAge, userIdFromContext, sqlPaginatify } from '../../util';
-import { SQL_TABLES } from '../../../db/constants';
+import { SQL_TABLES, DELETED_USER_ID } from '../../../db/constants';
 import sql from '../../../db/sql';
 import { User } from '../../../db/repos';
 import { putInOrder } from '../../../util';
 import { createUserMutation as createUser, updateCurrentUser } from './create';
 import { tosCurrent } from './tos';
 import { deleteCurrentUser } from './delete';
-
-export const DELETED_USER_ID = '7cb43790-3bed-4e23-9825-43d913074ee0';
 
 export const putPhoto = (id, photoId, preview) =>
   sql(SQL_TABLES.USERS)

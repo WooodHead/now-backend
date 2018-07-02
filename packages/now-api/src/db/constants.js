@@ -13,3 +13,6 @@ export const SQL_TABLES = {
   INVITATIONS: 'invitations',
   EVENT_USER_METADATA: 'eventUserMetadata',
 };
+
+export const NOW_BOT_USER_ID = 'ec6c81d8-7bb4-11e8-ba5d-2bc28925de05';
+export const DELETED_USER_ID = '7cb43790-3bed-4e23-9825-43d913074ee0';

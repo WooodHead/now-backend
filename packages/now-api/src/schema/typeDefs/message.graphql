@@ -4,6 +4,7 @@ type Query {
 
 type Mutation {
   createMessage(input: CreateMessageInput): CreateMessagePayload
+  createBotMessage(input: CreateMessageInput): CreateMessagePayload @admin
 }
 
 type Subscription {

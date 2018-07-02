@@ -1,7 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { partition } from 'lodash';
 
-import { DELETED_USER_ID } from './index';
 import { userIdFromContext } from '../../util';
 import { deleteUser } from '../../../auth0';
 import sql from '../../../db/sql';
@@ -15,7 +14,7 @@ import {
   User,
 } from '../../../db/repos';
 import { notifyEventChange } from '../Event';
-import { SQL_TABLES } from '../../../db/constants';
+import { SQL_TABLES, DELETED_USER_ID } from '../../../db/constants';
 
 // if the user is RSVPed to events which haven't started yet, release
 // their spots for someone else to claim. for events in the past (or
