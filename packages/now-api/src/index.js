@@ -44,6 +44,15 @@ if (isDev) {
 }
 app.use(morgan('common'));
 
+app.use((req, res, next) => {
+  const proto = req.get('X-Forwarded-Proto');
+  if (proto && proto !== 'https') {
+    res.redirect(301, `https://${req.get('Host')}${req.url}`);
+  } else {
+    next();
+  }
+});
+
 const buildUserForContext = (req, otherContext = {}) => {
   const currentUserAuth0Id = get(req, ['user', 'sub']);
   const scope = get(req, ['user', 'scope']) || '';
