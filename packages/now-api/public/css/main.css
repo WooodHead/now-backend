@@ -24,6 +24,7 @@ html {
 body {
   background: url('../img/background.png') repeat;
   padding: 24px;
+  font-size: 16px;
 }
 
 h1 {
@@ -294,7 +295,6 @@ textarea {
   /* Style adjustments for viewports that meet the condition */
   body {
     padding: 41px;
-    font-size: 16px;
     line-height: 1.38;
     letter-spacing: 0.4px;
   }
