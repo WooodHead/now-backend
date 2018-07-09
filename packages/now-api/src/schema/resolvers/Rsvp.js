@@ -4,7 +4,7 @@ import { userIdFromContext, sqlPaginatify } from '../util';
 import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
-import { notifyEventChange } from './Event';
+import { notifyEventChange, visibleEventsQuery } from './Event';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 
@@ -14,9 +14,12 @@ const user = (rsvp, args, context) =>
 const createRsvp = async (eventId, userId, action, loaders) =>
   sql
     .transaction(async trx => {
-      const rsvpEvent = await Event.byId(eventId)
+      const rsvpEvent = await visibleEventsQuery()
+        .where({ id: eventId })
         .transacting(trx)
-        .forUpdate();
+        .forUpdate()
+        .first();
+
       if (!rsvpEvent) {
         throw new Error(`Event ${eventId} not found`);
       }

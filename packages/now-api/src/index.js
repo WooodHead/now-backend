@@ -7,8 +7,7 @@ import express from 'express';
 import jwt from 'express-jwt';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
-import { use as jsJodaUse } from 'js-joda';
-import jsJodaTimezone from 'js-joda-timezone';
+import 'js-joda-timezone';
 import jwksRsa from 'jwks-rsa';
 import { get } from 'lodash';
 import morgan from 'morgan';
@@ -24,8 +23,6 @@ import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 import { endpoint as auth0Endpoint } from './auth0';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-jsJodaUse(jsJodaTimezone);
 
 // http://sharp.pixelplumbing.com/en/stable/install/#alpine-linux
 sharp.cache(false);

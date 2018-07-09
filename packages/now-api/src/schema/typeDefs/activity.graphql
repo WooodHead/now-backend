@@ -22,6 +22,7 @@ type Activity implements Node {
   activityDate: LocalDate
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+  generallyAvailableAt: ZonedDateTime
   emoji: String
   events(
     first: Int

@@ -1,9 +1,10 @@
-import { ChronoUnit, Instant, ZoneId } from 'js-joda';
+import { ChronoUnit, Instant, ZoneId, LocalDateTime } from 'js-joda';
 import uuid from 'uuid/v4';
 import { toNumber, isInteger } from 'lodash';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
+import { EARLY_AVAILABILITY_HOUR, NYC_TZ } from './Activity';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp } from '../../db/repos';
@@ -67,6 +68,29 @@ export const resolvers = {
   time: timeResolver,
 };
 
+export const visibleEventsQuery = () => {
+  const now = LocalDateTime.now(NYC_TZ);
+  const today = now.toLocalDate();
+
+  const todayEarlyAvailable = today.atTime(EARLY_AVAILABILITY_HOUR);
+
+  const todayStart = today.atStartOfDay();
+
+  const todayEnd = today.plusDays(1).atStartOfDay();
+
+  const tomorrowEnd = today.plusDays(2).atStartOfDay();
+
+  if (now.isBefore(todayEarlyAvailable)) {
+    return Event.all()
+      .where('time', '>=', todayStart.toString())
+      .where('time', '<', todayEnd.toString());
+  }
+
+  return Event.all()
+    .where('time', '>=', todayStart.toString())
+    .where('time', '<', tomorrowEnd.toString());
+};
+
 // Queries
 const allEvents = (root, { input, orderBy = 'id' }) =>
   sqlPaginatify(orderBy, Event.all({}), input);
@@ -75,7 +99,15 @@ const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
 
 const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
 
-export const queries = { event: eventQuery, allEvents, manyEvents };
+const eventsQuery = (root, { input, orderBy = 'time' }) =>
+  sqlPaginatify(orderBy, visibleEventsQuery(), input);
+
+export const queries = {
+  event: eventQuery,
+  allEvents,
+  manyEvents,
+  events: eventsQuery,
+};
 
 const createEvent = (
   root,

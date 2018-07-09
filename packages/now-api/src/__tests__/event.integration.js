@@ -1,12 +1,15 @@
 import gql from 'graphql-tag';
 import { omit, sortBy } from 'lodash';
 import uuid from 'uuid/v4';
+import { LocalDate } from 'js-joda';
 
 import { client, setAdmin, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { EventUserMetadata } from '../db/repos';
+import { mockNow, restoreNow } from '../../testutils/date';
+import * as Activity from '../schema/resolvers/Activity';
 
 const activity = factory.build('activity');
 const location = factory.build('location');
@@ -22,7 +25,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.LOCATIONS).truncate(),
   ]);
 
-beforeAll(() =>
+beforeEach(() =>
   truncateTables().then(() =>
     Promise.all([
       sql(SQL_TABLES.ACTIVITIES).insert(activity),
@@ -30,7 +33,7 @@ beforeAll(() =>
       sql(SQL_TABLES.LOCATIONS).insert(location),
     ])
   ));
-afterAll(() => {
+afterEach(() => {
   setAdmin(false);
   return truncateTables();
 });
@@ -92,6 +95,95 @@ describe('Event', () => {
           })
         )
       ),
+    });
+  });
+
+  describe('events visible to user', () => {
+    let eventToday;
+    let eventTomorrow;
+    beforeEach(async () => {
+      await sql(SQL_TABLES.EVENTS).truncate();
+      const today = LocalDate.now();
+      eventToday = factory.build(
+        'event',
+        {
+          time: today.atTime(14, 0).toString(),
+          timezone: Activity.NYC_TZ.id(),
+        },
+        { activity, location }
+      );
+      eventTomorrow = factory.build(
+        'event',
+        {
+          time: today
+            .plusDays(1)
+            .atTime(14, 0)
+            .toString(),
+          timezone: Activity.NYC_TZ.id(),
+        },
+        { activity, location }
+      );
+      await sql(SQL_TABLES.EVENTS).insert([eventToday, eventTomorrow]);
+    });
+    afterEach(() => {
+      restoreNow();
+      return sql(SQL_TABLES.EVENTS).truncate();
+    });
+    it('before early availability', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(14, 0)
+          .toString()
+      );
+      const results = client.query({
+        fetchPolicy: 'network-only',
+        query: gql`
+          {
+            events {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        `,
+      });
+
+      const { data } = await results;
+
+      expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventToday.id,
+      ]);
+    });
+    it.only('after early availability', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(20, 0)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+      const results = client.query({
+        fetchPolicy: 'network-only',
+        query: gql`
+          {
+            events {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        `,
+      });
+      const { data } = await results;
+
+      expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventToday.id,
+        eventTomorrow.id,
+      ]);
     });
   });
 

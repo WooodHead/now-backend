@@ -93,6 +93,7 @@ describe('activity', () => {
             emoji
             description
             activityDate
+            generallyAvailableAt
           }
         }
       `,
@@ -105,6 +106,9 @@ describe('activity', () => {
         __typename: 'Activity',
         [Symbol('id')]: `Activity:${activities[0].id}`,
         ...activities[0],
+        generallyAvailableAt: expect.stringMatching(
+          /T21:00-04:00\[America\/New_York\]$/
+        ),
       },
     });
   });

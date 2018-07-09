@@ -1,15 +1,17 @@
 import uuid from 'uuid';
-import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
+import { LocalDateTime, LocalTime, ZoneId, LocalDate } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 
-const AVAILABILITY_HOUR = LocalTime.parse('21:00');
+export const NYC_TZ = ZoneId.of('America/New_York');
+export const AVAILABILITY_HOUR = LocalTime.parse('21:00');
+export const EARLY_AVAILABILITY_HOUR = LocalTime.parse('20:00');
 
 export const getToday = () => {
-  const now = LocalDateTime.now(ZoneId.of('America/New_York'));
+  const now = LocalDateTime.now(NYC_TZ);
   return (now.toLocalTime().isBefore(AVAILABILITY_HOUR)
     ? now.toLocalDate()
     : now.toLocalDate().plusDays(1)
@@ -44,6 +46,10 @@ export const getEvents = ({ id }, { first, last, after, before }) =>
 
 export const resolvers = {
   events: getEvents,
+  generallyAvailableAt: () =>
+    LocalDate.now()
+      .atTime(AVAILABILITY_HOUR)
+      .atZone(NYC_TZ),
 };
 
 const createActivity = (

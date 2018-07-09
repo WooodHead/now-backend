@@ -5300,9 +5300,9 @@ jmespath@0.15.0:
   version "0.15.0"
   resolved "https://registry.yarnpkg.com/jmespath/-/jmespath-0.15.0.tgz#a3f222a9aae9f966f5d27c796510e28091764217"
 
-js-joda-timezone@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/js-joda-timezone/-/js-joda-timezone-1.2.1.tgz#ded948e1b6ffcb8cad57e7824d0ba2288f50879d"
+js-joda-timezone@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/js-joda-timezone/-/js-joda-timezone-1.3.0.tgz#93c7437430728ba2bf56f61332747181fb830724"
 
 js-joda@^1.8.2:
   version "1.8.2"

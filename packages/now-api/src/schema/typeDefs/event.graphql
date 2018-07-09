@@ -1,6 +1,7 @@
 type Query {
   allEvents(input: AdminInput, orderBy: EventOrder): RootEventsConnection!
-    @admin
+  # Returns the events that a user can see
+  events(input: AdminInput, orderBy: EventOrder): RootEventsConnection!
   manyEvents(ids: [ID!]!): [Event!]
   event(id: ID!): Event
 }

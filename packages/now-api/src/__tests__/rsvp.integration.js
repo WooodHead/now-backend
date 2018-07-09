@@ -1,14 +1,27 @@
 import gql from 'graphql-tag';
+import { ZonedDateTime, ZoneId } from 'js-joda';
 
 import { client, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { Event, Rsvp, RsvpLog } from '../db/repos';
+import { NYC_TZ } from '../schema/resolvers/Activity';
 
 const activity = factory.build('activity');
 const location = factory.build('location');
-const event = factory.build('event', { limit: 5 }, { activity, location });
+const event = factory.build(
+  'event',
+  {
+    limit: 5,
+    time: ZonedDateTime.now(NYC_TZ)
+      .minusHours(1)
+      .withZoneSameInstant(ZoneId.UTC)
+      .toString(),
+    timezone: NYC_TZ.id(),
+  },
+  { activity, location }
+);
 const user = factory.build('user', { id: USER_ID });
 
 const truncateTables = () =>
