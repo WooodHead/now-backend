@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import { LocalDateTime, LocalTime, ZoneId, LocalDate } from 'js-joda';
+import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
@@ -46,10 +46,13 @@ export const getEvents = ({ id }, { first, last, after, before }) =>
 
 export const resolvers = {
   events: getEvents,
-  generallyAvailableAt: () =>
-    LocalDate.now()
-      .atTime(AVAILABILITY_HOUR)
-      .atZone(NYC_TZ),
+  generallyAvailableAt: ({ activityDate }) =>
+    activityDate
+      ? activityDate
+          .minusDays(1)
+          .atTime(AVAILABILITY_HOUR)
+          .atZone(NYC_TZ)
+      : null,
 };
 
 const createActivity = (
