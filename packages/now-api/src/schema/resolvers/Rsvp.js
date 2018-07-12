@@ -11,7 +11,7 @@ const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
-const createRsvp = async (eventId, userId, action, loaders) =>
+export const createRsvp = async (eventId, userId, action, loaders) =>
   sql
     .transaction(async trx => {
       const rsvpEvent = await visibleEventsQuery()

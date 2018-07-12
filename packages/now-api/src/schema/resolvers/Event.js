@@ -7,7 +7,7 @@ import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { EARLY_AVAILABILITY_HOUR, NYC_TZ } from './Activity';
 import { getMessages } from './Message';
 import { getPubSub } from '../../subscriptions';
-import { Event, EventUserMetadata, Rsvp } from '../../db/repos';
+import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
 
 const topicName = eventId => `event-changes-${eventId}`;
@@ -15,6 +15,13 @@ const topicName = eventId => `event-changes-${eventId}`;
 export const notifyEventChange = eventId =>
   getPubSub().publish(topicName(eventId), true);
 
+export const hasInvitedToEvent = async (eventId, inviterId) => {
+  const invitation = await Invitation.all({
+    eventId,
+    inviterId,
+  });
+  return invitation.length !== 0;
+};
 // Resolvers
 const activityResolver = ({ activityId }, args, { loaders }) =>
   loaders.activities.load(activityId);
@@ -38,6 +45,9 @@ const messagesResolver = async (root, args) => {
 
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
   userDidRsvp({ eventId: id, userId: userId || userIdFromContext(ctx) });
+
+const hasInvitedResolver = async ({ id }, { userId }, ctx) =>
+  hasInvitedToEvent(id, userId || userIdFromContext(ctx));
 
 // one day, this will be fancier.
 const stateResolver = ({ time }) => {
@@ -63,6 +73,7 @@ export const resolvers = {
   rsvps: rsvpsResolver,
   messages: messagesResolver,
   isAttending: isAttendingResolver,
+  hasInvited: hasInvitedResolver,
   state: stateResolver,
   location: locationResolver,
   time: timeResolver,

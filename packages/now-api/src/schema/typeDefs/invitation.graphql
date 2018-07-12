@@ -10,6 +10,9 @@ type Mutation {
   createAppInvitation(
     input: CreateAppInvitationInput!
   ): CreateAppInvitationPayload @admin
+  createEventInvitation(
+    input: CreateEventInvitationInput!
+  ): CreateAppInvitationPayload
 }
 
 interface Invitation {
@@ -19,6 +22,8 @@ interface Invitation {
   expiresAt: ZonedDateTime
   usedAt: ZonedDateTime
   createdAt: ZonedDateTime
+  event: Event
+  message: String
 }
 
 type AppInvitation implements Invitation & Node {
@@ -29,6 +34,18 @@ type AppInvitation implements Invitation & Node {
   usedAt: ZonedDateTime
   createdAt: ZonedDateTime!
   notes: String
+  event: Event
+  message: String
+}
+type EventInvitation implements Invitation & Node {
+  id: ID!
+  code: String!
+  inviter: User
+  expiresAt: ZonedDateTime
+  usedAt: ZonedDateTime
+  createdAt: ZonedDateTime!
+  event: Event
+  message: String
 }
 
 enum InvitationOrder {
@@ -38,11 +55,16 @@ enum InvitationOrder {
   usedAt
   createdAt
   notes
+  event
 }
 
 input CreateAppInvitationInput {
   notes: String
   expiresAt: ZonedDateTime
+}
+
+input CreateEventInvitationInput {
+  eventId: String!
 }
 
 type CreateAppInvitationPayload {

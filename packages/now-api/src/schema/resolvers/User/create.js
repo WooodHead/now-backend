@@ -3,10 +3,15 @@ import uuid from 'uuid/v4';
 import { pick } from 'lodash';
 
 import { getUser } from './index';
+import { createRsvp } from '../Rsvp';
 import { CURRENT_TOS_VERSION } from './tos';
 import RunTimeFlags from '../../../RunTimeFlags';
 import sql from '../../../db/sql';
-import { consumeInvitation, findValidCode } from '../Invitation';
+import {
+  consumeInvitation,
+  findValidCode,
+  EVENT_INVITE_TYPE,
+} from '../Invitation';
 import { userIdFromContext } from '../../util';
 import { SQL_TABLES } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
@@ -58,7 +63,6 @@ export const createUserMutation = async (
       throw new Error('A valid invitation code is required.');
     }
   }
-
   const newId = uuid();
   const newUser = {
     id: newId,
@@ -79,8 +83,10 @@ export const createUserMutation = async (
     await trx(SQL_TABLES.USERS).insert(newUser);
     if (invitation) {
       await consumeInvitation(invitation.id, newId, trx);
-      // TODO: any invitation-type-specific stuff, like maybe RSVPing the new
-      // user to the Meetup they were invited to.
+      if (invitation.type === EVENT_INVITE_TYPE) {
+        // TODO: This needs to be changed, since we actually want to save the spots...
+        await createRsvp(invitation.eventId, newId, 'add', context.loaders);
+      }
     }
   });
 
