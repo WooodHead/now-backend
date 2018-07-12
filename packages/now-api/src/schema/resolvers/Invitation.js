@@ -96,15 +96,15 @@ const createEventInvitation = async (root, { input: { eventId } }, context) => {
   const inviterId = userIdFromContext(context);
 
   if (event.limit - event.going < 2) {
-    throw new Error('Not enough spots!!');
+    throw new Error("Sorry, there aren't enough spots left now");
   }
 
   if (!canInviteNow(event.time.toLocalDateTime())) {
-    throw new Error("Can't invite now!!");
+    throw new Error("You can't invite a friend to this Meetup at this time.");
   }
 
   if (await hasInvitedToEvent(eventId, inviterId)) {
-    throw new Error('Inviter already invited!!');
+    throw new Error("You're only allowed to invite one person to a Meetup.");
   }
 
   const id = uuid();
