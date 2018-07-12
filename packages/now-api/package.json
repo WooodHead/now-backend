@@ -112,7 +112,8 @@
     "webpack-node-externals": "^1.6.0"
   },
   "resolutions": {
-    "graphql": "0.13.2"
+    "graphql": "0.13.2",
+    "eslint-scope": "3.7.1"
   },
   "jest": {
     "transform": {
