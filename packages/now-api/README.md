@@ -49,7 +49,7 @@ The API is now running at http://localhost:3000/graphiql
 
 ### Connecting to the API from a device
 
-If you want to build the [Meetup Now app] and have it connect to the API you are running locally, simply modify the `.env` file in the `meetup-now` directory: 
+If you want to build the [Meetup Now app](https://github.com/meetup/now-mobile/blob/master/README.md#usage) and have it connect to the API you are running locally, simply modify the `.env` file in the `meetup-now` directory: 
 
 ```
 # Replace these:
