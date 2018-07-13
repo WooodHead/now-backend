@@ -7,89 +7,118 @@ import { userQuery } from './User';
 import { notifyEventChange, visibleEventsQuery } from './Event';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
+const invite = ({ inviteId }, args, { loaders }) =>
+  inviteId ? loaders.invitations.load(inviteId) : null;
 
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
-export const createRsvp = async (eventId, userId, action, loaders) =>
-  sql
-    .transaction(async trx => {
-      const rsvpEvent = await visibleEventsQuery()
-        .where({ id: eventId })
-        .transacting(trx)
-        .forUpdate()
-        .first();
+export const createRsvp = async (
+  trx,
+  { eventId, userId, inviteId },
+  action,
+  loaders
+) => {
+  const rsvpEvent = await visibleEventsQuery()
+    .where({ id: eventId })
+    .transacting(trx)
+    .forUpdate()
+    .first();
 
-      if (!rsvpEvent) {
-        throw new Error(`Event ${eventId} not found`);
-      }
-      const previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
+  if (!rsvpEvent) {
+    throw new Error(`Event ${eventId} not found`);
+  }
 
-      // idempotent
-      if (previousRsvp && previousRsvp.action === action) {
-        return previousRsvp.id;
-      }
+  let previousRsvp;
+  if (userId) {
+    previousRsvp = await Rsvp.get({ eventId, userId }).transacting(trx);
+  } else {
+    previousRsvp = await Rsvp.get({ eventId, inviteId }).transacting(trx);
+  }
 
-      if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
-        throw new Error(`Event ${eventId} full`);
-      }
+  // idempotent
+  if (previousRsvp && previousRsvp.action === action) {
+    return previousRsvp.id;
+  }
 
-      let rsvpCall;
-      let id = uuid();
-      const ISOString = new Date().toISOString();
-      if (previousRsvp) {
-        ({ id } = previousRsvp);
+  if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
+    throw new Error(`Event ${eventId} full`);
+  }
 
-        const updatedRsvp = {
-          id,
-          action,
-          updatedAt: ISOString,
-        };
-        rsvpCall = Rsvp.update(updatedRsvp);
-        loaders.rsvps.clear(id);
-      } else {
-        const newRsvp = {
-          id,
-          eventId,
-          userId,
-          action,
-          createdAt: ISOString,
-          updatedAt: ISOString,
-        };
-        rsvpCall = Rsvp.insert(newRsvp);
-      }
+  let rsvpCall;
+  let id = uuid();
+  const ISOString = new Date().toISOString();
+  if (previousRsvp) {
+    ({ id } = previousRsvp);
 
-      const going =
-        action === 'add'
-          ? rsvpEvent.going + 1
-          : Math.max(0, rsvpEvent.going - 1);
+    const updatedRsvp = {
+      id,
+      action,
+      updatedAt: ISOString,
+    };
+    rsvpCall = Rsvp.update(updatedRsvp);
+    loaders.rsvps.clear(id);
+  } else {
+    const newRsvp = {
+      id,
+      eventId,
+      userId,
+      inviteId,
+      action,
+      createdAt: ISOString,
+      updatedAt: ISOString,
+    };
+    rsvpCall = Rsvp.insert(newRsvp);
+  }
 
-      await Promise.all([
-        rsvpCall.transacting(trx),
-        RsvpLog.insert({ eventId, userId, action }).transacting(trx),
-        Event.byId(eventId)
-          .transacting(trx)
-          .update({ going }),
-      ]);
+  const going =
+    action === 'add' ? rsvpEvent.going + 1 : Math.max(0, rsvpEvent.going - 1);
 
-      return id;
-    })
-    .then(id => {
-      notifyEventChange(eventId);
+  await Promise.all([
+    rsvpCall.transacting(trx),
+    RsvpLog.insert({ eventId, userId, action }).transacting(trx),
+    Event.byId(eventId)
+      .transacting(trx)
+      .update({ going }),
+  ]);
 
-      return {
-        rsvp: () => loaders.rsvps.load(id),
-        event: () => loaders.events.load(eventId),
-      };
-    });
+  return id;
+};
+
+const postRsvp = (eventId, ctx) => id => {
+  notifyEventChange(eventId);
+
+  return {
+    rsvp: () => ctx.loaders.rsvps.load(id),
+    event: () => ctx.loaders.events.load(eventId),
+  };
+};
 
 const addRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'add', ctx.loaders);
+  sql
+    .transaction(trx =>
+      createRsvp(
+        trx,
+        { eventId, userId: userIdFromContext(ctx) },
+        'add',
+        ctx.loaders
+      )
+    )
+    .then(postRsvp(eventId, ctx));
 
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
-  createRsvp(eventId, userIdFromContext(ctx), 'remove', ctx.loaders);
+  sql
+    .transaction(trx =>
+      createRsvp(
+        trx,
+        { eventId, userId: userIdFromContext(ctx) },
+        'remove',
+        ctx.loaders
+      )
+    )
+    .then(postRsvp(eventId, ctx));
 
-export const resolvers = { event, user };
+export const resolvers = { event, user, invite };
 export const mutations = { addRsvp, removeRsvp };
 
 export const getEventRsvps = ({ eventId, first, last, after, before }) =>

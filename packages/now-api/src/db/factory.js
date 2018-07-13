@@ -3,7 +3,8 @@ import { Factory } from 'rosie';
 import uuid from 'uuid/v4';
 import { address, name, date, internet, random, lorem, hacker } from 'faker';
 import randomEmoji from 'random-emoji';
-import { LocalDate, ZoneId } from 'js-joda';
+import { LocalDate, ZoneId, LocalDateTime } from 'js-joda';
+import { EVENT_INVITE_TYPE } from '../schema/resolvers/Invitation';
 
 const md5 = () =>
   random
@@ -44,6 +45,21 @@ Factory.define('rsvp')
   .attr('id', uuid)
   .attr('action', 'add')
   .attr('userId', ['user'], ({ id }) => id)
+  .attr('eventId', ['event'], ({ id }) => id);
+
+Factory.define('eventInvite')
+  .option('inviter', () => ({ id: uuid() }))
+  .option('event', () => ({ id: uuid() }))
+  .attr('id', uuid)
+  .attr('type', EVENT_INVITE_TYPE)
+  .attr('code', () => random.number({ max: 999999, min: 100000 }))
+  .attr('expiresAt', () =>
+    LocalDateTime.now()
+      .plusDays(1)
+      .toString()
+  )
+
+  .attr('inviterId', ['inviter'], ({ id }) => id)
   .attr('eventId', ['event'], ({ id }) => id);
 
 Factory.define('activity')

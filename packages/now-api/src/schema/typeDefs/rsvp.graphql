@@ -13,6 +13,7 @@ type Rsvp implements Node {
   id: ID!
   user: User
   event: Event
+  invite: EventInvitation
   action: RsvpAction
   lastReadTs: String
   createdAt: ZonedDateTime

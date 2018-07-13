@@ -28,7 +28,11 @@ export const concatMapOfArrays = (...sources) =>
 export const putInOrder = (objects, ids, idProp = 'id') => {
   const lookup = {};
   objects.forEach(obj => {
-    lookup[obj[idProp]] = obj;
+    if (!obj) {
+      lookup.null = null;
+    } else {
+      lookup[obj[idProp]] = obj;
+    }
   });
   return ids.map(id => lookup[id]);
 };

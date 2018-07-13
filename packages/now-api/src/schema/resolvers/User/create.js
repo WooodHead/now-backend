@@ -3,10 +3,10 @@ import uuid from 'uuid/v4';
 import { pick } from 'lodash';
 
 import { getUser } from './index';
-import { createRsvp } from '../Rsvp';
 import { CURRENT_TOS_VERSION } from './tos';
 import RunTimeFlags from '../../../RunTimeFlags';
 import sql from '../../../db/sql';
+import { Rsvp } from '../../../db/repos';
 import {
   consumeInvitation,
   findValidCode,
@@ -82,10 +82,20 @@ export const createUserMutation = async (
   await sql.transaction(async trx => {
     await trx(SQL_TABLES.USERS).insert(newUser);
     if (invitation) {
-      await consumeInvitation(invitation.id, newId, trx);
-      if (invitation.type === EVENT_INVITE_TYPE) {
-        // TODO: This needs to be changed, since we actually want to save the spots...
-        await createRsvp(invitation.eventId, newId, 'add', context.loaders);
+      const { id: inviteId, eventId, type } = invitation;
+      await consumeInvitation(inviteId, newId, trx);
+      if (type === EVENT_INVITE_TYPE) {
+        // add new user id to the rsvp placeholder
+        const rsvp = await Rsvp.get({ eventId, inviteId });
+        if (!rsvp) {
+          throw new Error('invite rsvp not found');
+        }
+
+        await Rsvp.update({
+          ...rsvp,
+          userId: newId,
+          updatedAt: sql.raw('now()'),
+        });
       }
     }
   });

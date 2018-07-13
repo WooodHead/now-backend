@@ -5,7 +5,7 @@ import { client, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
-import { Event, Rsvp, RsvpLog } from '../db/repos';
+import { Event, Rsvp, RsvpLog, Invitation } from '../db/repos';
 import { NYC_TZ } from '../schema/resolvers/Activity';
 
 const activity = factory.build('activity');
@@ -27,6 +27,7 @@ const user = factory.build('user', { id: USER_ID });
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
+    sql(SQL_TABLES.INVITATIONS).truncate(),
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.RSVPS).truncate(),
@@ -315,6 +316,75 @@ describe('Rsvp', () => {
           ],
         },
       },
+    });
+  });
+
+  it('event rsvps resolves invites', async () => {
+    const invite = factory.build('eventInvite', {
+      eventId: event.id,
+      inviterId: USER_ID,
+    });
+    await Invitation.insert(invite);
+
+    const rsvp = factory.build('rsvp', {
+      eventId: event.id,
+      userId: USER_ID,
+    });
+    await Rsvp.insert(rsvp);
+
+    const inviteRsvp = factory.build('rsvp', {
+      eventId: event.id,
+      inviteId: invite.id,
+    });
+    await Rsvp.insert(inviteRsvp);
+
+    const results = await client.query({
+      query: gql`
+        query eventRsvps($id: ID!) {
+          event(id: $id) {
+            rsvps {
+              count
+              edges {
+                node {
+                  id
+                  user {
+                    id
+                  }
+                  invite {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: { id: event.id },
+    });
+
+    const { data } = results;
+    expect(data.event.rsvps).toMatchObject({
+      count: 2,
+      edges: expect.arrayContaining([
+        expect.objectContaining({
+          node: expect.objectContaining({
+            id: rsvp.id,
+            invite: null,
+            user: expect.objectContaining({
+              id: USER_ID,
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          node: expect.objectContaining({
+            id: inviteRsvp.id,
+            user: null,
+            invite: expect.objectContaining({
+              id: invite.id,
+            }),
+          }),
+        }),
+      ]),
     });
   });
 });
