@@ -33,10 +33,20 @@ _**On Ubuntu**_
     - `GRANT ALL ON DATABASE meetup_now to YOUR_USER_ID`
     - `GRANT ALL ON DATABASE meetup_now_test to YOUR_USER_ID`
 
-### Running migrations
-
+_**On MacOS and Ubuntu**_
 - `yarn migrate:test`
 - `yarn migrate:development`
+
+### Setting up admin
+
+If you install [Meetup Now Admin](https://github.com/meetup/now-admin) in the same directory and build it it will serve at http://localhost:3000/admin
+
+```
+|-now-api
+| \-(yarn server)
+|-now-admin
+| \-dist
+```
 
 ## Usage
 
@@ -45,7 +55,9 @@ _**On Ubuntu**_
 - `yarn build`
 - `yarn server`
 
-The API is now running at http://localhost:3000/graphiql
+The API is now running at http://localhost:3000/graphiql.
+
+If you installed admin, it is now running at http://localhost:3000/admin.
 
 ### Connecting to the API from a device
 
