@@ -1,37 +1,29 @@
-## Install
+# Meetup Now API
 
-1.  https://github.com/asdf-vm/asdf-nodejs
-1.  `yarn install`
-1.  `AWS_PROFILE=prod AWS_REGION=us-east-1 yarn start`
-1.  http://localhost:3000/graphiql
+This repository contains the API code for the Meetup Now app. There are separate repositories for the [app](https://github.com/meetup/now-mobile) and [admin](https://github.com/meetup/now-admin).
 
-## Admin
+## Installation
 
-If you install admin in the same directory and build it, it will serve at http://localhost:3000/admin
+### Installing dependencies
 
-```
-|-now-api
-| \-(yarn server)
-|-now-admin
-| \-dist
-```
+1. Install [yarn](https://yarnpkg.com/en/docs/install#mac-stable).
+1. Install [asdf](https://github.com/asdf-vm/asdf).
+1. Install the [asdf node plugin](https://github.com/asdf-vm/asdf-nodejs).
 
-## Deploy
+> **NOTE:** if command asdf is not found you likely need to source your `.bash_profile` or `.zshrc`.
 
-Deployments are handled by travis via `bin/deploy.sh`
+> **NOTE:** make sure the appropdiate version of node is running: `node -v` should return something like v8.9.4. If it doesn't, run `asdf install` to install the version specified in `.tool-versions`. 
 
-## Postgres
+### Setting up Postgres
 
-### MacOS
-
+_**On MacOS**_
 - `brew install postgresql@9.6`
 - `brew services start postgresql@9.6`
 - `echo 'export PATH="/usr/local/opt/postgresql@9.6/bin:$PATH"' >> ~/.bash_profile`
 - `createdb meetup_now`
 - `createdb meetup_now_test`
 
-### Ubuntu
-
+_**On Ubuntu**_
 - `sudo apt install postgres`
 - `sudo -u postgres -i`
   - `createuser YOUR_USER_ID`
@@ -41,7 +33,37 @@ Deployments are handled by travis via `bin/deploy.sh`
     - `GRANT ALL ON DATABASE meetup_now to YOUR_USER_ID`
     - `GRANT ALL ON DATABASE meetup_now_test to YOUR_USER_ID`
 
-### All
+### Running migrations
 
 - `yarn migrate:test`
 - `yarn migrate:development`
+
+## Usage
+
+### Running the API
+
+- `yarn build`
+- `yarn server`
+
+The API is now running at http://localhost:3000/graphiql
+
+### Connecting to the API from a device
+
+If you want to build the [Meetup Now app] and have it connect to the API you are running locally, simply modify the `.env` file in the `meetup-now` directory: 
+
+```
+# Replace these:
+#NOW_API_URL=https://now.meetup.com/graphql
+#NOW_WS_URL=wss://now.meetup.com/subscriptions
+# With these:
+NOW_API_URL=http://localhost:3000/graphql
+NOW_WS_URL=wss://localhost:3000/subscriptions
+```
+
+> **BEWARE: gradle keeps a build cache.** If you change your `.env` file you need to `cd /android` and `./gradlew clean` before you run `yarn android` or changes wont be picked up.
+
+> **BEWARE: AVDs are virtual machines.** To target an API running on your local machine you need to handle port forwarding: `adb reverse tcp:3000 tcp:3000`.
+
+### Deploying
+
+Deployments are handled by travis via `bin/deploy.sh`
