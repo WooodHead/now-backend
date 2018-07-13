@@ -1,6 +1,6 @@
 # Meetup Now API
 
-This repository contains the API code for the Meetup Now app. There are separate repositories for the [app](https://github.com/meetup/now-mobile) and [admin](https://github.com/meetup/now-admin).
+This repository contains the **API code** for Meetup Now. There is also a [Meetup Now App](https://github.com/meetup/now-mobile) and [Meetup Now Admin](https://github.com/meetup/now-admin).
 
 This README covers: 
 1. [Installation](https://github.com/meetup/now-api#installation)
