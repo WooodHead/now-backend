@@ -2,6 +2,12 @@
 
 This repository contains the API code for the Meetup Now app. There are separate repositories for the [app](https://github.com/meetup/now-mobile) and [admin](https://github.com/meetup/now-admin).
 
+This README covers: 
+1. [Installation](https://github.com/meetup/now-api#installation)
+1. [Usage](https://github.com/meetup/now-api#usage)
+1. [Contributing](https://github.com/meetup/now-api#contributing)
+
+
 ## Installation
 
 ### Installing dependencies
@@ -79,3 +85,9 @@ NOW_WS_URL=wss://localhost:3000/subscriptions
 ### Deploying
 
 Deployments are handled by travis via `bin/deploy.sh`
+
+## Contributing
+
+1. PRs MUST be code reviewed.
+1. PRs SHOULD include test coverage.
+1. PRs SHOULD be rebased against master if there are upstream changes.
