@@ -112,6 +112,9 @@ a:active {
   flex-direction: 'row';
   margin-bottom: 70px;
 }
+.purpleHeader {
+  color: #66f;
+}
 .logo img {
   width: 40px;
 }
