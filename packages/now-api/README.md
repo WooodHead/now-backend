@@ -5,6 +5,7 @@ This repository contains the **API code** for Meetup Now. There is also a [Meetu
 This README covers: 
 1. [Installation](https://github.com/meetup/now-api#installation)
 1. [Usage](https://github.com/meetup/now-api#usage)
+1. [Testing](https://github.com/meetup/now-api#testing)
 1. [Contributing](https://github.com/meetup/now-api#contributing)
 
 
@@ -85,6 +86,14 @@ NOW_WS_URL=wss://localhost:3000/subscriptions
 ### Deploying
 
 Deployments are handled by travis via `bin/deploy.sh`
+
+## Testing
+
+To run ESLint, Jest, and Flow:
+
+`yarn test`
+
+A common cause of seemingly unrelated test failures is a stale db schema. Make sure you have the latest with `yarn migrate:development`.
 
 ## Contributing
 
