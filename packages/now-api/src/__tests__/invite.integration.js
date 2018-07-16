@@ -6,8 +6,10 @@ import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { Rsvp } from '../db/repos';
+import loaders from '../db/loaders';
 import { mockNow, restoreNow } from '../../testutils/date';
 import * as Activity from '../schema/resolvers/Activity';
+import rejectExpiredEventInvites from '../jobs/rejectExpiredEventInvites';
 
 const location = factory.build('location');
 const user = factory.build('user', { id: USER_ID });
@@ -166,6 +168,52 @@ describe('Invitations', () => {
           `GraphQL error: You can't invite a friend to this Meetup at this time.`
         )
       );
+    });
+
+    it('remove expired rsvps', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(20, 1)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+      const eventTomorrow = await buildEventTomorrow();
+
+      const {
+        data: {
+          createEventInvitation: { invitation },
+        },
+      } = await createEventInvite(eventTomorrow.id);
+
+      mockNow(
+        LocalDate.now()
+          .atTime(21, 1)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+
+      await rejectExpiredEventInvites(loaders({ currentUserId: null }));
+
+      const dbRsvps = await Rsvp.all({ eventId: eventTomorrow.id }).orderBy(
+        'inviteId'
+      );
+
+      expect(dbRsvps).toEqual([
+        expect.objectContaining({
+          action: 'expired',
+          eventId: eventTomorrow.id,
+          inviteId: invitation.id,
+          userId: null,
+        }),
+        expect.objectContaining({
+          action: 'expired',
+          eventId: eventTomorrow.id,
+          inviteId: null,
+          userId: USER_ID,
+        }),
+      ]);
     });
 
     it("can't invite twice", async () => {

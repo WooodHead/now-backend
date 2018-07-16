@@ -32,6 +32,7 @@ enum RsvpAction {
   add
   remove
   flake
+  expired
 }
 
 type RsvpLog {
