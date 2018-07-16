@@ -4,6 +4,6 @@ import knexConfig from '../../knexfile';
 
 const sql = knex(knexConfig[process.env.NODE_ENV]);
 
-setPgTypes();
+setPgTypes(sql);
 
 export default sql;

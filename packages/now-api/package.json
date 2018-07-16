@@ -66,7 +66,8 @@
     "stream-to-promise": "^2.2.0",
     "subscriptions-transport-ws": "^0.9.6",
     "util.promisify": "^1.0.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "wkx": "^0.4.5"
   },
   "devDependencies": {
     "apollo-cache-inmemory": "^1.1.7",

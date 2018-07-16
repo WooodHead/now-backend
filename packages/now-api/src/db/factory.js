@@ -112,8 +112,10 @@ Factory.define('location')
   .attr('country', address.countryCode)
   .attr('neighborhood', hacker.noun)
   .attr('foursquareVenueId', md5)
-  .attr('lat', address.latitude)
-  .attr('lng', address.longitude);
+  .attr(
+    'location',
+    () => `SRID=4326;POINT(${address.longitude()} ${address.latitude()})`
+  );
 
 Factory.define('message')
   .option('event', () => ({ id: uuid() }))

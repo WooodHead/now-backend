@@ -13,4 +13,8 @@ export const queries = { location: locationQuery, allLocations, manyLocations };
 
 export const mutations = {};
 
-export const resolvers = {};
+const lng = ({ location }) => location.x;
+const lat = ({ location }) => location.y;
+const geojson = ({ location }) => location.toGeoJSON();
+
+export const resolvers = { lng, lat, geojson };

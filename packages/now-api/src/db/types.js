@@ -9,6 +9,7 @@ import {
   ResolverStyle,
   ZonedDateTime,
 } from 'js-joda';
+import { Geometry } from 'wkx';
 
 const DATE_OID = 1082;
 const TIMESTAMP_OID = 1114;
@@ -34,11 +35,21 @@ const timestamptzFormatter = new DateTimeFormatterBuilder()
   .toFormatter(ResolverStyle.STRICT)
   .withChronology(IsoChronology.INSTANCE);
 
-export const setPgTypes = () => {
+const parseWkb = wkb => Geometry.parse(Buffer.from(wkb, 'hex'));
+
+export const setPgTypes = sql => {
   types.setTypeParser(DATE_OID, parse(LocalDate));
   types.setTypeParser(TIMESTAMP_OID, parse(LocalDateTime, timestampFormatter));
   types.setTypeParser(
     TIMESTAMPTZ_OID,
     parse(ZonedDateTime, timestamptzFormatter)
   );
+
+  sql
+    .select('oid', 'typname')
+    .from('pg_type')
+    .whereIn('typname', ['geometry', 'geography'])
+    .then(t => {
+      t.forEach(({ oid }) => types.setTypeParser(oid, parseWkb));
+    });
 };

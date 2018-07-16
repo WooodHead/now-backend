@@ -55,6 +55,7 @@ export default wrapResolvers({
   User: User.resolvers,
   Invitation: Invitation.resolvers,
   EventMessagesConnection: EventMessagesConnection.resolvers,
+  Location: Location.resolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,

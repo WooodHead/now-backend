@@ -23,6 +23,7 @@ type Location implements Node {
   isFuzzed: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+  geojson: GraphQLJSON
 }
 
 enum LocationOrder {
