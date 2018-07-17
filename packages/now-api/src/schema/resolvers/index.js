@@ -40,6 +40,7 @@ export default wrapResolvers({
     ...Activity.mutations,
     ...Device.mutations,
     ...Event.mutations,
+    ...Location.mutations,
     ...Message.mutations,
     ...Rsvp.mutations,
     ...Photo.mutations,

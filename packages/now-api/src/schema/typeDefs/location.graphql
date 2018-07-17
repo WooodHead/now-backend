@@ -5,11 +5,17 @@ type Query {
     input: AdminInput
     orderBy: LocationOrder
   ): RootLocationsConnection! @admin
+  weworkMarkets(type: String): [String!] @admin
+}
+
+type Mutation {
+  syncWeworkMarket(market: String!): [Location!] @admin
 }
 
 type Location implements Node {
   id: ID!
   foursquareVenueId: String
+  weworkId: String
   lat: Float!
   lng: Float!
   address: String
