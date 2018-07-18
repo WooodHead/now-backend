@@ -7,8 +7,12 @@ import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
-export const AVAILABILITY_HOUR = LocalTime.parse('21:00');
-export const EARLY_AVAILABILITY_HOUR = LocalTime.parse('20:00');
+export const AVAILABILITY_HOUR = LocalTime.parse(
+  process.env.AVAILABILITY_HOUR || '21:00'
+);
+export const EARLY_AVAILABILITY_HOUR = LocalTime.parse(
+  process.env.EARLY_AVAILABILITY_HOUR || '20:00'
+);
 
 export const getToday = () => {
   const now = LocalDateTime.now(NYC_TZ);
