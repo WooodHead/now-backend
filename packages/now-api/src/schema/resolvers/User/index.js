@@ -3,7 +3,13 @@ import { pick } from 'lodash';
 import { getUserRsvps } from '../Rsvp';
 import { getDevices } from '../Device';
 import { computeAge, userIdFromContext, sqlPaginatify } from '../../util';
-import { SQL_TABLES, DELETED_USER_ID } from '../../../db/constants';
+import {
+  SQL_TABLES,
+  DELETED_USER_ID,
+  NOTIFICATION_PREFERENCE_MESSAGES,
+  NOTIFICATION_PREFERENCE_NEW_EVENT,
+  NOTIFICATION_PREFERENCE_REMINDERS,
+} from '../../../db/constants';
 import sql from '../../../db/sql';
 import { User } from '../../../db/repos';
 import { putInOrder } from '../../../util';
@@ -135,9 +141,9 @@ const devices = ({ id }, args, context) => {
 };
 
 const defaultPreferences = {
-  messagesNotification: true,
-  newEventNotification: true,
-  remindersNotification: true,
+  [NOTIFICATION_PREFERENCE_MESSAGES]: true,
+  [NOTIFICATION_PREFERENCE_NEW_EVENT]: true,
+  [NOTIFICATION_PREFERENCE_REMINDERS]: true,
 };
 
 const fillInDefaultPreferences = (

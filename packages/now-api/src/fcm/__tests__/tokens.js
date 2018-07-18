@@ -1,6 +1,6 @@
 import sql from '../../db/sql';
 import { SQL_TABLES } from '../../db/constants';
-import { getTokensForEvent } from '../tokens';
+import { getTokensForEvent, getTokensForRsvp } from '../tokens';
 import factory from '../../db/factory';
 
 const users = factory.buildList('user', 3);
@@ -37,8 +37,7 @@ beforeAll(() =>
         device3a,
       ]),
     ])
-  )
-);
+  ));
 afterAll(() => truncateTables());
 
 describe('getTokensForEvent', () => {
@@ -67,5 +66,20 @@ describe('getTokensForEvent', () => {
     expect(tokens).toEqual(
       expect.arrayContaining([device2a.token, device2b.token])
     );
+  });
+});
+
+describe('getTokensForRsvp', () => {
+  it('returns tokens for rsvp', async () => {
+    const tokens = await getTokensForRsvp(mockRsvp2.id, '');
+
+    expect(tokens).toHaveLength(2);
+    expect(tokens).toEqual(
+      expect.arrayContaining([device2a.token, device2b.token])
+    );
+  });
+  it('ignores tokens if pref set', async () => {
+    const tokens = await getTokensForEvent(mockRsvp1.id, 'receiveAlerts');
+    expect(tokens).toHaveLength(0);
   });
 });

@@ -1,6 +1,7 @@
 import { messaging } from './client';
 import { getTokensForEvent } from './tokens';
 import { Activity, Event, User } from '../db/repos';
+import { NOTIFICATION_PREFERENCE_MESSAGES } from '../db/constants';
 
 const getEventAndActivity = eventId =>
   Event.byId(eventId).then(event =>
@@ -12,7 +13,7 @@ const getEventAndActivity = eventId =>
 
 const sendChatNotif = ({ eventId, userId, text }) =>
   Promise.all([
-    getTokensForEvent(eventId, 'messagesNotification', [userId]),
+    getTokensForEvent(eventId, NOTIFICATION_PREFERENCE_MESSAGES, [userId]),
     getEventAndActivity(eventId),
     User.byId(userId),
   ])

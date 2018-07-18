@@ -7,6 +7,10 @@ import makeLoaders from '../db/loaders';
 import { Invitation, Event } from '../db/repos';
 import sql from '../db/sql';
 import { notifyEventChange } from '../schema/resolvers/Event';
+import { sendRsvpNotif } from '../fcm';
+
+const EXPIRE_MESSAGE =
+  'Your friend has not accepted your invite. You will have to join solo if spots are available.';
 
 const rejectExpiredEventInvites = async () => {
   const loaders = makeLoaders({});
@@ -38,10 +42,20 @@ const rejectExpiredEventInvites = async () => {
         .forUpdate();
 
       // Inviter rsvp
-      await createRsvp(trx, { eventId, userId: inviterId }, 'expired', loaders);
+      const inviterRsvpId = await createRsvp(
+        trx,
+        { eventId, userId: inviterId },
+        'expired',
+        loaders
+      );
       // Invited rsvp placeholder
       await createRsvp(trx, { eventId, inviteId: id }, 'expired', loaders);
       notifyEventChange(eventId);
+      await sendRsvpNotif({
+        rsvpId: inviterRsvpId,
+        eventId,
+        text: EXPIRE_MESSAGE,
+      });
     })
   );
 
