@@ -1,12 +1,15 @@
+// @flow
 import { ZonedDateTime, ZoneId } from 'js-joda';
 
 import { createRsvp } from '../schema/resolvers/Rsvp';
 import { EVENT_INVITE_TYPE } from '../schema/resolvers/Invitation';
+import makeLoaders from '../db/loaders';
 import { Invitation, Event } from '../db/repos';
 import sql from '../db/sql';
 import { notifyEventChange } from '../schema/resolvers/Event';
 
-const rejectExpiredEventInvites = async loaders => {
+const rejectExpiredEventInvites = async () => {
+  const loaders = makeLoaders({});
   const expiredEventInvites = await Invitation.all({
     type: EVENT_INVITE_TYPE,
     usedAt: null,

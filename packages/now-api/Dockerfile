@@ -21,6 +21,7 @@ COPY knexfile.js .
 COPY migrations migrations
 COPY public public
 COPY bin/start.sh .
+COPY cron.yaml .
 
 RUN rm -rf build
 USER node

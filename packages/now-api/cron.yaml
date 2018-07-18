@@ -1,0 +1,5 @@
+version: 1
+cron:
+  - name: "rejectExpiredEventInvites"
+    url: "/jobs/rejectExpiredEventInvites"
+    schedule: "0 0 * * *"

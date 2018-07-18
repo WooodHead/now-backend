@@ -21,6 +21,7 @@ import resizer from './resizer';
 import loaders from './db/loaders';
 import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 import { endpoint as auth0Endpoint } from './auth0';
+import jobs from './jobs';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -49,6 +50,10 @@ app.use((req, res, next) => {
     next();
   }
 });
+
+if (isDev || process.env.WORKER_NODE === 'true') {
+  app.post('/jobs/:name', jobs);
+}
 
 const buildUserForContext = (req, otherContext = {}) => {
   const currentUserAuth0Id = get(req, ['user', 'sub']);

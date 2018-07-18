@@ -4,8 +4,7 @@ set -e # exit on any errors
 # license: public domain
 
 APP=$1
-EB_ENV=$2
-VERSION=$3
+VERSION=$2
 AWS_ACCOUNT_ID=212646169882
 EB_BUCKET=elasticbeanstalk-us-east-1-212646169882
 ZIP=$VERSION.zip
@@ -29,7 +28,7 @@ sed -i='' "s/<NAME>/$APP/" Dockerrun.aws.json
 sed -i='' "s/<TAG>/$VERSION/" Dockerrun.aws.json
 
 # Zip up the Dockerrun file (feel free to zip up an .ebextensions directory with it)
-zip -r $ZIP Dockerrun.aws.json .ebextensions/.config .ebextensions/*
+zip -r $ZIP Dockerrun.aws.json .ebextensions/.config .ebextensions/* cron.yaml
 
 aws s3 cp $ZIP s3://$EB_BUCKET/$ZIP
 
@@ -38,5 +37,7 @@ aws elasticbeanstalk create-application-version --application-name $APP \
     --version-label $VERSION --source-bundle S3Bucket=$EB_BUCKET,S3Key=$ZIP
 
 # Update the environment to use the new application version
-aws elasticbeanstalk update-environment --environment-name $EB_ENV \
-      --version-label $VERSION
+for EB_ENV in "${@:3:99}"; do
+  aws elasticbeanstalk update-environment --environment-name $EB_ENV \
+        --version-label $VERSION
+done
