@@ -175,4 +175,38 @@ describe('user', () => {
     const dbUser = await User.byId(id);
     expect(pick(dbUser, ['photoPreview'])).toMatchSnapshot();
   });
+
+  it.each([
+    [
+      'A bio.\nWith linebreaks.\nBetween sentences.', // User input
+      'A bio. With linebreaks. Between sentences.', // Desired output
+    ],
+    [
+      'A bio with a lot \n\n\n\n\n of empty space.',
+      'A bio with a lot of empty space.',
+    ],
+    ['A bio   with   uneven   spaces.', 'A bio with uneven spaces.'],
+    ['\n\n\n\n\n\n\n', ' '],
+  ])(
+    'removes linebreaks and extra spaces from new user bio',
+    async (userInput, desiredOutput) => {
+      const userId = uuid();
+      const bioUser = factory.build('user', { id: userId, bio: userInput });
+      await sql(SQL_TABLES.USERS).insert(bioUser);
+
+      const results = await client.query({
+        query: gql`
+          query getUser($id: ID!) {
+            user(id: $id) {
+              bio
+            }
+          }
+        `,
+        variables: { id: userId },
+      });
+
+      const { data } = await results;
+      expect(data.user.bio).toEqual(desiredOutput);
+    }
+  );
 });
