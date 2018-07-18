@@ -125,6 +125,8 @@ const photo = ({ id, photoId, photoPreview }, args, ctx) => {
 
 const age = ({ birthday }) => (birthday ? computeAge(birthday) : null);
 
+const trimBio = ({ bio }) => (bio ? bio.replace(/\s+/g, ' ') : null);
+
 const devices = ({ id }, args, context) => {
   if (id === userIdFromContext(context)) {
     return getDevices(id);
@@ -155,6 +157,7 @@ export const resolvers = {
   rsvps,
   photo,
   age,
+  bio: trimBio,
   devices,
   preferences: fillInDefaultPreferences,
   isSelf,
