@@ -186,7 +186,8 @@ describe('user', () => {
       'A bio with a lot of empty space.',
     ],
     ['A bio   with   uneven   spaces.', 'A bio with uneven spaces.'],
-    ['\n\n\n\n\n\n\n', ' '],
+    ['\n\n\n\n\n\n\n', null],
+    ['', null],
   ])(
     'removes linebreaks and extra spaces from new user bio',
     async (userInput, desiredOutput) => {
