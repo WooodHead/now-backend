@@ -122,7 +122,7 @@ export const resolvers = { event, user, invite };
 export const mutations = { addRsvp, removeRsvp };
 
 export const getEventRsvps = ({ eventId, first, last, after, before }) =>
-  sqlPaginatify('userId', Rsvp.all({ action: 'add', eventId }), {
+  sqlPaginatify('id', Rsvp.all({ action: 'add', eventId }), {
     first,
     last,
     after,
