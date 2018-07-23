@@ -28,7 +28,7 @@ after_success:
   - yarn coveralls < coverage/lcov.info
 deploy:
   - provider: script
-    script: bin/deploy.sh now-api $TRAVIS_BUILD_NUMBER-`git rev-parse --short HEAD` now-api-prod now-api-jobs
+    script: bin/deploy.sh now-api $TRAVIS_BUILD_NUMBER-`git rev-parse --short HEAD` now-api-prod now-api-jobs now-api-staging
     skip_cleanup: true
     on:
       branch: master

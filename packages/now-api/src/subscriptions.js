@@ -8,14 +8,14 @@ const memory = () => new PubSub();
 const redis = () =>
   new RedisPubSub({
     publisher: new Redis({
-      host: 'now-pubsub-redis.int.meetup.com',
+      host: process.env.REDIS_PUBLISHER,
       port: 6379,
       retry_strategy: ({ attempt }) =>
         // reconnect after
         Math.max(attempt * 100, 3000),
     }),
     subscriber: new Redis({
-      host: 'now-pubsub-redis-ro.int.meetup.com',
+      host: process.env.REDIS_SUBSCRIBER,
       port: 6379,
       retry_strategy: ({ attempt }) =>
         // reconnect after
