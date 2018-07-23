@@ -1,0 +1,7 @@
+type Mutation {
+  rejectExpiredEventInvites: JobsResponse @admin
+}
+
+type JobsResponse {
+  success: Boolean
+}

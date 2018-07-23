@@ -13,6 +13,7 @@ import * as Photo from './Photo';
 import * as Report from './Report';
 import * as Location from './Location';
 import * as Invitation from './Invitation';
+import * as Jobs from './Jobs';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
@@ -47,6 +48,7 @@ export default wrapResolvers({
     ...User.mutations,
     ...Report.mutations,
     ...Invitation.mutations,
+    ...Jobs.mutations,
   },
   Activity: Activity.resolvers,
   Device: Device.resolvers,

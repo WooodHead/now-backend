@@ -8,9 +8,10 @@ import location from './location.graphql';
 import invitation from './invitation.graphql';
 import user from './user.graphql';
 import message from './message.graphql';
+import jobs from './jobs.graphql';
 
 export default mergeTypes(
-  [base, activity, event, rsvp, location, invitation, user, message],
+  [base, activity, event, rsvp, location, invitation, user, message, jobs],
   {
     all: true,
   }
