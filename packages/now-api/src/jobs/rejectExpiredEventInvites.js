@@ -1,5 +1,6 @@
 // @flow
 import { ZonedDateTime, ZoneId } from 'js-joda';
+import { uniq } from 'lodash';
 
 import { createRsvp } from '../schema/resolvers/Rsvp';
 import { EVENT_INVITE_TYPE } from '../schema/resolvers/Invitation';
@@ -35,36 +36,43 @@ const rejectExpiredEventInvites = async () => {
    * send notification to inviter
    * notify event update 
    */
-  const expires = expiredEventInvites.map(async ({ id, eventId, inviterId }) =>
-    sql.transaction(async trx => {
-      await Event.byId(eventId)
-        .transacting(trx)
-        .forUpdate();
+  const expires = await sql.transaction(async trx =>
+    Promise.all(
+      expiredEventInvites.map(async ({ id, eventId, inviterId }) => {
+        await Event.byId(eventId)
+          .transacting(trx)
+          .forUpdate();
 
-      // Inviter rsvp
-      const inviterRsvpId = await createRsvp(
-        trx,
-        { eventId, userId: inviterId, ignoreVisible: true },
-        'expired',
-        loaders
-      );
-      // Invited rsvp placeholder
-      await createRsvp(
-        trx,
-        { eventId, inviteId: id, ignoreVisible: true },
-        'expired',
-        loaders
-      );
-      notifyEventChange(eventId);
-      await sendRsvpNotif({
+        // Inviter rsvp
+        const inviterRsvpId = await createRsvp(
+          trx,
+          { eventId, userId: inviterId, ignoreVisible: true },
+          'expired',
+          loaders
+        );
+        // Invited rsvp placeholder
+        await createRsvp(
+          trx,
+          { eventId, inviteId: id, ignoreVisible: true },
+          'expired',
+          loaders
+        );
+        return { eventId, inviterRsvpId };
+      })
+    )
+  );
+
+  uniq(expires.map(({ eventId }) => eventId)).forEach(notifyEventChange);
+
+  await Promise.all(
+    expires.map(({ inviterRsvpId, eventId }) =>
+      sendRsvpNotif({
         rsvpId: inviterRsvpId,
         eventId,
         text: EXPIRE_MESSAGE,
-      });
-    })
+      })
+    )
   );
-
-  await Promise.all(expires);
 };
 
 export default rejectExpiredEventInvites;
