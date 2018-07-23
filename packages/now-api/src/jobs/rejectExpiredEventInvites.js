@@ -44,12 +44,17 @@ const rejectExpiredEventInvites = async () => {
       // Inviter rsvp
       const inviterRsvpId = await createRsvp(
         trx,
-        { eventId, userId: inviterId },
+        { eventId, userId: inviterId, ignoreVisible: true },
         'expired',
         loaders
       );
       // Invited rsvp placeholder
-      await createRsvp(trx, { eventId, inviteId: id }, 'expired', loaders);
+      await createRsvp(
+        trx,
+        { eventId, inviteId: id, ignoreVisible: true },
+        'expired',
+        loaders
+      );
       notifyEventChange(eventId);
       await sendRsvpNotif({
         rsvpId: inviterRsvpId,

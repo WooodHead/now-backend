@@ -15,11 +15,12 @@ const user = (rsvp, args, context) =>
 
 export const createRsvp = async (
   trx,
-  { eventId, userId, inviteId },
+  { eventId, userId, inviteId, ignoreVisible = false },
   action,
   loaders
 ) => {
-  const rsvpEvent = await visibleEventsQuery()
+  const query = ignoreVisible ? Event.get : visibleEventsQuery;
+  const rsvpEvent = await query()
     .where({ id: eventId })
     .transacting(trx)
     .forUpdate()

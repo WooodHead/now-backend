@@ -2,5 +2,6 @@
 import rejectExpiredEventInvites from '../../jobs/rejectExpiredEventInvites';
 
 export const mutations = {
-  rejectExpiredEventInvites: () => rejectExpiredEventInvites().then(() => true),
+  rejectExpiredEventInvites: () =>
+    rejectExpiredEventInvites().then(() => ({ success: true })),
 };
