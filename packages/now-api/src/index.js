@@ -144,6 +144,12 @@ app.use('/public', express.static('public'));
 app.use('^/$', (req, res) => {
   res.sendFile(path.join(process.cwd(), '/public/index.html'));
 });
+app.use('^/invitation', (req, res) => {
+  res.sendFile(path.join(process.cwd(), '/public/invitation.html'));
+});
+app.use('^/faq', (req, res) => {
+  res.sendFile(path.join(process.cwd(), '/public/faq.html'));
+});
 app.use('^/favicon.ico$', (req, res) => {
   res.sendFile(path.join(process.cwd(), '/public/favicon.ico'));
 });
