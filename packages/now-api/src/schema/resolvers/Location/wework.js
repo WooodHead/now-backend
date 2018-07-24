@@ -1,6 +1,6 @@
 import rp from 'request-promise-native';
 import uuid from 'uuid/v4';
-import sql from '../../../db/sql';
+import sql, { makepoint } from '../../../db/sql';
 
 const GEOGROUPINGS_ENDPOINT =
   'https://api-proxy.wework.com/locations/api/v1/geogroupings';
@@ -55,10 +55,10 @@ export const syncWeworkMarket = (root, { market }, { loaders }) => {
               country: 'United States', // FIXME: wework API for this is wacky, stop hardcoding when we expand internationally
               state: building.state,
               postalCode: building.zip,
-              location: trx.raw('st_makepoint(?, ?)', [
+              location: makepoint(
                 Number(building.longitude),
-                Number(building.latitude),
-              ]),
+                Number(building.latitude)
+              ),
               name: `WeWork ${building.name}`,
               updatedAt: trx.raw('now()'),
               weworkId: building.id,

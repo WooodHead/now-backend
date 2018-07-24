@@ -72,7 +72,6 @@ const generateEvent = (venue, id, activityDate) => {
       postalCode: venue.postalCode,
       country: venue.country,
       neighborhood: venue.crossStreet,
-      isFuzzed: false,
     },
   };
   vorpal.log(`Generating event for ${id} as ${JSON.stringify(input)}`);

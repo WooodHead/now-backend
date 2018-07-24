@@ -10,6 +10,8 @@ type Query {
 
 type Mutation {
   syncWeworkMarket(market: String!): [Location!] @admin
+  updateLocation(input: UpdateLocationInput!): UpdateLocationPayload @admin
+  createLocation(input: CreateLocationInput!): UpdateLocationPayload @admin
 }
 
 type Location implements Node {
@@ -26,7 +28,6 @@ type Location implements Node {
   postalCode: String
   country: String
   neighborhood: String
-  isFuzzed: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
   geojson: GraphQLJSON
@@ -59,10 +60,27 @@ type RootLocationsEdge implements Edge {
   node: Location!
 }
 
-input LocationInput {
+input CreateLocationInput {
   foursquareVenueId: String
-  lat: Float!
-  lng: Float!
+  lat: Float
+  lng: Float
+  geojson: GraphQLJSON
+  address: String
+  name: String!
+  crossStreet: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  neighborhood: String
+}
+
+input UpdateLocationInput {
+  id: ID!
+  foursquareVenueId: String
+  lat: Float
+  lng: Float
+  geojson: GraphQLJSON
   address: String
   name: String
   crossStreet: String
@@ -71,5 +89,8 @@ input LocationInput {
   postalCode: String
   country: String
   neighborhood: String
-  isFuzzed: Boolean
+}
+
+type UpdateLocationPayload {
+  location: Location
 }

@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parseInputGeometry handles empty input when told to 1`] = `"Either lat/lng or geojson is required."`;
+
+exports[`parseInputGeometry parses geojson 1`] = `"POINT(-73.9961013793945 40.7256011962891)"`;
+
+exports[`parseInputGeometry parses lat/lng 1`] = `"POINT(-73.9961013793945 40.7256011962891)"`;
+
+exports[`parseInputGeometry rejects invalid inputs 1`] = `"Invalid longitude."`;
+
+exports[`parseInputGeometry rejects invalid inputs 2`] = `"Invalid latitude."`;
+
+exports[`parseInputGeometry rejects invalid inputs 3`] = `"Either lat/lng or geojson is required, but not both."`;
+
+exports[`parseInputGeometry rejects invalid inputs 4`] = `"Only Point geometries are accepted."`;
