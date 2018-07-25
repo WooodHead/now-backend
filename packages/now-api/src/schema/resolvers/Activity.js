@@ -5,6 +5,7 @@ import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
+import { expiredUserAgent } from '../../util';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
 export const AVAILABILITY_HOUR = LocalTime.parse(
@@ -31,7 +32,12 @@ const manyActivities = (root, { ids }, { loaders }) =>
 const activityQuery = (root, { id }, { loaders }) =>
   loaders.activities.load(id);
 
-const todayActivity = () => Activity.get({ activityDate: getToday() });
+const todayActivity = (root, args, { userAgent }) => {
+  if (expiredUserAgent(userAgent)) {
+    return null;
+  }
+  return Activity.get({ activityDate: getToday() });
+};
 
 export const queries = {
   todayActivity,

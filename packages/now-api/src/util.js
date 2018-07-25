@@ -44,3 +44,49 @@ export const ellipsize = (text, length) =>
   text.length > length
     ? truncate(text, { length, omission: '…', separator: unicodeSpace })
     : text;
+
+export const MIN_IOS = 1980;
+export const MIN_ANDROID = 12791;
+
+export const expiredUserAgent = ({ client, platform, buildNumber }) => {
+  if (client !== 'Meetup-Now' || buildNumber === 1) {
+    return false;
+  }
+  if (platform === 'Ios' && buildNumber < MIN_IOS) {
+    return true;
+  } else if (platform !== 'Ios' && buildNumber < MIN_ANDROID) {
+    return true;
+  }
+
+  return false;
+};
+
+const USER_AGENT_REGEX = /^([^/]*)\/([^ ]*) ([^/]*)\/([^ ]*) Build ([\d.]+)$/;
+export const processUserAgent = (userAgent = '') => {
+  // Meetup-Now/1.1.0 Ios/11.4 Build 1
+  const matched = userAgent.match(USER_AGENT_REGEX);
+  // 0:"Meetup-Now/1.1.0 Ios/11.4 Build 1"
+  // 1:"Meetup-Now"
+  // 2:"1.1.0"
+  // 3:"Ios"
+  // 4:"11.4"
+  // 5:"1"
+
+  if (!matched || matched[1] !== 'Meetup-Now') {
+    return {
+      client: 'unknown',
+      clientVersion: 'unknown',
+      platform: 'unknown',
+      osVersion: 'unknown',
+      buildNumber: 'unknown',
+    };
+  }
+
+  return {
+    client: matched[1],
+    clientVersion: matched[2],
+    platform: matched[3],
+    osVersion: matched[4],
+    buildNumber: Number(matched[5]),
+  };
+};

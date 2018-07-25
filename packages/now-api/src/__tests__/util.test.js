@@ -1,4 +1,13 @@
-import { splitName, concatMapOfArrays, putInOrder, ellipsize } from '../util';
+import {
+  splitName,
+  concatMapOfArrays,
+  putInOrder,
+  ellipsize,
+  MIN_IOS,
+  MIN_ANDROID,
+  expiredUserAgent,
+  processUserAgent,
+} from '../util';
 
 describe('splitName', () => {
   it('splits two words into two words', () => {
@@ -58,5 +67,65 @@ describe('ellipsize', () => {
     expect(ellipsize('hello this is a long sentence', 13)).toEqual(
       'hello this…'
     );
+  });
+});
+
+describe('expiredUserAgent', () => {
+  it.each([
+    [{ client: 'not-meetup' }, false],
+    [{ client: 'Meetup-Now', buildNumber: 1 }, false],
+    [
+      { client: 'Meetup-Now', buildNumber: MIN_ANDROID, platform: 'Android' },
+      false,
+    ],
+    [
+      {
+        client: 'Meetup-Now',
+        buildNumber: MIN_ANDROID - 1,
+        platform: 'Android',
+      },
+      true,
+    ],
+    [
+      {
+        client: 'Meetup-Now',
+        buildNumber: MIN_IOS,
+        platform: 'Ios',
+      },
+      false,
+    ],
+    [
+      {
+        client: 'Meetup-Now',
+        buildNumber: MIN_IOS - 1,
+        platform: 'Ios',
+      },
+      true,
+    ],
+  ])('returns the right values', (userAgent, expected) => {
+    expect(expiredUserAgent(userAgent)).toBe(expected);
+  });
+});
+
+describe('processUserAgent', () => {
+  it('processes Ios user agent', () => {
+    expect(processUserAgent('Meetup-Now/1.1.0 Ios/11.4 Build 1')).toEqual({
+      buildNumber: 1,
+      client: 'Meetup-Now',
+      clientVersion: '1.1.0',
+      osVersion: '11.4',
+      platform: 'Ios',
+    });
+  });
+  it('processes Android user agent', () => {
+    expect(
+      processUserAgent('Meetup-Now/1.1.0 Android/8.0.0 Build 12691')
+    ).toEqual({
+      buildNumber: 12691,
+      client: 'Meetup-Now',
+      clientVersion: '1.1.0',
+      osVersion: '8.0.0',
+      platform: 'Android',
+    });
   });
 });

@@ -31,6 +31,7 @@ interface Connection {
 
 type Query {
   serverMessages: ServerMessages
+  userAgent: UserAgent
 }
 
 type Mutation {
@@ -72,6 +73,14 @@ type Photo {
   type: String @deprecated
   preview: String
   blocked: Boolean
+}
+
+type UserAgent {
+  client: String
+  clientVersion: String
+  platform: String
+  osVersion: String
+  buildNumber: Float
 }
 
 enum DeviceType {

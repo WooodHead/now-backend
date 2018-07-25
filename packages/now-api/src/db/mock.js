@@ -21,6 +21,13 @@ let isAdmin = false;
 export const setAdmin = b => {
   isAdmin = b;
 };
+const userAgent = {
+  client: 'unknown',
+  clientVersion: 'unknown',
+  platform: 'unknown',
+  osVersion: 'unknown',
+  buildNumber: 'unknown',
+};
 
 export const client = new ApolloClient({
   cache: apolloCache,
@@ -31,6 +38,7 @@ export const client = new ApolloClient({
       user: { id: USER_ID },
       loaders: loaders({ currentUserId: USER_ID }),
       scopes: isAdmin ? ['admin'] : [],
+      userAgent,
     }),
   }),
 });
@@ -44,6 +52,7 @@ export const newUserClient = (currentUserAuth0Id, currentUserId) =>
         token: null,
         currentUserAuth0Id,
         loaders: loaders({ currentUserId }),
+        userAgent,
       },
     }),
   });

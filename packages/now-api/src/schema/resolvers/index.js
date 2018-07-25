@@ -14,6 +14,7 @@ import * as Report from './Report';
 import * as Location from './Location';
 import * as Invitation from './Invitation';
 import * as Jobs from './Jobs';
+import * as ServerMessages from './ServerMessages';
 import Name from './Name';
 import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
@@ -27,11 +28,8 @@ export default wrapResolvers({
     ...Message.queries,
     ...Location.queries,
     ...Invitation.queries,
-    serverMessages: () => ({
-      noActivityTitle: 'Sorry, no meetup today!',
-      noActivityMessage:
-        'We’re either on vacay or planning something extra special for you.',
-    }),
+    ...ServerMessages.queries,
+    userAgent: (root, args, { userAgent }) => userAgent,
   },
   Subscription: {
     ...Event.subscriptions,

@@ -22,6 +22,7 @@ import loaders from './db/loaders';
 import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 import { endpoint as auth0Endpoint } from './auth0';
 import jobs from './jobs';
+import { processUserAgent } from './util';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -59,6 +60,7 @@ const buildUserForContext = (req, otherContext = {}) => {
   const currentUserAuth0Id = get(req, ['user', 'sub']);
   const scope = get(req, ['user', 'scope']) || '';
   const context = {
+    userAgent: processUserAgent(req.get('User-Agent')),
     ...otherContext,
     currentUserAuth0Id,
     user: undefined,
