@@ -2,4 +2,7 @@ version: 1
 cron:
   - name: "rejectExpiredEventInvites"
     url: "/jobs/rejectExpiredEventInvites"
-    schedule: "0 0 * * *"
+    schedule: "0 * * * *"
+  - name: "sendEventReminders"
+    url: "/jobs/sendEventReminders"
+    schedule: "0/15 * * * *"

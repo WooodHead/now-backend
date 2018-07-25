@@ -2,10 +2,12 @@
 import type { $Request, $Response, NextFunction } from 'express';
 import rejectExpiredEventInvites from './rejectExpiredEventInvites';
 import sayHello from './sayHello';
+import sendEventReminders from './sendEventReminders';
 
 const jobs: { [string]: () => Promise<any> } = {
   rejectExpiredEventInvites,
   sayHello,
+  sendEventReminders,
 };
 
 export default (req: $Request, res: $Response, next: NextFunction) => {

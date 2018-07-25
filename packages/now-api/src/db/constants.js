@@ -10,6 +10,7 @@ export const SQL_TABLES = {
   RSVP_LOG: 'rsvpLog',
   INVITATIONS: 'invitations',
   EVENT_USER_METADATA: 'eventUserMetadata',
+  SENT_NOTIFICATIONS: 'sentNotifications',
 };
 
 export const NOW_BOT_USER_ID = 'ec6c81d8-7bb4-11e8-ba5d-2bc28925de05';
