@@ -10,6 +10,9 @@ type Mutation {
   createAppInvitation(
     input: CreateAppInvitationInput!
   ): CreateAppInvitationPayload @admin
+  createManyAppInvitations(
+    input: CreateManyAppInvitationsInput!
+  ): CreateManyAppInvitationsPayload @admin
   createEventInvitation(
     input: CreateEventInvitationInput!
   ): CreateAppInvitationPayload
@@ -37,6 +40,7 @@ type AppInvitation implements Invitation & Node {
   event: Event
   message: String
 }
+
 type EventInvitation implements Invitation & Node {
   id: ID!
   code: String!
@@ -63,12 +67,22 @@ input CreateAppInvitationInput {
   expiresAt: ZonedDateTime
 }
 
+input CreateManyAppInvitationsInput {
+  notes: [String]
+  expiresAt: ZonedDateTime
+}
+
 input CreateEventInvitationInput {
   eventId: String!
 }
 
 type CreateAppInvitationPayload {
   invitation: Invitation
+}
+
+type CreateManyAppInvitationsPayload {
+  invitations: [Invitation!]!
+  codes: [String!]!
 }
 
 type AppInvitationConnection implements Connection {

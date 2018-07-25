@@ -28,8 +28,8 @@ const valid = builder =>
     .whereNull('usedAt')
     .whereRaw('(?? >= now() or ?? is null)', ['expiresAt', 'expiresAt']);
 
-export const findValidCode = (code, ...fields) =>
-  valid(Invitation.all({ code })).first(...fields);
+export const findValidCode = (code, trx, ...fields) =>
+  valid(Invitation.withTransaction(trx).all({ code })).first(...fields);
 
 const canInviteNow = date => {
   const now = LocalDateTime.now(NYC_TZ);
@@ -87,12 +87,14 @@ export const queries = { invitation: invitationQuery, openAppInvitations };
 // regex which matches a string with all the same character, like 444444
 const allTheSame = /^(.)\1*$/;
 
-export const generateCode = async () => {
+export const generateCode = async trx => {
   for (let i = 0; i < MAX_CODE_RETRIES; i += 1) {
     const num = await randomNumber(0, 999999);
     const trialCode = leftPad(String(num), 6, '0');
-    const existing = await findValidCode(trialCode, 'id');
-    if (!existing && !allTheSame.test(trialCode)) return trialCode;
+    const existing = await findValidCode(trialCode, trx, 'id');
+    if (!existing && !allTheSame.test(trialCode)) {
+      return trialCode;
+    }
   }
   throw new Error("Couldn't generate code.");
 };
@@ -164,28 +166,53 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
     };
   });
 
-const createAppInvitation = async (
-  root,
-  { input: { notes, expiresAt } },
-  context
-) => {
+const makeAppInvitation = async (trx, expiresAt, inviterId, notes) => {
   const id = uuid();
   const code = await generateCode();
   const newInvitation = {
     id,
     code,
     type: APP_INVITE_TYPE,
-    inviterId: userIdFromContext(context),
+    inviterId,
     expiresAt: (expiresAt || ZonedDateTime.now().plusWeeks(1))
       .toInstant()
       .toString(),
     notes,
     eventId: null,
   };
-  await Invitation.insert(newInvitation);
-  return {
+  await Invitation.withTransaction(trx).insert(newInvitation);
+
+  return id;
+};
+
+const createAppInvitation = (
+  root,
+  { input: { notes, expiresAt } },
+  context
+) => {
+  const inviterId = userIdFromContext(context);
+  return makeAppInvitation(undefined, expiresAt, inviterId, notes).then(id => ({
     invitation: Invitation.byId(id),
-  };
+  }));
+};
+
+const createManyAppInvitations = (
+  root,
+  { input: { notes, expiresAt } },
+  context
+) => {
+  const inviterId = userIdFromContext(context);
+  return sql
+    .transaction(trx =>
+      Promise.all(
+        notes.map(note => makeAppInvitation(trx, expiresAt, inviterId, note))
+      )
+    )
+    .then(Invitation.batch)
+    .then(invitations => ({
+      invitations,
+      codes: invitations.map(({ code }) => code),
+    }));
 };
 
 export const consumeInvitation = (id, userId, trx) =>
@@ -202,4 +229,8 @@ export const consumeInvitation = (id, userId, trx) =>
           : Promise.reject(new Error('Invalid invitation'))
     );
 
-export const mutations = { createAppInvitation, createEventInvitation };
+export const mutations = {
+  createAppInvitation,
+  createManyAppInvitations,
+  createEventInvitation,
+};
