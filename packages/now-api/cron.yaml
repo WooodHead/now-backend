@@ -5,4 +5,4 @@ cron:
     schedule: "0 * * * *"
   - name: "sendEventReminders"
     url: "/jobs/sendEventReminders"
-    schedule: "0/15 * * * *"
+    schedule: "*/15 * * * *"
