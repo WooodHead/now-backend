@@ -60,7 +60,7 @@ const buildUserForContext = (req, otherContext = {}) => {
   const currentUserAuth0Id = get(req, ['user', 'sub']);
   const scope = get(req, ['user', 'scope']) || '';
   const context = {
-    userAgent: processUserAgent(req.get('User-Agent')),
+    userAgent: processUserAgent(req && req.get('User-Agent')),
     ...otherContext,
     currentUserAuth0Id,
     user: undefined,
