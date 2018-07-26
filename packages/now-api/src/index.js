@@ -190,7 +190,10 @@ SubscriptionServer.create(
     subscribe,
     onConnect: ({ token }) =>
       new Promise((resolve, reject) => {
-        const req = { headers: { authorization: `Bearer ${token}` } };
+        const req = {
+          headers: { authorization: `Bearer ${token}` },
+          get: () => {},
+        };
         checkJwt(req, null, err => {
           if (err) {
             reject(new Error('error authorizing'));
