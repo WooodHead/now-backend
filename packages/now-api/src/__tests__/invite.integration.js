@@ -216,7 +216,7 @@ describe('Invitations', () => {
       ]);
     });
 
-    it("can't invite twice", async () => {
+    it('invites are idempotent per user and event', async () => {
       mockNow(
         LocalDate.now()
           .atTime(20, 1)
@@ -226,13 +226,10 @@ describe('Invitations', () => {
       );
       const eventTomorrow = await buildEventTomorrow();
 
-      await createEventInvite(eventTomorrow.id);
+      const { data: firstInvite } = await createEventInvite(eventTomorrow.id);
+      const { data: secondInvite } = await createEventInvite(eventTomorrow.id);
 
-      await expect(createEventInvite(eventTomorrow.id)).rejects.toEqual(
-        new Error(
-          `GraphQL error: You're only allowed to invite one person to a Meetup.`
-        )
-      );
+      expect(secondInvite).toEqual(firstInvite);
     });
   });
 });

@@ -9,11 +9,7 @@ import { Invitation } from '../../db/repos';
 import { userQuery } from './User';
 import { createRsvp } from './Rsvp';
 import { sqlPaginatify, userIdFromContext } from '../util';
-import {
-  hasInvitedToEvent,
-  notifyEventChange,
-  visibleEventsQuery,
-} from './Event';
+import { notifyEventChange, visibleEventsQuery } from './Event';
 import { EARLY_AVAILABILITY_HOUR, AVAILABILITY_HOUR, NYC_TZ } from './Activity';
 
 const MAX_CODE_RETRIES = 6;
@@ -121,8 +117,13 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
       throw new Error("You can't invite a friend to this Meetup at this time.");
     }
 
-    if (await hasInvitedToEvent(eventId, inviterId)) {
-      throw new Error("You're only allowed to invite one person to a Meetup.");
+    const previousInvite = await Invitation.get({
+      eventId,
+      inviterId,
+    });
+
+    if (previousInvite) {
+      return { invitation: previousInvite };
     }
 
     const id = uuid();
