@@ -10,6 +10,8 @@ type Mutation {
 type Subscription {
   messageAdded(eventId: ID!): EventMessagesEdge
   messages(eventId: ID!): EventMessagesConnection!
+  # returns all new messages for any event to which the current user has RSVPed
+  newMessage: EventMessagesEdge
 }
 
 type Message implements Node {

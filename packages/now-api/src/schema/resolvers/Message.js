@@ -6,7 +6,7 @@ import { getPubSub } from '../../subscriptions';
 import { userDidRsvp } from './Rsvp';
 import { notifyEventChange } from './Event';
 import { sendChatNotif } from '../../fcm';
-import { Message } from '../../db/repos';
+import { Message, Rsvp } from '../../db/repos';
 import { NOW_BOT_USER_ID } from '../../db/constants';
 
 const MESSAGE_CURSOR_ID = 'ts';
@@ -21,7 +21,8 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
     before,
   });
 
-const topicName = eventId => `messages-${eventId}`;
+const eventTopicName = eventId => `messages-${eventId}`;
+const userTopicName = userId => `user-messages-${userId}`;
 
 const newMessageObject = ({ id, eventId, userId, text }) => ({
   eventId,
@@ -37,10 +38,21 @@ const sendMessage = async (newMessage, sendNotification = false) => {
     const { eventId } = newMessage;
     await Message.insert(newMessage);
 
-    getPubSub().publish(topicName(eventId), {
-      messageAdded: buildEdge(MESSAGE_CURSOR_ID, newMessage),
+    const edge = buildEdge(MESSAGE_CURSOR_ID, newMessage);
+    const pubsub = getPubSub();
+    pubsub.publish(eventTopicName(eventId), {
+      messageAdded: edge,
     });
     notifyEventChange(eventId);
+    Rsvp.all({ eventId, action: 'add' })
+      .select('userId')
+      .then(users =>
+        users.forEach(({ userId }) => {
+          pubsub.publish(userTopicName(userId), {
+            newMessage: edge,
+          });
+        })
+      );
 
     if (sendNotification) {
       sendChatNotif(newMessage);
@@ -98,10 +110,15 @@ const user = ({ userId: id }, args, context) => {
 };
 const messageAdded = {
   subscribe: (root, { eventId }) =>
-    getPubSub().asyncIterator(topicName(eventId)),
+    getPubSub().asyncIterator(eventTopicName(eventId)),
+};
+
+const newMessage = {
+  subscribe: (root, args, context) =>
+    getPubSub().asyncIterator(userTopicName(userIdFromContext(context))),
 };
 
 export const queries = {};
 export const mutations = { createMessage: createUserMessage, createBotMessage };
 export const resolvers = { event, user };
-export const subscriptions = { messageAdded };
+export const subscriptions = { messageAdded, newMessage };
