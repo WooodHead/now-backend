@@ -113,6 +113,7 @@ app.use(
       debug: isDev,
       tracing: isDev,
       logFunction: isDev || process.env.VERBOSE ? console.log : () => {},
+      // formatError: e => ({ message: e.message }),
     }));
   })
 );

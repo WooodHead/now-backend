@@ -1,5 +1,6 @@
 type Query {
   invitation(code: String, id: ID): Invitation
+  checkInvitation(code: String): InvitationCheck
   openAppInvitations(
     input: AdminInput
     orderBy: InvitationOrder
@@ -27,6 +28,12 @@ interface Invitation {
   createdAt: ZonedDateTime
   event: Event
   message: String
+}
+
+type InvitationCheck {
+  code: String
+  eventId: String
+  type: String
 }
 
 type AppInvitation implements Invitation & Node {

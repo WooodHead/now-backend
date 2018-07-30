@@ -78,7 +78,37 @@ const openAppInvitations = (root, { input }) => {
   );
 };
 
-export const queries = { invitation: invitationQuery, openAppInvitations };
+const checkInvitation = async (root, { code }) => {
+  const now = ZonedDateTime.now(NYC_TZ);
+  const invite = await Invitation.get({ code });
+  if (!invite) {
+    throw new Error('Invite not found.');
+  }
+
+  if (invite.usedAt) {
+    if (invite.usedAt.isBefore(now)) {
+      throw new Error('This invite has been used already.');
+    }
+  }
+
+  if (invite.expiresAt) {
+    if (invite.expiresAt.isBefore(now)) {
+      throw new Error('This invite has expired.');
+    }
+  }
+
+  return {
+    code,
+    eventId: invite.eventId,
+    type: invite.type,
+  };
+};
+
+export const queries = {
+  invitation: invitationQuery,
+  openAppInvitations,
+  checkInvitation,
+};
 
 // regex which matches a string with all the same character, like 444444
 const allTheSame = /^(.)\1*$/;
@@ -87,7 +117,9 @@ export const generateCode = async trx => {
   for (let i = 0; i < MAX_CODE_RETRIES; i += 1) {
     const num = await randomNumber(0, 999999);
     const trialCode = leftPad(String(num), 6, '0');
-    const existing = await findValidCode(trialCode, trx, 'id');
+    const existing = await Invitation.withTransaction(trx).get({
+      code: trialCode,
+    });
     if (!existing && !allTheSame.test(trialCode)) {
       return trialCode;
     }

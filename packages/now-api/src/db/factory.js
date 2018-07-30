@@ -4,7 +4,10 @@ import uuid from 'uuid/v4';
 import { address, name, date, internet, random, lorem, hacker } from 'faker';
 import randomEmoji from 'random-emoji';
 import { LocalDate, ZoneId, LocalDateTime } from 'js-joda';
-import { EVENT_INVITE_TYPE } from '../schema/resolvers/Invitation';
+import {
+  EVENT_INVITE_TYPE,
+  APP_INVITE_TYPE,
+} from '../schema/resolvers/Invitation';
 
 const md5 = () =>
   random
@@ -47,18 +50,29 @@ Factory.define('rsvp')
   .attr('userId', ['user'], ({ id }) => id)
   .attr('eventId', ['event'], ({ id }) => id);
 
-Factory.define('eventInvite')
+Factory.define('appInvite')
   .option('inviter', () => ({ id: uuid() }))
-  .option('event', () => ({ id: uuid() }))
   .attr('id', uuid)
-  .attr('type', EVENT_INVITE_TYPE)
-  .attr('code', () => random.number({ max: 999999, min: 100000 }))
+  .attr('type', APP_INVITE_TYPE)
+  .attr('code', () => String(random.number({ max: 999999, min: 100000 })))
   .attr('expiresAt', () =>
     LocalDateTime.now()
       .plusDays(1)
       .toString()
   )
+  .attr('inviterId', ['inviter'], ({ id }) => id);
 
+Factory.define('eventInvite')
+  .option('inviter', () => ({ id: uuid() }))
+  .option('event', () => ({ id: uuid() }))
+  .attr('id', uuid)
+  .attr('type', EVENT_INVITE_TYPE)
+  .attr('code', () => String(random.number({ max: 999999, min: 100000 })))
+  .attr('expiresAt', () =>
+    LocalDateTime.now()
+      .plusDays(1)
+      .toString()
+  )
   .attr('inviterId', ['inviter'], ({ id }) => id)
   .attr('eventId', ['event'], ({ id }) => id);
 

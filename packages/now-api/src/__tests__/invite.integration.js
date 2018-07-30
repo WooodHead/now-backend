@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
-import { ZoneId, LocalDate } from 'js-joda';
+import { ZoneId, LocalDate, LocalDateTime } from 'js-joda';
 
 import { client, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
-import { Rsvp } from '../db/repos';
+import { Rsvp, Invitation } from '../db/repos';
 import loaders from '../db/loaders';
 import { mockNow, restoreNow } from '../../testutils/date';
 import * as Activity from '../schema/resolvers/Activity';
@@ -38,6 +38,20 @@ const createEventInvite = eventId =>
     variables: { input: { eventId } },
   });
 
+const checkInvitation = code =>
+  client.query({
+    query: gql`
+      query checkInvitation($code: String) {
+        checkInvitation(code: $code) {
+          code
+          eventId
+          type
+        }
+      }
+    `,
+    variables: { code },
+  });
+
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
@@ -59,6 +73,55 @@ beforeEach(() =>
 afterEach(() => truncateTables());
 
 describe('Invitations', () => {
+  describe('Check invitations', () => {
+    it('returns data if valid', async () => {
+      const invite = factory.build('appInvite');
+      await Invitation.insert(invite);
+
+      const results = await checkInvitation(invite.code);
+
+      expect(results.data.checkInvitation).toEqual(
+        expect.objectContaining({
+          __typename: 'InvitationCheck',
+          code: invite.code,
+          type: invite.type,
+          eventId: null,
+          [Symbol('id')]: `$ROOT_QUERY.checkInvitation({"code":"${
+            invite.code
+          }"})`,
+        })
+      );
+    });
+    it('returns error if not found', async () => {
+      await expect(checkInvitation('1234')).rejects.toEqual(
+        new Error(`GraphQL error: Invite not found.`)
+      );
+    });
+    it('returns error if expired', async () => {
+      const invite = factory.build('appInvite', {
+        expiresAt: LocalDateTime.now()
+          .minusDays(1)
+          .toString(),
+      });
+      await Invitation.insert(invite);
+
+      await expect(checkInvitation(invite.code)).rejects.toEqual(
+        new Error(`GraphQL error: This invite has expired.`)
+      );
+    });
+    it('returns error if used', async () => {
+      const invite = factory.build('appInvite', {
+        usedAt: LocalDateTime.now()
+          .minusDays(1)
+          .toString(),
+      });
+      await Invitation.insert(invite);
+
+      await expect(checkInvitation(invite.code)).rejects.toEqual(
+        new Error(`GraphQL error: This invite has been used already.`)
+      );
+    });
+  });
   describe('Event Invitations', () => {
     const buildEventTomorrow = async () => {
       const tomorrow = LocalDate.now(Activity.NYC_TZ).plusDays(1);
