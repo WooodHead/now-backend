@@ -1,5 +1,5 @@
 type Query {
-  invitation(code: String, id: ID): Invitation
+  invitation(code: String, id: ID, eventId: ID): Invitation
   checkInvitation(code: String): InvitationCheck
   openAppInvitations(
     input: AdminInput

@@ -57,7 +57,7 @@ export const resolvers = {
   event: resolveEvent,
 };
 
-const invitationQuery = (root, { code, id }) => {
+const invitationQuery = (root, { code, id, eventId }, ctx) => {
   if (code) {
     return findValidCode(code).then(
       candidate => (id && candidate.id !== id ? null : candidate)
@@ -65,6 +65,10 @@ const invitationQuery = (root, { code, id }) => {
   }
   if (id) {
     return Invitation.byId(id);
+  }
+  if (eventId) {
+    const userId = userIdFromContext(ctx);
+    return Invitation.get({ eventId, userId, active: true });
   }
   return null;
 };
