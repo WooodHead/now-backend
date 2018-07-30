@@ -5,13 +5,13 @@ import { uniq } from 'lodash';
 import { createRsvp } from '../schema/resolvers/Rsvp';
 import { EVENT_INVITE_TYPE } from '../schema/resolvers/Invitation';
 import makeLoaders from '../db/loaders';
-import { Invitation, Event } from '../db/repos';
+import { Invitation, Event, Rsvp } from '../db/repos';
 import sql from '../db/sql';
 import { notifyEventChange } from '../schema/resolvers/Event';
 import { sendRsvpNotif } from '../fcm';
 
 const EXPIRE_MESSAGE =
-  'Your friend has not accepted your invite. You will have to join solo if spots are available.';
+  'Your friend did not accept your invite to the meetup on time.';
 
 const rejectExpiredEventInvites = async () => {
   const loaders = makeLoaders({});
@@ -32,7 +32,6 @@ const rejectExpiredEventInvites = async () => {
 
   /* For each expired invite:
    * rsvp matching invite action=remove 
-   * rsvp matching inviter action=remove
    * send notification to inviter
    * notify event update 
    */
@@ -44,12 +43,11 @@ const rejectExpiredEventInvites = async () => {
           .forUpdate();
 
         // Inviter rsvp
-        const inviterRsvpId = await createRsvp(
-          trx,
-          { eventId, userId: inviterId, ignoreVisible: true },
-          'expired',
-          loaders
-        );
+        const { id: inviterRsvpId } = await Rsvp.get({
+          eventId,
+          userId: inviterId,
+        }).select('id');
+
         // Invited rsvp placeholder
         await createRsvp(
           trx,

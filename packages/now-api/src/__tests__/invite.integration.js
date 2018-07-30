@@ -270,8 +270,9 @@ describe('Invitations', () => {
           inviteId: invitation.id,
           userId: null,
         }),
+        // Don't reject inviter's invite
         expect.objectContaining({
-          action: 'expired',
+          action: 'add',
           eventId: eventTomorrow.id,
           inviteId: null,
           userId: USER_ID,
