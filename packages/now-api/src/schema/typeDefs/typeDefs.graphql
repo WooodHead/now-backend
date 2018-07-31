@@ -61,6 +61,8 @@ input AdminInput {
 type ServerMessages {
   noActivityTitle: String
   noActivityMessage: String
+  inviteExplain: String
+  inviteExpire: String
 }
 
 type ReportInputPayload {

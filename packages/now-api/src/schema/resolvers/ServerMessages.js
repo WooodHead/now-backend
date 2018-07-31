@@ -18,6 +18,9 @@ export const queries = {
       noActivityTitle: 'Sorry, no meetup today!',
       noActivityMessage:
         'We’re either on vacay or planning something extra special for you.',
+      inviteExplain:
+        'If you invite a friend, you will reserve both of your spots before everyone else.',
+      inviteExpire: 'Your friend’s invite will expire at 9PM',
     };
   },
 };
