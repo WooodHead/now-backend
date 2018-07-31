@@ -156,7 +156,7 @@ describe('Event', () => {
         eventToday.id,
       ]);
     });
-    it.only('after early availability', async () => {
+    it('after early availability', async () => {
       mockNow(
         LocalDate.now()
           .atTime(20, 0)

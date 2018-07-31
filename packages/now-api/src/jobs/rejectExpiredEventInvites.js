@@ -37,7 +37,7 @@ const rejectExpiredEventInvites = async () => {
    */
   const expires = await sql.transaction(async trx =>
     Promise.all(
-      expiredEventInvites.map(async ({ id, eventId, inviterId }) => {
+      expiredEventInvites.map(async ({ id, eventId, inviterId, userId }) => {
         await Event.byId(eventId)
           .transacting(trx)
           .forUpdate();
@@ -48,13 +48,16 @@ const rejectExpiredEventInvites = async () => {
           userId: inviterId,
         }).select('id');
 
-        // Invited rsvp placeholder
-        await createRsvp(
-          trx,
-          { eventId, inviteId: id, ignoreVisible: true },
-          'expired',
-          loaders
-        );
+        // Only kickout if invite not used
+        if (!userId) {
+          // Invited rsvp placeholder
+          await createRsvp(
+            trx,
+            { eventId, inviteId: id, ignoreVisible: true },
+            'expired',
+            loaders
+          );
+        }
         return { eventId, inviterRsvpId };
       })
     )

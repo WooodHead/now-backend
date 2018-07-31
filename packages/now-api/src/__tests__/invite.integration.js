@@ -253,7 +253,7 @@ describe('Invitations', () => {
       expect(dbInvite.active).toBe(false);
     });
 
-    it.only('leaving does not remove invite if accepted', async () => {
+    it('leaving does not remove invite if accepted', async () => {
       const authId = uuid();
       const clientForNewUser = newUserClient(authId);
       const inviteStart = LocalDate.now()
@@ -363,7 +363,7 @@ describe('Invitations', () => {
       );
     });
 
-    it('remove expired rsvps', async () => {
+    it('remove expired rsvps if invite not used', async () => {
       mockNow(
         LocalDate.now()
           .atTime(20, 1)
@@ -399,6 +399,78 @@ describe('Invitations', () => {
           eventId: eventTomorrow.id,
           inviteId: invitation.id,
           userId: null,
+        }),
+        // Don't reject inviter's invite
+        expect.objectContaining({
+          action: 'add',
+          eventId: eventTomorrow.id,
+          inviteId: null,
+          userId: USER_ID,
+        }),
+      ]);
+    });
+
+    it('does not remove expired rsvps if invite used', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(20, 1)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+      const eventTomorrow = await buildEventTomorrow();
+
+      const {
+        data: {
+          createEventInvitation: { invitation },
+        },
+      } = await createEventInvite(eventTomorrow.id);
+      const authId = uuid();
+      const clientForNewUser = newUserClient(authId);
+
+      const {
+        data: { createUser },
+      } = await clientForNewUser.mutate({
+        mutation: gql`
+          mutation createUser($input: CreateUserInput!) {
+            createUser(input: $input) {
+              user {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            email: 'a@b.com',
+            firstName: 'a',
+            lastName: 'b',
+            birthday: '1910-10-10',
+            invitationCode: invitation.code,
+          },
+        },
+      });
+
+      mockNow(
+        LocalDate.now()
+          .atTime(21, 1)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+
+      await rejectExpiredEventInvites(loaders({ currentUserId: null }));
+
+      const dbRsvps = await Rsvp.all({ eventId: eventTomorrow.id }).orderBy(
+        'inviteId'
+      );
+
+      expect(dbRsvps).toEqual([
+        expect.objectContaining({
+          action: 'add',
+          eventId: eventTomorrow.id,
+          inviteId: invitation.id,
+          userId: createUser.user.id,
         }),
         // Don't reject inviter's invite
         expect.objectContaining({

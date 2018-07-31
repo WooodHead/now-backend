@@ -15,6 +15,7 @@ import {
 import { userIdFromContext } from '../../util';
 import { SQL_TABLES } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
+import { notifyEventChange } from '../Event';
 
 const PRE_LOGGED_IN_AUTH0_ID = 'CUV6mTWPcyKmfHTw0DppzuVkb45RRCVN@clients';
 
@@ -79,12 +80,14 @@ export const createUserMutation = async (
     tosVersion: CURRENT_TOS_VERSION,
   };
 
+  let notifyEventId;
   await sql.transaction(async trx => {
     await trx(SQL_TABLES.USERS).insert(newUser);
     if (invitation) {
       const { id: inviteId, eventId, type } = invitation;
       await consumeInvitation(inviteId, newId, trx);
       if (type === EVENT_INVITE_TYPE) {
+        notifyEventId = eventId;
         // add new user id to the rsvp placeholder
         const rsvp = await Rsvp.get({ eventId, inviteId });
         if (!rsvp) {
@@ -97,6 +100,10 @@ export const createUserMutation = async (
           updatedAt: sql.raw('now()'),
         });
       }
+    }
+
+    if (notifyEventId) {
+      notifyEventChange(notifyEventId);
     }
   });
 
