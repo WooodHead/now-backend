@@ -68,7 +68,7 @@ const invitationQuery = (root, { code, id, eventId }, ctx) => {
   }
   if (eventId) {
     const userId = userIdFromContext(ctx);
-    return Invitation.get({ eventId, userId, active: true });
+    return Invitation.get({ eventId, inviterId: userId, active: true });
   }
   return null;
 };
@@ -87,6 +87,12 @@ const checkInvitation = async (root, { code }) => {
   const invite = await Invitation.get({ code });
   if (!invite) {
     throw new Error('Invite not found.');
+  }
+
+  if (!invite.active) {
+    throw new Error(
+      'Your friend has left the meetup so your invite has expired.'
+    );
   }
 
   if (invite.usedAt) {
@@ -156,6 +162,7 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
     const previousInvite = await Invitation.get({
       eventId,
       inviterId,
+      active: true,
     });
 
     if (previousInvite) {

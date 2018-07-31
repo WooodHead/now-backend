@@ -19,6 +19,7 @@ export const hasInvitedToEvent = async (eventId, inviterId) => {
   const invitation = await Invitation.all({
     eventId,
     inviterId,
+    active: true,
   });
   return invitation.length !== 0;
 };

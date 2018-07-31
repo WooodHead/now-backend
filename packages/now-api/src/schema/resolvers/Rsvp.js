@@ -1,7 +1,7 @@
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
-import { Event, Rsvp, RsvpLog } from '../../db/repos';
+import { Event, Rsvp, RsvpLog, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange, visibleEventsQuery } from './Event';
@@ -109,14 +109,36 @@ const addRsvp = (root, { input: { eventId } }, ctx) =>
 
 const removeRsvp = (root, { input: { eventId } }, ctx) =>
   sql
-    .transaction(trx =>
-      createRsvp(
+    .transaction(async trx => {
+      const userId = userIdFromContext(ctx);
+      const rsvpId = await createRsvp(
         trx,
-        { eventId, userId: userIdFromContext(ctx) },
+        { eventId, userId },
         'remove',
         ctx.loaders
-      )
-    )
+      );
+
+      const inviteRsvpData = await Invitation.get({
+        'invitations.eventId': eventId,
+        inviterId: userId,
+        active: true,
+      })
+        .innerJoin('rsvps', 'invitations.id', 'rsvps.inviteId')
+        .select('inviteId', 'inviteeId');
+
+      if (inviteRsvpData && !inviteRsvpData.inviteeId) {
+        const { inviteId } = inviteRsvpData;
+        await createRsvp(
+          trx,
+          { eventId, inviteId },
+          'inviter-left',
+          ctx.loaders
+        );
+        await Invitation.update({ id: inviteId, active: false });
+      }
+
+      return rsvpId;
+    })
     .then(postRsvp(eventId, ctx));
 
 export const resolvers = { event, user, invite };

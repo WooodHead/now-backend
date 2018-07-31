@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { ZoneId, LocalDate, LocalDateTime } from 'js-joda';
+import uuid from 'uuid/v4';
 
-import { client, USER_ID } from '../db/mock';
+import { client, USER_ID, newUserClient } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -198,6 +199,135 @@ describe('Invitations', () => {
           userId: USER_ID,
         }),
       ]);
+    });
+
+    it('leaving removes invite if not accepted', async () => {
+      const inviteStart = LocalDate.now()
+        .atTime(20, 0)
+        .atZone(Activity.NYC_TZ)
+        .withFixedOffsetZone();
+
+      mockNow(inviteStart.toString());
+      const eventTomorrow = await buildEventTomorrow();
+
+      const {
+        data: { createEventInvitation },
+      } = await createEventInvite(eventTomorrow.id);
+
+      await client.mutate({
+        mutation: gql`
+          mutation rsvp($input: CreateRsvpInput!) {
+            removeRsvp(input: $input) {
+              rsvp {
+                id
+                action
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: eventTomorrow.id } },
+      });
+
+      const dbRsvps = await Rsvp.all({ eventId: eventTomorrow.id }).orderBy(
+        'inviteId'
+      );
+      expect(dbRsvps).toEqual([
+        expect.objectContaining({
+          action: 'inviter-left',
+          eventId: eventTomorrow.id,
+          inviteId: createEventInvitation.invitation.id,
+          userId: null,
+        }),
+        expect.objectContaining({
+          action: 'remove',
+          eventId: eventTomorrow.id,
+          inviteId: null,
+          userId: USER_ID,
+        }),
+      ]);
+
+      const dbInvite = await Invitation.byId(
+        createEventInvitation.invitation.id
+      );
+
+      expect(dbInvite.active).toBe(false);
+    });
+
+    it.only('leaving does not remove invite if accepted', async () => {
+      const authId = uuid();
+      const clientForNewUser = newUserClient(authId);
+      const inviteStart = LocalDate.now()
+        .atTime(20, 0)
+        .atZone(Activity.NYC_TZ)
+        .withFixedOffsetZone();
+
+      mockNow(inviteStart.toString());
+      const eventTomorrow = await buildEventTomorrow();
+
+      const {
+        data: { createEventInvitation },
+      } = await createEventInvite(eventTomorrow.id);
+
+      const {
+        data: { createUser },
+      } = await clientForNewUser.mutate({
+        mutation: gql`
+          mutation createUser($input: CreateUserInput!) {
+            createUser(input: $input) {
+              user {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            email: 'a@b.com',
+            firstName: 'a',
+            lastName: 'b',
+            birthday: '1910-10-10',
+            invitationCode: createEventInvitation.invitation.code,
+          },
+        },
+      });
+
+      await client.mutate({
+        mutation: gql`
+          mutation rsvp($input: CreateRsvpInput!) {
+            removeRsvp(input: $input) {
+              rsvp {
+                id
+                action
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: eventTomorrow.id } },
+      });
+
+      const dbRsvps = await Rsvp.all({ eventId: eventTomorrow.id }).orderBy(
+        'inviteId'
+      );
+      expect(dbRsvps).toEqual([
+        expect.objectContaining({
+          action: 'add',
+          eventId: eventTomorrow.id,
+          inviteId: createEventInvitation.invitation.id,
+          userId: createUser.user.id,
+        }),
+        expect.objectContaining({
+          action: 'remove',
+          eventId: eventTomorrow.id,
+          inviteId: null,
+          userId: USER_ID,
+        }),
+      ]);
+
+      const dbInvite = await Invitation.byId(
+        createEventInvitation.invitation.id
+      );
+
+      expect(dbInvite.active).toBe(true);
     });
 
     it("can't create before invite hour", async () => {
