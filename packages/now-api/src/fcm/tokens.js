@@ -15,7 +15,7 @@ export const getTokensForEvent = (eventId, prefName, excludeUsers = []) => {
     .select()
     .innerJoin(SQL_TABLES.USERS, 'rsvps.userId', 'users.id')
     .whereNotIn('userId', excludeUsers)
-    .andWhere({ eventId })
+    .andWhere({ eventId, 'rsvps.action': 'add' })
     .andWhere(
       sql.raw('coalesce(users.preferences->?, ?)=?', [prefName, 'true', 'true'])
     );

@@ -3,11 +3,16 @@ import { SQL_TABLES } from '../../db/constants';
 import { getTokensForEvent, getTokensForRsvp } from '../tokens';
 import factory from '../../db/factory';
 
-const users = factory.buildList('user', 3);
+const users = factory.buildList('user', 4);
 users[0].preferences = { receiveAlerts: false };
 const eventId = 'fa8a48e0-1043-11e8-b919-8f03cfc03e44';
 const mockRsvp1 = factory.build('rsvp', { eventId }, { user: users[0] });
 const mockRsvp2 = factory.build('rsvp', { eventId }, { user: users[1] });
+const mockRsvp3 = factory.build(
+  'rsvp',
+  { eventId, action: 'remove' },
+  { user: users[2] }
+);
 
 const device1a = factory.build('device', {}, { user: users[0] });
 const device1b = factory.build('device', {}, { user: users[0] });
@@ -16,6 +21,8 @@ const device2a = factory.build('device', {}, { user: users[1] });
 const device2b = factory.build('device', {}, { user: users[1] });
 
 const device3a = factory.build('device', {}, { user: users[2] });
+
+const device4a = factory.build('device', {}, { user: users[3] });
 
 const truncateTables = () =>
   Promise.all([
@@ -28,13 +35,14 @@ beforeAll(() =>
   truncateTables().then(() =>
     Promise.all([
       sql(SQL_TABLES.USERS).insert(users),
-      sql(SQL_TABLES.RSVPS).insert([mockRsvp1, mockRsvp2]),
+      sql(SQL_TABLES.RSVPS).insert([mockRsvp1, mockRsvp2, mockRsvp3]),
       sql(SQL_TABLES.DEVICES).insert([
         device1a,
         device1b,
         device2a,
         device2b,
         device3a,
+        device4a,
       ]),
     ])
   ));
