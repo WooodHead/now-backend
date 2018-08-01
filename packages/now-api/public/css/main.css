@@ -58,9 +58,8 @@ a:active {
   margin: 0 auto;
 }
 
-.stores img {
-  width: 240px;
-  height: 71px;
+.stores img,
+.stores svg {
   margin-bottom: 32px;
   object-fit: contain;
 }
