@@ -16,8 +16,5 @@ export default (eventId: string, activityId: string): Promise<any> =>
       notification: {
         body: `${title} is starting in 2 hours!`,
       },
-      data: {
-        uri: `meetupnow://now/eventDetails/${eventId}`,
-      },
     });
   });
