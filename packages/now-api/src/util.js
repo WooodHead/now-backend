@@ -46,8 +46,8 @@ export const ellipsize = (text, length) =>
     ? truncate(text, { length, omission: '…', separator: unicodeSpace })
     : text;
 
-export const MIN_IOS = 1980;
-export const MIN_ANDROID = 12791;
+export const MIN_IOS = 2132;
+export const MIN_ANDROID = 13981;
 
 export const expiredUserAgent = ({ client, platform, buildNumber }) => {
   if (client !== 'Meetup-Now' || buildNumber === 1) {
