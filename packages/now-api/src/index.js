@@ -137,6 +137,10 @@ app.get(
   })
 );
 
+app.get('/i', (req, res) => {
+  res.redirect(301, '/invitation');
+});
+
 app.get('/invite', (req, res) => {
   res.redirect('https://meetupinc.typeform.com/to/mYMKbB');
 });

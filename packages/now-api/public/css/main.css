@@ -58,13 +58,10 @@ a:active {
   margin: 0 auto;
 }
 
-.stores {
-  margin-bottom: 32px;
-}
-
 .stores img {
-  width: 120px;
-  height: 35.5px;
+  width: 240px;
+  height: 71px;
+  margin-bottom: 32px;
   object-fit: contain;
 }
 
