@@ -87,7 +87,6 @@ a:active {
 }
 
 .content {
-  max-width: 440px;
   margin-top: 30px;
 }
 .preview {
@@ -294,6 +293,9 @@ textarea {
   }
   h2 {
     font-size: 48px;
+  }
+  .faqpage h1 {
+    font-size: 36px;
   }
 
   .content {
