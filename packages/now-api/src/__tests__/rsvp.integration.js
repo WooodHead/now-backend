@@ -176,7 +176,7 @@ describe('Rsvp', () => {
 
     expect(dbEvent.going).toEqual(1);
     const rsvpLog = await RsvpLog.all({ eventId: event.id, userId: USER_ID });
-    expect(rsvpLog.length).toEqual(1);
+    expect(rsvpLog).toHaveLength(1);
     expect(rsvpLog[0]).toMatchObject({
       userId: USER_ID,
       eventId: event.id,
@@ -264,7 +264,7 @@ describe('Rsvp', () => {
     expect(dbEvent.going).toEqual(0);
 
     const rsvpLog = await RsvpLog.all({ eventId: event.id, userId: USER_ID });
-    expect(rsvpLog.length).toEqual(1);
+    expect(rsvpLog).toHaveLength(1);
     expect(rsvpLog[0]).toMatchObject({
       userId: USER_ID,
       eventId: event.id,

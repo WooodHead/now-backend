@@ -1,3 +1,5 @@
+import { LocalTime } from 'js-joda';
+
 import {
   splitName,
   concatMapOfArrays,
@@ -7,6 +9,7 @@ import {
   MIN_ANDROID,
   expiredUserAgent,
   processUserAgent,
+  formatTime,
 } from '../util';
 
 describe('splitName', () => {
@@ -127,5 +130,16 @@ describe('processUserAgent', () => {
       osVersion: '8.0.0',
       platform: 'Android',
     });
+  });
+});
+
+describe('formatTime', () => {
+  it('hours', () => {
+    expect(formatTime(LocalTime.parse('10:00'))).toEqual('10 a.m.');
+    expect(formatTime(LocalTime.parse('21:00'))).toEqual('9 p.m.');
+  });
+  it('minutes', () => {
+    expect(formatTime(LocalTime.parse('21:03'))).toEqual('9:03 p.m.');
+    expect(formatTime(LocalTime.parse('21:30'))).toEqual('9:30 p.m.');
   });
 });

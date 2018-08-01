@@ -1,4 +1,5 @@
 import { assignWith, truncate } from 'lodash';
+import { ChronoField } from 'js-joda';
 
 export const splitName = name => {
   const re = /[\s]+/;
@@ -89,4 +90,19 @@ export const processUserAgent = (userAgent = '') => {
     osVersion: matched[4],
     buildNumber: Number(matched[5]),
   };
+};
+
+export const formatTime = when => {
+  let time = `${when.get(ChronoField.HOUR_OF_AMPM)}`;
+  const minutes = when.get(ChronoField.MINUTE_OF_HOUR);
+  if (minutes !== 0) {
+    time += ':';
+    if (minutes < 10) {
+      time += '0';
+    }
+    time += `${minutes}`;
+  }
+  time += ' ';
+  time += when.get(ChronoField.AMPM_OF_DAY) === 0 ? 'a.m.' : 'p.m.';
+  return time;
 };
