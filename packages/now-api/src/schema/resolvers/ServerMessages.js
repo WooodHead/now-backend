@@ -15,9 +15,9 @@ export const queries = {
     }
 
     return {
-      noActivityTitle: 'Sorry, no meetup today!',
+      noActivityTitle: 'Stay tuned!',
       noActivityMessage:
-        'We’re either on vacay or planning something extra special for you.',
+        'Tomorrow’s Meetup of the Day will be announced at 8 p.m. Make sure you join before spots fill up!',
       inviteExplain:
         'If you invite a friend, you will reserve both of your spots before everyone else.',
       inviteExpire: 'Your friend’s invite will expire at 9PM',
