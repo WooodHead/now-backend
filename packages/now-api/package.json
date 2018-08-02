@@ -26,9 +26,14 @@
     "flow-coverage": "flow coverage",
     "precommit": "pretty-quick --staged",
     "prepush": "eslint .",
-    "postinstall": "rm -f node_modules/grpc/node_modules/protobufjs/src/bower.json"
+    "postinstall": "rm -f node_modules/grpc/node_modules/protobufjs/src/bower.json",
+    "apollo:publish": "yarn apollo schema:publish --endpoint=${ENDPOINT} --header=\"Authorization: Bearer ${MACHINE_TOKEN}\" --key=\"${ENGINE_KEY}\"",
+    "apollo:publish:local": "ENDPOINT=http://localhost:3000/graphql yarn apollo:publish",
+    "apollo:publish:staging": "ENDPOINT=https://now-staging.meetup.com/graphql yarn apollo:publish",
+    "apollo:publish:prod": "ENDPOINT=https://now.meetup.com/graphql yarn apollo:publish"
   },
   "dependencies": {
+    "apollo-engine": "^1.1.2",
     "apollo-server-express": "^1.3.2",
     "apollo-upload-server": "^5.0.0",
     "aws-sdk": "2.190.0",
@@ -69,6 +74,7 @@
     "wkx": "^0.4.5"
   },
   "devDependencies": {
+    "apollo": "^1.6.0",
     "apollo-cache-inmemory": "^1.1.7",
     "apollo-client": "^2.2.3",
     "apollo-link-http": "^1.5.3",

@@ -1,12 +1,13 @@
 import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
+import { ApolloEngine } from 'apollo-engine';
 import { apolloUploadExpress } from 'apollo-upload-server';
+import { createServer } from 'http';
 import bodyParser from 'body-parser';
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import jwt from 'express-jwt';
 import { execute, subscribe } from 'graphql';
-import { createServer } from 'http';
 import 'js-joda-timezone';
 import jwksRsa from 'jwks-rsa';
 import { get } from 'lodash';
@@ -111,7 +112,8 @@ app.use(
       schema,
       context,
       debug: isDev,
-      tracing: isDev,
+      tracing: true,
+      cacheControl: true,
       logFunction: isDev || process.env.VERBOSE ? console.log : () => {},
       // formatError: e => ({ message: e.message }),
     }));
@@ -183,10 +185,26 @@ if (isDev) {
   });
 }
 
-const graphQLServer = createServer(app);
-graphQLServer.listen(PORT, () => {
-  console.log(`Server initialized -- ${process.env.NODE_ENV}`);
-});
+let server;
+
+if (process.env.ENGINE_KEY) {
+  const engine = new ApolloEngine({
+    apiKey: process.env.ENGINE_KEY,
+  });
+
+  // Call engine.listen instead of app.listen(port)
+  engine.listen({
+    port: PORT,
+    expressApp: app,
+  });
+
+  server = engine;
+} else {
+  server = createServer(app);
+  server.listen(PORT, () => {
+    console.log(`Server initialized -- ${process.env.NODE_ENV}`);
+  });
+}
 
 SubscriptionServer.create(
   {
@@ -209,7 +227,7 @@ SubscriptionServer.create(
       }),
   },
   {
-    server: graphQLServer,
+    server,
     path: '/subscriptions',
   }
 );
