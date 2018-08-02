@@ -47,6 +47,7 @@ export default wrapResolvers({
     ...Report.mutations,
     ...Invitation.mutations,
     ...Jobs.mutations,
+    ...ServerMessages.mutations,
   },
   Activity: Activity.resolvers,
   Device: Device.resolvers,

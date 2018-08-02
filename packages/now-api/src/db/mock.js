@@ -29,17 +29,19 @@ const userAgent = {
   buildNumber: 'unknown',
 };
 
+const defaultContext = () => ({
+  token: null,
+  user: { id: USER_ID },
+  loaders: loaders({ currentUserId: USER_ID }),
+  scopes: isAdmin ? ['admin'] : [],
+  userAgent,
+});
+
 export const client = new ApolloClient({
   cache: apolloCache,
   link: new SchemaLink({
     schema,
-    context: () => ({
-      token: null,
-      user: { id: USER_ID },
-      loaders: loaders({ currentUserId: USER_ID }),
-      scopes: isAdmin ? ['admin'] : [],
-      userAgent,
-    }),
+    context: defaultContext,
   }),
 });
 
@@ -49,10 +51,19 @@ export const newUserClient = (currentUserAuth0Id, currentUserId) =>
     link: new SchemaLink({
       schema,
       context: {
-        token: null,
+        ...defaultContext(),
         currentUserAuth0Id,
+        user: undefined,
         loaders: loaders({ currentUserId }),
-        userAgent,
       },
+    }),
+  });
+
+export const userAgentClient = ua =>
+  new ApolloClient({
+    cache: new InMemoryCache(),
+    link: new SchemaLink({
+      schema,
+      context: () => ({ ...defaultContext(), userAgent: ua }),
     }),
   });

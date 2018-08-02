@@ -139,4 +139,9 @@ Factory.define('message')
   .attr('eventId', ['event'], ({ id }) => id)
   .attr('userId', ['user'], ({ id }) => id);
 
+Factory.define('serverMessage')
+  .attr('id', uuid)
+  .attr('key')
+  .attr('text', lorem.sentences());
+
 export default Factory;

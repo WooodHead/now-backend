@@ -9,11 +9,15 @@ import { Activity } from '../db/repos';
 const activities = factory.buildList('activity', 3);
 const todayActivity = factory.build('todayActivity');
 const event = factory.build('event', {}, { activity: todayActivity });
+const serverMessages = ['noActivityTitle', 'noActivityMessage'].map(key =>
+  factory.build('serverMessage', { key })
+);
 
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
+    sql(SQL_TABLES.SERVER_MESSAGES).truncate(),
   ]);
 
 beforeAll(() =>
@@ -21,6 +25,7 @@ beforeAll(() =>
     Promise.all([
       sql(SQL_TABLES.ACTIVITIES).insert([...activities, todayActivity]),
       sql(SQL_TABLES.EVENTS).insert(event),
+      sql(SQL_TABLES.SERVER_MESSAGES).insert(serverMessages),
     ])
   ));
 afterAll(() => {

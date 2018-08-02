@@ -30,7 +30,6 @@ interface Connection {
 }
 
 type Query {
-  serverMessages: ServerMessages
   userAgent: UserAgent
 }
 
@@ -56,13 +55,6 @@ input AdminInput {
   before: String
   offset: Int
   reverse: Boolean
-}
-
-type ServerMessages {
-  noActivityTitle: String
-  noActivityMessage: String
-  inviteExplain: String
-  inviteExpire: String
 }
 
 type ReportInputPayload {

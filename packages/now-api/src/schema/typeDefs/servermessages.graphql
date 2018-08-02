@@ -1,0 +1,48 @@
+type Query {
+  serverMessages: ServerMessages
+
+  adminMessage(id: ID!): AdminMessage @admin
+  manyAdminMessages(ids: [ID!]!): [AdminMessage!] @admin
+  allAdminMessages(input: AdminInput): AdminMessagesConnection! @admin
+}
+
+type Mutation {
+  updateAdminMessage(
+    input: UpdateAdminMessageInput!
+  ): UpdateAdminMessagePayload @admin
+}
+
+type ServerMessages {
+  noActivityTitle: String
+  noActivityMessage: String
+  inviteExplain: String
+  inviteExpire: String
+}
+
+type AdminMessage implements Node {
+  id: ID!
+  key: String!
+  text: String
+  createdAt: ZonedDateTime!
+  updatedAt: ZonedDateTime!
+}
+
+type AdminMessagesConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int
+  edges: [AdminMessagesEdge!]!
+}
+
+type AdminMessagesEdge implements Edge {
+  cursor: String!
+  node: AdminMessage!
+}
+
+input UpdateAdminMessageInput {
+  id: ID!
+  text: String
+}
+
+type UpdateAdminMessagePayload {
+  adminMessage: AdminMessage
+}
