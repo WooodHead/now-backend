@@ -7,9 +7,32 @@ import { userDidRsvp } from './Rsvp';
 import { notifyEventChange } from './Event';
 import { sendChatNotif } from '../../fcm';
 import { Message, Rsvp } from '../../db/repos';
-import { NOW_BOT_USER_ID } from '../../db/constants';
+import { NOW_BOT_USER_ID, SQL_TABLES } from '../../db/constants';
+import sql from '../../db/sql';
 
 const MESSAGE_CURSOR_ID = 'ts';
+
+const unreadMessagesCount = (root, args, context) =>
+  sql
+    .select(sql.raw('count(*)'))
+    .from(SQL_TABLES.RSVPS)
+    .innerJoin(SQL_TABLES.MESSAGES, { 'rsvps.eventId': 'messages.eventId' })
+    .leftJoin(SQL_TABLES.EVENT_USER_METADATA, {
+      'rsvps.eventId': 'eventUserMetadata.eventId',
+      'rsvps.userId': 'eventUserMetadata.userId',
+    })
+    .where({
+      'rsvps.userId': userIdFromContext(context),
+      'rsvps.action': 'add',
+    })
+    .andWhere(
+      sql.raw('(?? is null or ?? > ??)', [
+        'eventUserMetadata.lastReadTs',
+        'messages.ts',
+        'eventUserMetadata.lastReadTs',
+      ])
+    )
+    .then(([{ count }]) => count);
 
 export const getMessages = (root, { eventId, first, last, after, before }) =>
   sqlPaginatify(MESSAGE_CURSOR_ID, Message.all({ eventId }), {
@@ -113,12 +136,23 @@ const messageAdded = {
     getPubSub().asyncIterator(eventTopicName(eventId)),
 };
 
+const newMessageIterator = (root, args, context) =>
+  getPubSub().asyncIterator(userTopicName(userIdFromContext(context)));
+
 const newMessage = {
-  subscribe: (root, args, context) =>
-    getPubSub().asyncIterator(userTopicName(userIdFromContext(context))),
+  subscribe: newMessageIterator,
 };
 
-export const queries = {};
+const unreadMessagesCountSub = {
+  subscribe: newMessageIterator,
+  resolve: unreadMessagesCount,
+};
+
+export const queries = { unreadMessagesCount };
 export const mutations = { createMessage: createUserMessage, createBotMessage };
 export const resolvers = { event, user };
-export const subscriptions = { messageAdded, newMessage };
+export const subscriptions = {
+  messageAdded,
+  newMessage,
+  unreadMessagesCount: unreadMessagesCountSub,
+};

@@ -1,5 +1,6 @@
 type Query {
   messages(eventId: ID!): EventMessagesConnection!
+  unreadMessagesCount: Int!
 }
 
 type Mutation {
@@ -12,6 +13,7 @@ type Subscription {
   messages(eventId: ID!): EventMessagesConnection!
   # returns all new messages for any event to which the current user has RSVPed
   newMessage: EventMessagesEdge
+  unreadMessagesCount: Int!
 }
 
 type Message implements Node {

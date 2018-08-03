@@ -10,6 +10,7 @@ import factory from '../db/factory';
 import { EventUserMetadata } from '../db/repos';
 import { mockNow, restoreNow } from '../../testutils/date';
 import * as Activity from '../schema/resolvers/Activity';
+import { createRsvp } from '../schema/resolvers/Rsvp';
 
 const activity = factory.build('activity');
 const location = factory.build('location');
@@ -280,6 +281,7 @@ describe('Event', () => {
                 unreadCount
               }
             }
+            unreadMessagesCount
           }
         `,
         variables: { id: event.id },
@@ -290,6 +292,7 @@ describe('Event', () => {
         unreadCount: 0,
         count: 0,
       });
+      expect(data.unreadMessagesCount).toEqual(0);
     });
     it('unread matches count when no row created', async () => {
       const messages = factory.buildList(
@@ -309,6 +312,7 @@ describe('Event', () => {
                 unreadCount
               }
             }
+            unreadMessagesCount
           }
         `,
         variables: {
@@ -321,6 +325,32 @@ describe('Event', () => {
         unreadCount: 10,
         count: 10,
       });
+      expect(data.unreadMessagesCount).toEqual(0);
+    });
+    it('unread matches count when RSVP', async () => {
+      await sql.transaction(trx =>
+        createRsvp(
+          trx,
+          { userId: USER_ID, eventId: event.id, ignoreVisible: true },
+          'add'
+        )
+      );
+      const messages = factory.buildList(
+        'message',
+        10,
+        {},
+        { event, user: { id: USER_ID } }
+      );
+      await sql(SQL_TABLES.MESSAGES).insert(messages);
+      const { data } = await client.query({
+        query: gql`
+          query unreadMessagesCount {
+            unreadMessagesCount
+          }
+        `,
+        fetchPolicy: 'network-only',
+      });
+      expect(data.unreadMessagesCount).toEqual(10);
     });
     it('unread correct when marked read', async () => {
       const messages = factory.buildList(
@@ -391,12 +421,12 @@ describe('Event', () => {
         },
       });
 
-      const dbRsvp = await EventUserMetadata.get({
+      const dbMetadata = await EventUserMetadata.get({
         eventId: event.id,
         userId: USER_ID,
       });
 
-      expect(dbRsvp).toMatchObject({
+      expect(dbMetadata).toMatchObject({
         userId: USER_ID,
         eventId: event.id,
         lastReadTs: '123456',
@@ -460,12 +490,12 @@ describe('Event', () => {
         },
       });
 
-      const dbRsvp = await EventUserMetadata.get({
+      const dbMetadata = await EventUserMetadata.get({
         eventId: event.id,
         userId: USER_ID,
       });
 
-      expect(dbRsvp).toMatchObject({
+      expect(dbMetadata).toMatchObject({
         userId: USER_ID,
         eventId: event.id,
         lastReadTs: '654321',
