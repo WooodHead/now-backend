@@ -185,7 +185,7 @@ if (isDev) {
   });
 }
 
-let server;
+const server = createServer(app);
 
 if (process.env.ENGINE_KEY) {
   const engine = new ApolloEngine({
@@ -195,12 +195,9 @@ if (process.env.ENGINE_KEY) {
   // Call engine.listen instead of app.listen(port)
   engine.listen({
     port: PORT,
-    expressApp: app,
+    httpServer: server,
   });
-
-  server = engine;
 } else {
-  server = createServer(app);
   server.listen(PORT, () => {
     console.log(`Server initialized -- ${process.env.NODE_ENV}`);
   });
