@@ -27,8 +27,7 @@ const resizer = ({ params: { width, height, originalKey } }, res) => {
   const scaledKey = `${width}x${height}/${originalKey}`;
   const scaledParams = { Bucket: NOW_IMAGE_BUCKET, Key: scaledKey };
 
-  s3
-    .headObject(scaledParams)
+  s3.headObject(scaledParams)
     .promise()
     .catch(e => {
       if (e.statusCode === 404) {
@@ -38,6 +37,11 @@ const resizer = ({ params: { width, height, originalKey } }, res) => {
           }
         );
       }
+      console.error(
+        `Error loading resized image key=%s, error=%s`,
+        originalKey,
+        e
+      );
       res.send(500);
       return undefined;
     })
