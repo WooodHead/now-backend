@@ -5,7 +5,7 @@ import { toNumber, isInteger } from 'lodash';
 import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { EARLY_AVAILABILITY_HOUR, NYC_TZ } from './Activity';
-import { getMessages } from './Message';
+import { getMessages, notifyMessagesRead } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
@@ -198,10 +198,14 @@ const markEventChatRead = async (root, { input: { eventId, ts } }, ctx) => {
 
   ctx.loaders.events.clear(eventId);
 
-  return EventUserMetadata.update(updatedMetadata).then(() => ({
-    rsvp: () => Rsvp.get({ eventId, userId }),
-    event: () => ctx.loaders.events.load(eventId),
-  }));
+  return EventUserMetadata.update(updatedMetadata).then(() => {
+    notifyMessagesRead(userId, eventId);
+
+    return {
+      rsvp: () => Rsvp.get({ eventId, userId }),
+      event: () => ctx.loaders.events.load(eventId),
+    };
+  });
 };
 
 export const mutations = {

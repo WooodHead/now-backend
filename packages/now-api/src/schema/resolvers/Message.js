@@ -46,6 +46,7 @@ export const getMessages = (root, { eventId, first, last, after, before }) =>
 
 const eventTopicName = eventId => `messages-${eventId}`;
 const userTopicName = userId => `user-messages-${userId}`;
+const userReadTopicName = userId => `user-read-${userId}`;
 
 const newMessageObject = ({ id, eventId, userId, text }) => ({
   eventId,
@@ -144,8 +145,18 @@ const newMessage = {
 };
 
 const unreadMessagesCountSub = {
-  subscribe: newMessageIterator,
+  subscribe: (root, args, context) => {
+    const userId = userIdFromContext(context);
+    return getPubSub().asyncIterator([
+      userReadTopicName(userId),
+      userTopicName(userId),
+    ]);
+  },
   resolve: unreadMessagesCount,
+};
+
+export const notifyMessagesRead = (userId, eventId) => {
+  getPubSub().publish(userReadTopicName(userId), { messagesRead: eventId });
 };
 
 export const queries = { unreadMessagesCount };
