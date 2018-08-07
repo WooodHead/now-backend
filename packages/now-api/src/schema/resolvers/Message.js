@@ -5,7 +5,7 @@ import { userIdFromContext, buildEdge, sqlPaginatify } from '../util';
 import { getPubSub } from '../../subscriptions';
 import { userDidRsvp } from './Rsvp';
 import { notifyEventChange } from './Event';
-import { sendChatNotif } from '../../fcm';
+import { sendChatNotif } from '../../jobs';
 import { Message, Rsvp } from '../../db/repos';
 import { NOW_BOT_USER_ID, SQL_TABLES } from '../../db/constants';
 import sql from '../../db/sql';

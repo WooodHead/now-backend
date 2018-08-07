@@ -89,8 +89,7 @@ describe('message', () => {
           message5,
         ]),
       ])
-    )
-  );
+    ));
   afterEach(() => truncateTables());
   it('returns eventMessages', async () => {
     const results = client.query({
@@ -208,13 +207,15 @@ describe('message', () => {
       });
 
       const { id, ts } = data.createMessage.edge.node;
-      expect(chat).toBeCalledWith({
-        eventId: event.id,
-        id,
-        text: 'new message',
-        ts: Number(ts),
-        userId: USER_ID,
-      });
+      expect(chat).toBeCalledWith(
+        expect.objectContaining({
+          eventId: event.id,
+          id,
+          text: 'new message',
+          ts: Number(ts),
+          userId: USER_ID,
+        })
+      );
 
       const dbMessage = await Message.byId(id);
 

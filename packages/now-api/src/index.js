@@ -22,7 +22,7 @@ import resizer from './resizer';
 import loaders from './db/loaders';
 import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
 import { endpoint as auth0Endpoint } from './auth0';
-import jobs from './jobs';
+import { handler as jobs } from './jobs';
 import { processUserAgent } from './util';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 });
 
 if (isDev || process.env.WORKER_NODE === 'true') {
-  app.post('/jobs/:name', jobs);
+  app.use('/jobs', jobs);
 }
 
 const buildUserForContext = (req, otherContext = {}) => {
