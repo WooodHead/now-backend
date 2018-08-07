@@ -23,6 +23,19 @@ export const hasInvitedToEvent = async (eventId, inviterId) => {
   });
   return invitation.length !== 0;
 };
+
+export const inviteHasBeenAccepted = async (eventId, inviterId) => {
+  const invitations = await Invitation.all({
+    eventId,
+    inviterId,
+    active: true,
+  });
+
+  return (
+    invitations.filter(invitation => invitation.inviteeId !== null).length !== 0
+  );
+};
+
 // Resolvers
 const activityResolver = ({ activityId }, args, { loaders }) =>
   loaders.activities.load(activityId);
@@ -50,6 +63,9 @@ const isAttendingResolver = ({ id }, { userId }, ctx) =>
 const hasInvitedResolver = async ({ id }, { userId }, ctx) =>
   hasInvitedToEvent(id, userId || userIdFromContext(ctx));
 
+const inviteHasBeenAcceptedResolver = async ({ id }, { userId }, ctx) =>
+  inviteHasBeenAccepted(id, userId || userIdFromContext(ctx));
+
 // one day, this will be fancier.
 const stateResolver = ({ time }) => {
   const eventTime = time.toInstant();
@@ -75,6 +91,7 @@ export const resolvers = {
   messages: messagesResolver,
   isAttending: isAttendingResolver,
   hasInvited: hasInvitedResolver,
+  inviteHasBeenAccepted: inviteHasBeenAcceptedResolver,
   state: stateResolver,
   location: locationResolver,
   time: timeResolver,

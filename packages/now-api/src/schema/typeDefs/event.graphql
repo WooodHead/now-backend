@@ -65,6 +65,7 @@ type Event implements Node {
   ): EventMessagesConnection!
   isAttending(userId: ID): Boolean
   hasInvited(userId: ID): Boolean
+  inviteHasBeenAccepted(userId: ID): Boolean
   limit: Int
   instigator: User
   location: Location!
