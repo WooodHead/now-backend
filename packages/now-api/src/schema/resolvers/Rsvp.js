@@ -126,14 +126,20 @@ const removeRsvp = (root, { input: { eventId } }, ctx) =>
         .innerJoin('rsvps', 'invitations.id', 'rsvps.inviteId')
         .select('inviteId', 'inviteeId');
 
-      if (inviteRsvpData && !inviteRsvpData.inviteeId) {
+      if (inviteRsvpData) {
         const { inviteId } = inviteRsvpData;
-        await createRsvp(
-          trx,
-          { eventId, inviteId },
-          'inviter-left',
-          ctx.loaders
-        );
+        if (!inviteRsvpData.inviteeId) {
+          // If the invitee has not accepted we burn the RSVP. We don't burn
+          // the RSVP if the invitee HAS accepted because it'd kick them out.
+          await createRsvp(
+            trx,
+            { eventId, inviteId },
+            'inviter-left',
+            ctx.loaders
+          );
+        }
+        // Whether or not the invitee accepted, flag the invitation as not
+        // active. Do this so the inviter can rejoin during the invite window.
         await Invitation.update({ id: inviteId, active: false });
       }
 

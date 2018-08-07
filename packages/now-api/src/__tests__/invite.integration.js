@@ -327,7 +327,7 @@ describe('Invitations', () => {
         createEventInvitation.invitation.id
       );
 
-      expect(dbInvite.active).toBe(true);
+      expect(dbInvite.active).toBe(false);
     });
 
     it("can't create before invite hour", async () => {
