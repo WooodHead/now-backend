@@ -1,15 +1,7 @@
-import { makeExecutableSchema } from 'graphql-tools';
-
-import typeDefs from '../typeDefs';
+import { schema } from '../../db/mock';
 
 describe('typeDefs.graphql', () => {
   it('validates', () => {
-    const schema = makeExecutableSchema({
-      typeDefs,
-      resolverValidationOptions: {
-        requireResolversForResolveType: false,
-      },
-    });
     expect(schema).toBeDefined();
   });
 });

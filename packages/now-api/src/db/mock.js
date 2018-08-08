@@ -2,9 +2,31 @@
 import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { SchemaLink } from 'apollo-link-schema';
+import { makeExecutableSchema } from 'graphql-tools';
+import gql from 'graphql-tag';
+import { mergeTypes } from 'merge-graphql-schemas';
 
-import schema from '../schema';
 import loaders from './loaders';
+
+import typeDefs from '../schema/typeDefs';
+import resolvers from '../schema/resolvers';
+import AdminDirective from '../schema/AdminDirective';
+
+const uploadScalar = gql`
+  scalar Upload
+`;
+
+export const schema = makeExecutableSchema({
+  typeDefs: mergeTypes([typeDefs, uploadScalar]),
+  resolvers,
+  schemaDirectives: {
+    admin: AdminDirective,
+  },
+  resolverValidationOptions: {
+    requireResolversForResolveType: false,
+  },
+  inheritResolversFromInterfaces: true,
+});
 
 export const USER_ID = 'aea68a98-591c-11e8-9cdb-872a15ebfd30';
 export const mockPromise = (resolver, rejecter) =>

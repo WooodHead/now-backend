@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { PostgresPubSub } from 'graphql-postgres-subscriptions';
-import { PubSub } from 'graphql-subscriptions';
+import { PubSub } from 'apollo-server-express';
 import { memoize } from 'lodash';
 
 import { connection } from './db/sql';
