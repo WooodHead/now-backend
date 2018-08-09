@@ -11,7 +11,8 @@ import { userQuery } from './User';
 import { createRsvp } from './Rsvp';
 import { sqlPaginatify, userIdFromContext } from '../util';
 import { notifyEventChange, visibleEventsQuery } from './Event';
-import { EARLY_AVAILABILITY_HOUR, AVAILABILITY_HOUR, NYC_TZ } from './Activity';
+import { NYC_TZ } from './Activity';
+import { EARLY_AVAILABILITY_HOUR, AVAILABILITY_HOUR } from '../../db/constants';
 
 const MAX_CODE_RETRIES = 6;
 

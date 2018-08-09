@@ -1,3 +1,5 @@
+import { LocalTime } from 'js-joda';
+
 export const SQL_TABLES = {
   USERS: 'users',
   BLOCKED_USERS: 'blockedUsers',
@@ -20,3 +22,10 @@ export const DELETED_USER_ID = '7cb43790-3bed-4e23-9825-43d913074ee0';
 export const NOTIFICATION_PREFERENCE_MESSAGES = 'messagesNotification';
 export const NOTIFICATION_PREFERENCE_NEW_EVENT = 'newEventNotification';
 export const NOTIFICATION_PREFERENCE_REMINDERS = 'remindersNotification';
+
+export const AVAILABILITY_HOUR = LocalTime.parse(
+  process.env.AVAILABILITY_HOUR || '21:00'
+);
+export const EARLY_AVAILABILITY_HOUR = LocalTime.parse(
+  process.env.EARLY_AVAILABILITY_HOUR || '20:00'
+);

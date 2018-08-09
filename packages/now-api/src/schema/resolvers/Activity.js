@@ -1,19 +1,14 @@
 import uuid from 'uuid';
-import { LocalDateTime, LocalTime, ZoneId } from 'js-joda';
+import { LocalDateTime, ZoneId } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 import { expiredUserAgent } from '../../util';
+import { AVAILABILITY_HOUR } from '../../db/constants';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
-export const AVAILABILITY_HOUR = LocalTime.parse(
-  process.env.AVAILABILITY_HOUR || '21:00'
-);
-export const EARLY_AVAILABILITY_HOUR = LocalTime.parse(
-  process.env.EARLY_AVAILABILITY_HOUR || '20:00'
-);
 
 export const getToday = () => {
   const now = LocalDateTime.now(NYC_TZ);

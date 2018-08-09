@@ -4,7 +4,8 @@ import { toNumber, isInteger } from 'lodash';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
-import { EARLY_AVAILABILITY_HOUR, NYC_TZ } from './Activity';
+import { NYC_TZ } from './Activity';
+import { EARLY_AVAILABILITY_HOUR } from '../../db/constants';
 import { getMessages, notifyMessagesRead } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
@@ -104,6 +105,7 @@ export const visibleEventsQuery = () => {
   const todayEarlyAvailable = today.atTime(EARLY_AVAILABILITY_HOUR);
 
   const todayStart = today.atStartOfDay();
+  const tomorrowStart = today.plusDays(1).atStartOfDay();
 
   const todayEnd = today.plusDays(1).atStartOfDay();
 
@@ -116,7 +118,7 @@ export const visibleEventsQuery = () => {
   }
 
   return Event.all()
-    .where('time', '>=', todayStart.toString())
+    .where('time', '>=', tomorrowStart.toString())
     .where('time', '<', tomorrowEnd.toString());
 };
 

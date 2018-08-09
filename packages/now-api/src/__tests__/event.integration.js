@@ -182,7 +182,6 @@ describe('Event', () => {
       const { data } = await results;
 
       expect(data.events.edges.map(({ node }) => node.id)).toEqual([
-        eventToday.id,
         eventTomorrow.id,
       ]);
     });
