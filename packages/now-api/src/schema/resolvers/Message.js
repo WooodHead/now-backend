@@ -79,7 +79,7 @@ const sendMessage = async (newMessage, sendNotification = false) => {
       );
 
     if (sendNotification) {
-      sendChatNotif(newMessage);
+      await sendChatNotif(newMessage);
     }
 
     return newMessage;

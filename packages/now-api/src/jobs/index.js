@@ -4,9 +4,14 @@ import enqueue from './enqueue';
 export { handler } from './dequeue';
 export { enqueue };
 
-export type JobRequest = {
+export type JobRequestNoDelay = {
   name: string,
   [string]: any,
+};
+
+export type JobRequest = {
+  delay?: number,
+  ...JobRequestNoDelay,
 };
 
 export const sendChatNotif = (args: {
@@ -14,3 +19,9 @@ export const sendChatNotif = (args: {
   userId: string,
   text: string,
 }) => enqueue({ ...args, name: 'sendChatNotif' });
+
+export const syncIntercomUser = (userId: string) =>
+  enqueue({ name: 'syncIntercomUser', userId });
+
+export const deleteIntercomUser = (userId: string) =>
+  enqueue({ name: 'deleteIntercomUser', userId });

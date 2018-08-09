@@ -16,6 +16,7 @@ import { userIdFromContext } from '../../util';
 import { SQL_TABLES } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
 import { notifyEventChange } from '../Event';
+import { syncIntercomUser } from '../../../jobs';
 
 const PRE_LOGGED_IN_AUTH0_ID = 'CUV6mTWPcyKmfHTw0DppzuVkb45RRCVN@clients';
 
@@ -108,6 +109,7 @@ export const createUserMutation = async (
   });
 
   maybeUpdateFcm(preferences, newId, true);
+  await syncIntercomUser(newId);
   return { user: getUser(newId, newId) };
 };
 
@@ -129,10 +131,12 @@ export const updateCurrentUser = (root, { input }, context) => {
   context.loaders.members.clear(id);
   return putUser(newUser)
     .then(() => context.loaders.members.load(id))
-    .then(u => {
-      maybeUpdateFcm(input.preferences, id);
-      return {
-        user: u,
-      };
-    });
+    .then(u =>
+      syncIntercomUser(id).then(() => {
+        maybeUpdateFcm(input.preferences, id);
+        return {
+          user: u,
+        };
+      })
+    );
 };

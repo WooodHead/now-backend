@@ -5,21 +5,31 @@ import { ChronoField, LocalTime } from 'js-joda';
 import type { $Request, $Response, NextFunction } from 'express';
 
 import { promiseDelay } from '../util';
-import type { JobRequest } from '.';
+import type { JobRequestNoDelay } from '.';
 import rejectExpiredEventInvites from './rejectExpiredEventInvites';
 import sayHello from './sayHello';
 import sendEventReminders from './sendEventReminders';
+import {
+  updateIntercomUser,
+  syncAllIntercomUsers,
+  syncIntercomUser,
+  deleteIntercomUser,
+} from './intercom';
 import sendChatNotif from '../fcm/chat';
 
-const cronjobs: { [string]: (JobRequest) => Promise<any> } = {
+const cronjobs: { [string]: ({ [string]: any }) => Promise<any> } = {
   rejectExpiredEventInvites,
   sayHello,
   sendEventReminders,
+  syncAllIntercomUsers,
 };
 
-const jobs: { [string]: (JobRequest) => Promise<any> } = {
+const jobs: { [string]: ({ [string]: any }) => Promise<any> } = {
   ...cronjobs,
   sendChatNotif,
+  updateIntercomUser,
+  syncIntercomUser,
+  deleteIntercomUser,
 };
 
 export const handler = express();
@@ -36,7 +46,8 @@ const waitASecond = () => {
 
 handler.use(bodyParser.json({ type: 'application/json' }));
 
-export const handleJob = (job: JobRequest) => jobs[job.name](job);
+export const handleJob = ({ name, ...args }: JobRequestNoDelay) =>
+  jobs[name](args);
 
 // for SQS jobs
 handler.post('/', (req, res, next) => {

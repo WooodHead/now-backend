@@ -15,6 +15,7 @@ import {
 } from '../../../db/repos';
 import { notifyEventChange } from '../Event';
 import { SQL_TABLES, DELETED_USER_ID } from '../../../db/constants';
+import { deleteIntercomUser } from '../../../jobs';
 
 // if the user is RSVPed to events which haven't started yet, release
 // their spots for someone else to claim. for events in the past (or
@@ -74,6 +75,7 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
           eventIds.forEach(id => notifyEventChange(id));
         })
       )
+      .then(() => deleteIntercomUser(userId))
       // TODO: catch errors here and do something useful with them, rather than echoing to the client
       .then(() => userId)
   );

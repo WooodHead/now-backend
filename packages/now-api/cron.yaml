@@ -6,3 +6,6 @@ cron:
   - name: "sendEventReminders"
     url: "/jobs/sendEventReminders"
     schedule: "*/15 * * * *"
+  - name: "syncAllIntercomUsers"
+    url: "/jobs/syncAllIntercomUsers"
+    schedule: "58 6 * * 6"
