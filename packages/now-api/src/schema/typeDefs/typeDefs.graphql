@@ -12,6 +12,8 @@ scalar Name
 
 scalar Birthdate
 
+scalar Upload
+
 interface Node {
   id: ID!
 }

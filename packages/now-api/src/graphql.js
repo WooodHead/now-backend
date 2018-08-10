@@ -8,9 +8,7 @@ import jwksRsa from 'jwks-rsa';
 import { resolveGraphiQLString } from 'apollo-server-module-graphiql';
 import url from 'url';
 
-import typeDefs from './schema/typeDefs';
-import resolvers from './schema/resolvers';
-import AdminDirective from './schema/AdminDirective';
+import schema from './schema';
 import buildUserForContext from './buildContext';
 import { endpoint as auth0Endpoint } from './auth0';
 
@@ -47,11 +45,7 @@ const graphiqlExpress = options => {
 
 export default app => {
   const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    schemaDirectives: {
-      admin: AdminDirective,
-    },
+    schema,
     context: ({ req, res, connection = {} }) => {
       if (!req) {
         return connection.context;
