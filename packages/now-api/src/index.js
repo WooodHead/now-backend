@@ -15,9 +15,6 @@ sharp.cache(false);
 
 const app = express();
 
-createStatic(app);
-createGraphql(app);
-
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');
 
@@ -35,3 +32,5 @@ app.use((req, res, next) => {
 if (isDev || process.env.WORKER_NODE === 'true') {
   app.use('/jobs', jobs);
 }
+createStatic(app);
+createGraphql(app);
