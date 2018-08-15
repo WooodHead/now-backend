@@ -142,4 +142,8 @@ describe('formatTime', () => {
     expect(formatTime(LocalTime.parse('21:03'))).toEqual('9:03 p.m.');
     expect(formatTime(LocalTime.parse('21:30'))).toEqual('9:30 p.m.');
   });
+  it('noon and midnight', () => {
+    expect(formatTime(LocalTime.parse('00:00'))).toEqual('12 a.m.');
+    expect(formatTime(LocalTime.parse('12:35'))).toEqual('12:35 p.m.');
+  });
 });

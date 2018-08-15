@@ -93,7 +93,8 @@ export const processUserAgent = (userAgent = '') => {
 };
 
 export const formatTime = when => {
-  let time = `${when.get(ChronoField.HOUR_OF_AMPM)}`;
+  const hour = when.get(ChronoField.HOUR_OF_AMPM);
+  let time = hour === 0 ? '12' : String(hour);
   const minutes = when.get(ChronoField.MINUTE_OF_HOUR);
   if (minutes !== 0) {
     time += ':';
