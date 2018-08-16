@@ -30,6 +30,7 @@ type Activity implements Node {
     after: String
     before: String
   ): ActivityEventsConnection!
+  header: Photo
 }
 
 enum ActivityOrder {
@@ -58,6 +59,7 @@ input CreateActivityInput {
   emoji: String!
   pushNotification: String
   activityDate: LocalDate!
+  header: Upload
 }
 
 input UpdateActivityInput {
@@ -67,6 +69,7 @@ input UpdateActivityInput {
   emoji: String!
   pushNotification: String
   activityDate: LocalDate!
+  header: Upload
 }
 
 type CreateActivityPayload {

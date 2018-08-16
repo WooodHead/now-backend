@@ -1,4 +1,6 @@
 import gql from 'graphql-tag';
+import fs from 'fs';
+import { pick } from 'lodash';
 
 import { client, setAdmin } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
@@ -12,6 +14,14 @@ const event = factory.build('event', {}, { activity: todayActivity });
 const serverMessages = ['noActivityTitle', 'noActivityMessage'].map(key =>
   factory.build('serverMessage', { key })
 );
+
+jest.mock('../s3', () => ({
+  s3: {
+    putObject: () => ({
+      promise: () => Promise.resolve(),
+    }),
+  },
+}));
 
 const truncateTables = () =>
   Promise.all([
@@ -99,6 +109,9 @@ describe('activity', () => {
             description
             activityDate
             generallyAvailableAt
+            header {
+              id
+            }
           }
         }
       `,
@@ -114,6 +127,7 @@ describe('activity', () => {
         generallyAvailableAt: expect.stringMatching(
           /T21:00-04:00\[America\/New_York\]$/
         ),
+        header: null,
       },
     });
   });
@@ -175,12 +189,19 @@ describe('activity', () => {
     const activity = factory.build('activity');
     const { title, description, activityDate, emoji } = activity;
 
+    const file = fs.createReadStream(`${__dirname}/test_wide.png`);
+    const header = Promise.resolve({ stream: file });
+
     const res = await client.mutate({
       mutation: gql`
         mutation create($input: CreateActivityInput) {
           createActivity(input: $input) {
             activity {
               id
+              header {
+                id
+                preview
+              }
             }
           }
         }
@@ -191,6 +212,7 @@ describe('activity', () => {
           description,
           activityDate,
           emoji,
+          header,
         },
       },
     });
@@ -198,7 +220,7 @@ describe('activity', () => {
     const {
       data: {
         createActivity: {
-          activity: { id },
+          activity: { id, header: headerResponse },
         },
       },
     } = res;
@@ -206,12 +228,19 @@ describe('activity', () => {
     const dbActivity = await Activity.byId(id);
     dbActivity.activityDate = dbActivity.activityDate.toString();
 
-    expect(dbActivity).toMatchObject({
-      id,
-      title,
-      description,
-      activityDate: expect.stringContaining(activityDate),
-      emoji,
-    });
+    expect(dbActivity).toEqual(
+      expect.objectContaining({
+        id,
+        title,
+        description,
+        activityDate: expect.stringContaining(activityDate),
+        emoji,
+      })
+    );
+
+    expect(
+      pick(headerResponse, ['headerPhotoPreview, __typename'])
+    ).toMatchSnapshot();
+    expect(dbActivity.headerPhotoPreview).toMatchSnapshot();
   });
 });

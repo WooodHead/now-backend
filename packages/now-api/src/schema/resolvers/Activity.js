@@ -5,6 +5,7 @@ import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
+import { setActivityHeaderPhoto } from './Photo';
 import { expiredUserAgent } from '../../util';
 import { AVAILABILITY_HOUR } from '../../db/constants';
 
@@ -49,7 +50,20 @@ export const getEvents = ({ id }, { first, last, after, before }) =>
     before,
   });
 
+const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }) => {
+  if (headerPhotoId) {
+    return {
+      id: headerPhotoId,
+      preview: headerPhotoPreview,
+      baseUrl: 'https://now.meetup.com/images',
+      blocked: false,
+    };
+  }
+  return null;
+};
+
 export const resolvers = {
+  header: getHeaderPhoto,
   events: getEvents,
   generallyAvailableAt: ({ activityDate }) =>
     activityDate
@@ -60,9 +74,18 @@ export const resolvers = {
       : null,
 };
 
-const createActivity = (
+const createActivity = async (
   root,
-  { input: { title, description, activityDate, emoji, pushNotification } },
+  {
+    input: {
+      title,
+      description,
+      activityDate,
+      emoji,
+      pushNotification,
+      header,
+    },
+  },
   { loaders }
 ) => {
   const newId = uuid.v1();
@@ -79,6 +102,12 @@ const createActivity = (
 
   loaders.activities.clear(newId);
 
+  if (header) {
+    const { preview, key } = await setActivityHeaderPhoto(newId, header);
+    newActivity.headerPhotoId = key;
+    newActivity.headerPhotoPreview = preview;
+  }
+
   return Activity.insert(newActivity).then(() => ({
     activity: loaders.activities.load(newId),
   }));
@@ -86,7 +115,17 @@ const createActivity = (
 
 const updateActivity = async (
   root,
-  { input: { id, title, description, activityDate, emoji, pushNotification } },
+  {
+    input: {
+      id,
+      title,
+      description,
+      activityDate,
+      emoji,
+      pushNotification,
+      header,
+    },
+  },
   { loaders }
 ) => {
   const updatedActivity = {
@@ -100,6 +139,12 @@ const updateActivity = async (
   };
 
   loaders.activities.clear(id);
+
+  if (header) {
+    const { preview, key } = await setActivityHeaderPhoto(id, header);
+    updatedActivity.headerPhotoId = key;
+    updatedActivity.headerPhotoPreview = preview;
+  }
 
   await Activity.update(updatedActivity);
   const activityEvents = await Event.all({ activityId: id });
