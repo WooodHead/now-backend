@@ -142,7 +142,7 @@ export const queries = {
 
 const createEvent = (
   root,
-  { input: { time, timezone, activityId, limit, locationId } },
+  { input: { time, timezone, duration, activityId, limit, locationId } },
   { loaders }
 ) => {
   const newId = uuid();
@@ -153,6 +153,7 @@ const createEvent = (
     limit,
     time: time.toString(),
     timezone: timezone.id(),
+    duration,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
@@ -166,7 +167,7 @@ const createEvent = (
 
 const updateEvent = (
   root,
-  { input: { id, time, timezone, activityId, limit, locationId } },
+  { input: { id, time, timezone, duration, activityId, limit, locationId } },
   { loaders }
 ) => {
   const updatedEvent = {
@@ -176,6 +177,7 @@ const updateEvent = (
     limit,
     time: time.toString(),
     timezone: timezone.id(),
+    duration,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };

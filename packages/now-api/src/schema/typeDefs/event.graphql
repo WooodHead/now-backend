@@ -19,6 +19,7 @@ type Subscription {
 enum EventOrder {
   id
   time
+  duration
   activity
   limit
   createdAt
@@ -30,6 +31,7 @@ input CreateEventInput {
   activityId: ID!
   time: ZonedDateTime!
   timezone: ZoneId!
+  duration: Int!
   limit: Int!
   locationId: ID!
 }
@@ -39,6 +41,7 @@ input UpdateEventInput {
   activityId: ID!
   time: ZonedDateTime!
   timezone: ZoneId!
+  duration: Int!
   limit: Int!
   locationId: ID!
 }
@@ -50,6 +53,7 @@ type CreateEventPayload {
 type Event implements Node {
   id: ID!
   time: ZonedDateTime
+  duration: Int
   activity: Activity
   rsvps(
     first: Int

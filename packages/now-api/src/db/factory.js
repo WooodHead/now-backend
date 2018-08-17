@@ -114,7 +114,8 @@ Factory.define('event')
       )
       .toISOString();
   })
-  .attr('timezone', () => random.arrayElement(ZoneId.getAvailableZoneIds()));
+  .attr('timezone', () => random.arrayElement(ZoneId.getAvailableZoneIds()))
+  .attr('duration', () => random.number({ max: 300, min: 30 }));
 
 Factory.define('location')
   .attr('id', uuid)
