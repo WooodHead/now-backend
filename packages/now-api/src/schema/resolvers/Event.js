@@ -98,7 +98,7 @@ export const resolvers = {
   time: timeResolver,
 };
 
-export const visibleEventsQuery = () => {
+export const visibleEventsQuery = includePast => {
   const now = LocalDateTime.now(NYC_TZ);
   const today = now.toLocalDate();
 
@@ -110,16 +110,22 @@ export const visibleEventsQuery = () => {
   const todayEnd = today.plusDays(1).atStartOfDay();
 
   const tomorrowEnd = today.plusDays(2).atStartOfDay();
+  const query = Event.all();
 
   if (now.isBefore(todayEarlyAvailable)) {
-    return Event.all()
-      .where('time', '>=', todayStart.toString())
-      .where('time', '<', todayEnd.toString());
-  }
+    query.where('time', '<', todayEnd.toString());
 
-  return Event.all()
-    .where('time', '>=', tomorrowStart.toString())
-    .where('time', '<', tomorrowEnd.toString());
+    if (!includePast) {
+      query.where('time', '>=', todayStart.toString());
+    }
+  } else {
+    query.where('time', '<', tomorrowEnd.toString());
+
+    if (!includePast) {
+      query.where('time', '>=', tomorrowStart.toString());
+    }
+  }
+  return query;
 };
 
 // Queries
@@ -130,8 +136,8 @@ const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
 
 const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
 
-const eventsQuery = (root, { input, orderBy = 'time' }) =>
-  sqlPaginatify(orderBy, visibleEventsQuery(), input);
+const eventsQuery = (root, { input, orderBy = 'time', includePast = false }) =>
+  sqlPaginatify(orderBy, visibleEventsQuery(includePast), input);
 
 export const queries = {
   event: eventQuery,

@@ -1,7 +1,11 @@
 type Query {
   allEvents(input: AdminInput, orderBy: EventOrder): RootEventsConnection!
   # Returns the events that a user can see
-  events(input: AdminInput, orderBy: EventOrder): RootEventsConnection!
+  events(
+    input: AdminInput
+    orderBy: EventOrder
+    includePast: Boolean
+  ): RootEventsConnection!
   manyEvents(ids: [ID!]!): [Event!]
   event(id: ID!): Event
 }

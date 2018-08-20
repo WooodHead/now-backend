@@ -103,6 +103,7 @@ describe('Event', () => {
   describe('events visible to user', () => {
     let eventToday;
     let eventTomorrow;
+    let eventLastWeek;
     beforeEach(async () => {
       await sql(SQL_TABLES.EVENTS).truncate();
       const today = LocalDate.now();
@@ -125,7 +126,22 @@ describe('Event', () => {
         },
         { activity, location }
       );
-      await sql(SQL_TABLES.EVENTS).insert([eventToday, eventTomorrow]);
+      eventLastWeek = factory.build(
+        'event',
+        {
+          time: today
+            .minusDays(7)
+            .atTime(14, 0)
+            .toString(),
+          timezone: Activity.NYC_TZ.id(),
+        },
+        { activity, location }
+      );
+      await sql(SQL_TABLES.EVENTS).insert([
+        eventLastWeek,
+        eventToday,
+        eventTomorrow,
+      ]);
     });
     afterEach(() => {
       restoreNow();
@@ -183,6 +199,39 @@ describe('Event', () => {
       const { data } = await results;
 
       expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventTomorrow.id,
+      ]);
+    });
+    it('includePast', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(20, 0)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
+      const results = client.query({
+        fetchPolicy: 'network-only',
+        query: gql`
+          query getEvents($includePast: Boolean) {
+            events(includePast: $includePast) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        `,
+        variables: {
+          includePast: true,
+        },
+      });
+      const { data } = await results;
+
+      expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventLastWeek.id,
+        eventToday.id,
         eventTomorrow.id,
       ]);
     });
