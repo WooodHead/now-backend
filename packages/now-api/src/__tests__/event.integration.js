@@ -90,6 +90,7 @@ describe('Event', () => {
                 'activityId',
                 'timezone',
                 'duration',
+                'visibleAt',
                 'time',
                 'going',
               ]),
@@ -112,6 +113,10 @@ describe('Event', () => {
         {
           time: today.atTime(14, 0).toString(),
           timezone: Activity.NYC_TZ.id(),
+          visibleAt: today
+            .minusDays(1)
+            .atTime(14, 0)
+            .toString(),
         },
         { activity, location }
       );
@@ -123,6 +128,7 @@ describe('Event', () => {
             .atTime(14, 0)
             .toString(),
           timezone: Activity.NYC_TZ.id(),
+          visibleAt: today.atTime(14, 0).toString(),
         },
         { activity, location }
       );
@@ -134,6 +140,19 @@ describe('Event', () => {
             .atTime(14, 0)
             .toString(),
           timezone: Activity.NYC_TZ.id(),
+          visibleAt: today
+            .minusDays(8)
+            .atTime(14, 0)
+            .toString(),
+        },
+        { activity, location }
+      );
+      const eventNotPublished = factory.build(
+        'event',
+        {
+          time: today.atTime(14, 0).toString(),
+          timezone: Activity.NYC_TZ.id(),
+          visibleAt: null,
         },
         { activity, location }
       );
@@ -141,6 +160,7 @@ describe('Event', () => {
         eventLastWeek,
         eventToday,
         eventTomorrow,
+        eventNotPublished,
       ]);
     });
     afterEach(() => {
@@ -289,6 +309,7 @@ describe('Event', () => {
           'activityId',
           'timezone',
           'duration',
+          'visibleAt',
           'time',
           'going',
         ]),

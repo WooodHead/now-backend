@@ -115,7 +115,13 @@ Factory.define('event')
       .toISOString();
   })
   .attr('timezone', () => random.arrayElement(ZoneId.getAvailableZoneIds()))
-  .attr('duration', () => random.number({ max: 300, min: 30 }));
+  .attr('duration', () => random.number({ max: 300, min: 30 }))
+  .attr('visibleAt', () =>
+    LocalDate.now()
+      .minusDays(1)
+      .atTime(14, 0)
+      .toString()
+  );
 
 Factory.define('location')
   .attr('id', uuid)

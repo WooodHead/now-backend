@@ -112,19 +112,18 @@ export const visibleEventsQuery = includePast => {
   const tomorrowEnd = today.plusDays(2).atStartOfDay();
   const query = Event.all();
 
-  if (now.isBefore(todayEarlyAvailable)) {
-    query.where('time', '<', todayEnd.toString());
-
-    if (!includePast) {
+  if (!includePast) {
+    if (now.isBefore(todayEarlyAvailable)) {
+      query.where('time', '<', todayEnd.toString());
       query.where('time', '>=', todayStart.toString());
-    }
-  } else {
-    query.where('time', '<', tomorrowEnd.toString());
-
-    if (!includePast) {
+    } else {
+      query.where('time', '<', tomorrowEnd.toString());
       query.where('time', '>=', tomorrowStart.toString());
     }
   }
+  query.where('visibleAt', '<', Instant.now().toString());
+  query.whereNotNull('visibleAt');
+
   return query;
 };
 
@@ -148,7 +147,17 @@ export const queries = {
 
 const createEvent = (
   root,
-  { input: { time, timezone, duration, activityId, limit, locationId } },
+  {
+    input: {
+      time,
+      timezone,
+      duration,
+      visibleAt,
+      activityId,
+      limit,
+      locationId,
+    },
+  },
   { loaders }
 ) => {
   const newId = uuid();
@@ -160,6 +169,7 @@ const createEvent = (
     time: time.toString(),
     timezone: timezone.id(),
     duration,
+    visibleAt: visibleAt ? visibleAt.toString() : null,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
@@ -173,7 +183,18 @@ const createEvent = (
 
 const updateEvent = (
   root,
-  { input: { id, time, timezone, duration, activityId, limit, locationId } },
+  {
+    input: {
+      id,
+      time,
+      timezone,
+      duration,
+      visibleAt,
+      activityId,
+      limit,
+      locationId,
+    },
+  },
   { loaders }
 ) => {
   const updatedEvent = {
@@ -184,6 +205,7 @@ const updateEvent = (
     time: time.toString(),
     timezone: timezone.id(),
     duration,
+    visibleAt: visibleAt ? visibleAt.toString() : null,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
