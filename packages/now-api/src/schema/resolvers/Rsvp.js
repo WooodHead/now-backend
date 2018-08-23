@@ -4,7 +4,7 @@ import { userIdFromContext, sqlPaginatify } from '../util';
 import { Event, Rsvp, RsvpLog, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
-import { notifyEventChange, visibleEventsQuery } from './Event';
+import { notifyEventChange, joinableEventsQuery } from './Event';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 const invite = ({ inviteId }, args, { loaders }) =>
@@ -19,7 +19,7 @@ export const createRsvp = async (
   action,
   loaders
 ) => {
-  const query = ignoreVisible ? Event.get : visibleEventsQuery;
+  const query = ignoreVisible ? Event.get : joinableEventsQuery;
   const rsvpEvent = await query()
     .where({ id: eventId })
     .transacting(trx)

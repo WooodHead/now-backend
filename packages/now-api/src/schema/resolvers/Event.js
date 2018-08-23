@@ -121,8 +121,17 @@ export const visibleEventsQuery = includePast => {
       query.where('time', '>=', tomorrowStart.toString());
     }
   }
-  query.where('visibleAt', '<', Instant.now().toString());
+  query.where('visibleAt', '<=', Instant.now().toString());
   query.whereNotNull('visibleAt');
+
+  return query;
+};
+
+export const joinableEventsQuery = () => {
+  const now = Instant.now().toString();
+  const query = Event.all();
+  query.where('time', '>', now);
+  query.where('visibleAt', '<', now);
 
   return query;
 };

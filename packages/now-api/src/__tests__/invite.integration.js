@@ -330,39 +330,6 @@ describe('Invitations', () => {
       expect(dbInvite.active).toBe(false);
     });
 
-    it("can't create before invite hour", async () => {
-      mockNow(
-        LocalDate.now()
-          .atTime(19, 0)
-          .atZone(Activity.NYC_TZ)
-          .withFixedOffsetZone()
-          .toString()
-      );
-      const eventTomorrow = await buildEventTomorrow();
-
-      const results = createEventInvite(eventTomorrow.id);
-      await expect(results).rejects.toEqual(
-        new Error(`GraphQL error: Event ${eventTomorrow.id} not found`)
-      );
-    });
-
-    it("can't create after invite hour", async () => {
-      mockNow(
-        LocalDate.now()
-          .atTime(21, 1)
-          .atZone(Activity.NYC_TZ)
-          .withFixedOffsetZone()
-          .toString()
-      );
-      const eventTomorrow = await buildEventTomorrow();
-
-      await expect(createEventInvite(eventTomorrow.id)).rejects.toEqual(
-        new Error(
-          `GraphQL error: You can't invite a friend to this Meetup at this time.`
-        )
-      );
-    });
-
     it('remove expired rsvps if invite not used', async () => {
       mockNow(
         LocalDate.now()

@@ -15,7 +15,7 @@ const event = factory.build(
   {
     limit: 5,
     time: ZonedDateTime.now(NYC_TZ)
-      .minusHours(1)
+      .plusHours(1)
       .withZoneSameInstant(ZoneId.UTC)
       .toString(),
     timezone: NYC_TZ.id(),
@@ -212,6 +212,78 @@ describe('Rsvp', () => {
     expect.assertions(1);
     await expect(results).rejects.toEqual(
       new Error(`GraphQL error: Event ${event.id} full`)
+    );
+  });
+
+  it("Doesn't rsvp to event after its start time", async () => {
+    const time = ZonedDateTime.now(NYC_TZ)
+      .minusMinutes(1)
+      .withZoneSameInstant(ZoneId.UTC)
+      .toString();
+
+    await Event.update({ id: event.id, time });
+
+    const results = client.mutate({
+      mutation: gql`
+        mutation rsvp($input: CreateRsvpInput!) {
+          addRsvp(input: $input) {
+            rsvp {
+              id
+              user {
+                id
+              }
+              event {
+                id
+                isAttending
+              }
+            }
+            event {
+              id
+            }
+          }
+        }
+      `,
+      variables: { input: { eventId: event.id } },
+    });
+    expect.assertions(1);
+    await expect(results).rejects.toEqual(
+      new Error(`GraphQL error: Event ${event.id} not found`)
+    );
+  });
+
+  it("Doesn't rsvp to event before visibleAt", async () => {
+    const visibleAt = ZonedDateTime.now(NYC_TZ)
+      .plusDays(1)
+      .withZoneSameInstant(ZoneId.UTC)
+      .toString();
+
+    await Event.update({ id: event.id, visibleAt });
+
+    const results = client.mutate({
+      mutation: gql`
+        mutation rsvp($input: CreateRsvpInput!) {
+          addRsvp(input: $input) {
+            rsvp {
+              id
+              user {
+                id
+              }
+              event {
+                id
+                isAttending
+              }
+            }
+            event {
+              id
+            }
+          }
+        }
+      `,
+      variables: { input: { eventId: event.id } },
+    });
+    expect.assertions(1);
+    await expect(results).rejects.toEqual(
+      new Error(`GraphQL error: Event ${event.id} not found`)
     );
   });
 

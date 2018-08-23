@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { ZonedDateTime, LocalDate, LocalDateTime } from 'js-joda';
+import { ZonedDateTime, LocalDate } from 'js-joda';
 import leftPad from 'left-pad';
 import randomNumber from 'random-number-csprng';
 import uuid from 'uuid/v4';
@@ -10,9 +10,9 @@ import { formatTime } from '../../util';
 import { userQuery } from './User';
 import { createRsvp } from './Rsvp';
 import { sqlPaginatify, userIdFromContext } from '../util';
-import { notifyEventChange, visibleEventsQuery } from './Event';
+import { notifyEventChange, joinableEventsQuery } from './Event';
 import { NYC_TZ } from './Activity';
-import { EARLY_AVAILABILITY_HOUR, AVAILABILITY_HOUR } from '../../db/constants';
+import { AVAILABILITY_HOUR } from '../../db/constants';
 
 const MAX_CODE_RETRIES = 6;
 
@@ -28,22 +28,6 @@ const valid = builder =>
 
 export const findValidCode = (code, trx, ...fields) =>
   valid(Invitation.withTransaction(trx).all({ code })).first(...fields);
-
-const canInviteNow = date => {
-  const now = LocalDateTime.now(NYC_TZ);
-  const today = now.toLocalDate();
-  const tomorrowBegin = today.plusDays(1).atStartOfDay();
-  const tomorrowEnd = today.plusDays(2).atStartOfDay();
-  const earlyAvailabilityTime = today.atTime(EARLY_AVAILABILITY_HOUR);
-  const availabilityTime = today.atTime(AVAILABILITY_HOUR);
-
-  return (
-    date.isAfter(tomorrowBegin) &&
-    date.isBefore(tomorrowEnd) &&
-    !now.isBefore(earlyAvailabilityTime) &&
-    now.isBefore(availabilityTime)
-  );
-};
 
 const resolveType = ({ type }) => type;
 
@@ -141,7 +125,7 @@ export const generateCode = async trx => {
 
 const createEventInvitation = async (root, { input: { eventId } }, context) =>
   sql.transaction(async trx => {
-    const event = await visibleEventsQuery()
+    const event = await joinableEventsQuery()
       .where({ id: eventId })
       .transacting(trx)
       .forUpdate()
@@ -155,10 +139,6 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
 
     if (event.limit - event.going < 2) {
       throw new Error("Sorry, there aren't enough spots left now");
-    }
-
-    if (!canInviteNow(event.time.toLocalDateTime())) {
-      throw new Error("You can't invite a friend to this Meetup at this time.");
     }
 
     const previousInvite = await Invitation.get({
