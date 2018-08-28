@@ -192,6 +192,7 @@ describe('Event', () => {
 
       expect(data.events.edges.map(({ node }) => node.id)).toEqual([
         eventToday.id,
+        eventTomorrow.id,
       ]);
     });
     it('after early availability', async () => {
@@ -219,6 +220,7 @@ describe('Event', () => {
       const { data } = await results;
 
       expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventToday.id,
         eventTomorrow.id,
       ]);
     });

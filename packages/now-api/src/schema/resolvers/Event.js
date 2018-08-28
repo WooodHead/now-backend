@@ -5,7 +5,6 @@ import { toNumber, isInteger } from 'lodash';
 import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { NYC_TZ } from './Activity';
-import { EARLY_AVAILABILITY_HOUR } from '../../db/constants';
 import { getMessages, notifyMessagesRead } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
@@ -101,26 +100,15 @@ export const resolvers = {
 export const visibleEventsQuery = includePast => {
   const now = LocalDateTime.now(NYC_TZ);
   const today = now.toLocalDate();
-
-  const todayEarlyAvailable = today.atTime(EARLY_AVAILABILITY_HOUR);
-
   const todayStart = today.atStartOfDay();
-  const tomorrowStart = today.plusDays(1).atStartOfDay();
-
-  const todayEnd = today.plusDays(1).atStartOfDay();
-
-  const tomorrowEnd = today.plusDays(2).atStartOfDay();
   const query = Event.all();
 
   if (!includePast) {
-    if (now.isBefore(todayEarlyAvailable)) {
-      query.where('time', '<', todayEnd.toString());
-      query.where('time', '>=', todayStart.toString());
-    } else {
-      query.where('time', '<', tomorrowEnd.toString());
-      query.where('time', '>=', tomorrowStart.toString());
-    }
+    // We're only excluding events older than today. Events
+    // that were today but are already over will still appear.
+    query.where('time', '>=', todayStart.toString());
   }
+
   query.where('visibleAt', '<=', Instant.now().toString());
   query.whereNotNull('visibleAt');
 
