@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import { LocalDateTime, ZoneId } from 'js-joda';
+import { LocalDateTime, LocalDate, ZoneId } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
@@ -62,16 +62,15 @@ const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }) => {
   return null;
 };
 
+const getGenerallyAvailableAt = () =>
+  LocalDate.now()
+    .atStartOfDay()
+    .atZone(NYC_TZ);
+
 export const resolvers = {
   header: getHeaderPhoto,
   events: getEvents,
-  generallyAvailableAt: ({ activityDate }) =>
-    activityDate
-      ? activityDate
-          .minusDays(1)
-          .atTime(AVAILABILITY_HOUR)
-          .atZone(NYC_TZ)
-      : null,
+  generallyAvailableAt: getGenerallyAvailableAt,
 };
 
 const createActivity = async (

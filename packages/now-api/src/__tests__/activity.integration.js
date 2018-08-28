@@ -125,7 +125,7 @@ describe('activity', () => {
         [Symbol('id')]: `Activity:${activities[0].id}`,
         ...activities[0],
         generallyAvailableAt: expect.stringMatching(
-          /T21:00-04:00\[America\/New_York\]$/
+          /T00:00-04:00\[America\/New_York\]$/
         ),
         header: null,
       },
