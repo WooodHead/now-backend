@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { ZoneId, LocalDate, LocalDateTime } from 'js-joda';
+import { LocalDate, LocalDateTime, ZoneId } from 'js-joda';
 import uuid from 'uuid/v4';
 
 import { client, USER_ID, newUserClient } from '../db/mock';
@@ -134,7 +134,10 @@ describe('Invitations', () => {
       const eventTomorrow = factory.build(
         'event',
         {
-          time: tomorrow.atTime(14, 0).toString(),
+          time: tomorrow
+            .atTime(14, 0)
+            .atZone(ZoneId.UTC)
+            .toString(),
           timezone: Activity.NYC_TZ.id(),
         },
         { activity, location }
@@ -149,38 +152,35 @@ describe('Invitations', () => {
       restoreNow();
     });
 
-    it('create during invite hour', async () => {
-      const inviteStart = LocalDate.now()
-        .atTime(20, 0)
-        .atZone(Activity.NYC_TZ)
-        .withFixedOffsetZone();
-      const inviteEnd = LocalDate.now()
-        .atTime(21, 0)
-        .atZone(Activity.NYC_TZ)
-        .withZoneSameInstant(ZoneId.UTC)
-        .withFixedOffsetZone();
+    it('creates before event start', async () => {
+      mockNow(
+        LocalDate.now()
+          .atTime(20, 1)
+          .atZone(Activity.NYC_TZ)
+          .withFixedOffsetZone()
+          .toString()
+      );
 
-      mockNow(inviteStart.toString());
       const eventTomorrow = await buildEventTomorrow();
 
       const results = await createEventInvite(eventTomorrow.id);
 
       const { data } = results;
+      const { invitation } = data.createEventInvitation;
 
-      expect(data.createEventInvitation).toMatchObject({
-        invitation: {
-          __typename: 'EventInvitation',
-          code: expect.stringMatching(/\d{6}/),
-          expiresAt: inviteEnd.toString(),
-          inviter: {
-            id: USER_ID,
-          },
-          usedAt: null,
-          event: {
-            id: eventTomorrow.id,
-          },
+      expect(invitation).toMatchObject({
+        __typename: 'EventInvitation',
+        inviter: {
+          id: USER_ID,
         },
+        usedAt: null,
+        event: {
+          id: eventTomorrow.id,
+        },
+        expiresAt: eventTomorrow.time,
       });
+
+      expect(invitation.code).toEqual(expect.stringMatching(/\d{6}/));
 
       const dbRsvps = await Rsvp.all({ eventId: eventTomorrow.id }).orderBy(
         'inviteId'
@@ -346,13 +346,7 @@ describe('Invitations', () => {
         },
       } = await createEventInvite(eventTomorrow.id);
 
-      mockNow(
-        LocalDate.now()
-          .atTime(21, 1)
-          .atZone(Activity.NYC_TZ)
-          .withFixedOffsetZone()
-          .toString()
-      );
+      mockNow(eventTomorrow.time);
 
       await rejectExpiredEventInvites(loaders({ currentUserId: null }));
 

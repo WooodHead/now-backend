@@ -6,7 +6,6 @@ import uuid from 'uuid/v4';
 
 import sql from '../../db/sql';
 import { Invitation } from '../../db/repos';
-import { formatTime } from '../../util';
 import { userQuery } from './User';
 import { createRsvp } from './Rsvp';
 import { sqlPaginatify, userIdFromContext } from '../util';
@@ -153,11 +152,13 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
 
     const id = uuid();
     const code = await generateCode();
-    const expiresAt = LocalDate.now(NYC_TZ)
-      .atTime(AVAILABILITY_HOUR)
-      .atZone(NYC_TZ);
-
-    const time = formatTime(AVAILABILITY_HOUR);
+    const expiresAt =
+      event.time ||
+      LocalDate.now(NYC_TZ)
+        .atTime(AVAILABILITY_HOUR)
+        .atZone(NYC_TZ)
+        .toInstant()
+        .toString();
 
     const newInvitation = {
       id,
@@ -166,8 +167,8 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
       inviterId,
       eventId,
       notes: '',
-      expiresAt: expiresAt.toInstant().toString(),
-      message: `Hey, I invited you to join tomorrow’s Meetup of the Day with me! You just have to get the app here: https://now.meetup.com/i and use this invite code: ${code}. But hurry, if you don’t sign up by ${time} you’ll lose your spot!`,
+      expiresAt,
+      message: `Hey, I invited you to join tomorrow’s Meetup of the Day with me! You just have to get the app here: https://now.meetup.com/i and use this invite code: ${code}.`,
     };
 
     await Invitation.insert(newInvitation).transacting(trx);
