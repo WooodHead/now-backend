@@ -132,6 +132,59 @@ describe('activity', () => {
     });
   });
 
+  it("gets today's activity", async () => {
+    const res = client.query({
+      query: gql`
+        {
+          serverMessages {
+            noActivityTitle
+            noActivityMessage
+          }
+          todayActivity {
+            id
+            title
+            emoji
+            description
+            activityDate
+            events {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+      `,
+    });
+
+    const { data } = await res;
+    expect(data).toMatchObject({
+      serverMessages: {
+        noActivityTitle: expect.any(String),
+        noActivityMessage: expect.any(String),
+      },
+      todayActivity: {
+        __typename: 'Activity',
+        [Symbol('id')]: `Activity:${todayActivity.id}`,
+        ...todayActivity,
+        events: {
+          edges: expect.arrayContaining([
+            expect.objectContaining({
+              __typename: 'ActivityEventsEdge',
+              [Symbol('id')]: `$Activity:${todayActivity.id}.events.edges.0`,
+              node: expect.objectContaining({
+                __typename: 'Event',
+                id: event.id,
+                [Symbol('id')]: `Event:${event.id}`,
+              }),
+            }),
+          ]),
+        },
+      },
+    });
+  });
+
   it('creates an activity', async () => {
     const activity = factory.build('activity');
     const { title, description, activityDate, emoji } = activity;

@@ -1,5 +1,5 @@
 import uuid from 'uuid';
-import { LocalDateTime, LocalDate, ZoneId } from 'js-joda';
+import { LocalDateTime, ZoneId } from 'js-joda';
 
 import { sqlPaginatify } from '../util';
 import { Activity, Event } from '../../db/repos';
@@ -59,7 +59,8 @@ const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }) => {
 };
 
 const getGenerallyAvailableAt = () =>
-  LocalDate.now()
+  LocalDateTime.now(NYC_TZ)
+    .toLocalDate()
     .atStartOfDay()
     .atZone(NYC_TZ);
 
