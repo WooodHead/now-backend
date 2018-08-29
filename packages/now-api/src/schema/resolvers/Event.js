@@ -97,18 +97,13 @@ export const resolvers = {
   time: timeResolver,
 };
 
-export const visibleEventsQuery = includePast => {
+export const visibleEventsQuery = () => {
   const now = LocalDateTime.now(NYC_TZ);
   const today = now.toLocalDate();
   const todayStart = today.atStartOfDay();
   const query = Event.all();
 
-  if (!includePast) {
-    // We're only excluding events older than today. Events
-    // that were today but are already over will still appear.
-    query.where('time', '>=', todayStart.toString());
-  }
-
+  query.where('time', '>=', todayStart.toString());
   query.where('visibleAt', '<=', Instant.now().toString());
   query.whereNotNull('visibleAt');
 
@@ -132,8 +127,8 @@ const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
 
 const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
 
-const eventsQuery = (root, { input, orderBy = 'time', includePast = false }) =>
-  sqlPaginatify(orderBy, visibleEventsQuery(includePast), input);
+const eventsQuery = (root, { input, orderBy = 'time' }) =>
+  sqlPaginatify(orderBy, visibleEventsQuery(), input);
 
 export const queries = {
   event: eventQuery,

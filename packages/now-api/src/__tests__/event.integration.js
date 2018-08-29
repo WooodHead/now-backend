@@ -224,39 +224,6 @@ describe('Event', () => {
         eventTomorrow.id,
       ]);
     });
-    it('includePast', async () => {
-      mockNow(
-        LocalDate.now()
-          .atTime(20, 0)
-          .atZone(Activity.NYC_TZ)
-          .withFixedOffsetZone()
-          .toString()
-      );
-      const results = client.query({
-        fetchPolicy: 'network-only',
-        query: gql`
-          query getEvents($includePast: Boolean) {
-            events(includePast: $includePast) {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        `,
-        variables: {
-          includePast: true,
-        },
-      });
-      const { data } = await results;
-
-      expect(data.events.edges.map(({ node }) => node.id)).toEqual([
-        eventLastWeek.id,
-        eventToday.id,
-        eventTomorrow.id,
-      ]);
-    });
   });
 
   it('return event', async () => {
