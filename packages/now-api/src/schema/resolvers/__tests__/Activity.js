@@ -19,8 +19,8 @@ describe('getToday', () => {
     expect(getToday()).toEqual('2018-04-30');
   });
 
-  it("gives tomorrow's date at 9:00pm", () => {
+  it("still gives today's date at 9:00pm", () => {
     mockNow('2018-04-30T21:00:00-04:00');
-    expect(getToday()).toEqual('2018-05-01');
+    expect(getToday()).toEqual('2018-04-30');
   });
 });

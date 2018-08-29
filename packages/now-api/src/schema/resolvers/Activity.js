@@ -7,16 +7,12 @@ import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 import { setActivityHeaderPhoto } from './Photo';
 import { expiredUserAgent } from '../../util';
-import { AVAILABILITY_HOUR } from '../../db/constants';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
 
 export const getToday = () => {
   const now = LocalDateTime.now(NYC_TZ);
-  return (now.toLocalTime().isBefore(AVAILABILITY_HOUR)
-    ? now.toLocalDate()
-    : now.toLocalDate().plusDays(1)
-  ).toString();
+  return now.toLocalDate().toString();
 };
 
 const allActivities = (root, { input, orderBy = 'id' }) =>
