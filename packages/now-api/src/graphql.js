@@ -72,7 +72,13 @@ export default app => {
         new Promise((resolve, reject) => {
           const req = {
             headers: { authorization: `Bearer ${token}` },
-            get: () => {},
+            get: option => {
+              if (option === 'host') {
+                return 'now.meetup.com';
+              }
+              return '';
+            },
+            protocol: 'https',
           };
           checkJwt(req, null, err => {
             if (err) {
