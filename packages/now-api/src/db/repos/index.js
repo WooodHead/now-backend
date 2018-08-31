@@ -55,5 +55,6 @@ export const Rsvp = new Repo(SQL_TABLES.RSVPS);
 export const RsvpLog = new Repo(SQL_TABLES.RSVP_LOG);
 export const Message = new Repo(SQL_TABLES.MESSAGES);
 export const Invitation = new Repo(SQL_TABLES.INVITATIONS);
+export const InvitationLog = new Repo(SQL_TABLES.INVITATION_LOG);
 export const EventUserMetadata = new Repo(SQL_TABLES.EVENT_USER_METADATA);
 export const ServerMessages = new Repo(SQL_TABLES.SERVER_MESSAGES);

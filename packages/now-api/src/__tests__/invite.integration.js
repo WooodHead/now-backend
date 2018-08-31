@@ -107,18 +107,6 @@ describe('Invitations', () => {
         new Error(`GraphQL error: This invite has expired.`)
       );
     });
-    it('returns error if used', async () => {
-      const invite = factory.build('appInvite', {
-        usedAt: LocalDateTime.now()
-          .minusDays(1)
-          .toString(),
-      });
-      await Invitation.insert(invite);
-
-      await expect(checkInvitation(invite.code)).rejects.toEqual(
-        new Error(`GraphQL error: This invite has been used already.`)
-      );
-    });
   });
   describe('Event Invitations', () => {
     const buildEventTomorrow = async () => {

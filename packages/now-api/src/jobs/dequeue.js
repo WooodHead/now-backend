@@ -6,7 +6,6 @@ import type { $Request, $Response, NextFunction } from 'express';
 
 import { promiseDelay } from '../util';
 import type { JobRequestNoDelay } from '.';
-import rejectExpiredEventInvites from './rejectExpiredEventInvites';
 import sayHello from './sayHello';
 import sendEventReminders from './sendEventReminders';
 import {
@@ -18,7 +17,6 @@ import {
 import sendChatNotif from '../fcm/chat';
 
 const cronjobs: { [string]: ({ [string]: any }) => Promise<any> } = {
-  rejectExpiredEventInvites,
   sayHello,
   sendEventReminders,
   syncAllIntercomUsers,

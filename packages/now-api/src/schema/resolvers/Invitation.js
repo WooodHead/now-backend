@@ -20,9 +20,7 @@ export const EVENT_INVITE_TYPE = 'EventInvitation';
 // given a partial knex query, add some WHERE clauses to make sure the token
 // is currently redeemable
 const valid = builder =>
-  builder
-    .whereNull('usedAt')
-    .whereRaw('(?? >= now() or ?? is null)', ['expiresAt', 'expiresAt']);
+  builder.whereRaw('(?? >= now() or ?? is null)', ['expiresAt', 'expiresAt']);
 
 export const findValidCode = (code, trx, ...fields) =>
   valid(Invitation.withTransaction(trx).all({ code })).first(...fields);
@@ -72,19 +70,6 @@ const checkInvitation = async (root, { code }) => {
   if (!invite) {
     throw new Error('Invite not found.');
   }
-
-  if (!invite.active) {
-    throw new Error(
-      'Your friend has left the meetup so your invite has expired.'
-    );
-  }
-
-  if (invite.usedAt) {
-    if (invite.usedAt.isBefore(now)) {
-      throw new Error('This invite has been used already.');
-    }
-  }
-
   if (invite.expiresAt) {
     if (invite.expiresAt.isBefore(now)) {
       throw new Error('This invite has expired.');

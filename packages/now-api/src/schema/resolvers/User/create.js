@@ -5,8 +5,8 @@ import { pick } from 'lodash';
 import { getUser } from './index';
 import { CURRENT_TOS_VERSION } from './tos';
 import RunTimeFlags from '../../../RunTimeFlags';
+import { InvitationLog } from '../../../db/repos';
 import sql from '../../../db/sql';
-import { Rsvp } from '../../../db/repos';
 import {
   consumeInvitation,
   findValidCode,
@@ -17,6 +17,7 @@ import { SQL_TABLES } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
 import { notifyEventChange } from '../Event';
 import { syncIntercomUser } from '../../../jobs';
+import { createRsvp } from '../Rsvp';
 
 const PRE_LOGGED_IN_AUTH0_ID = 'CUV6mTWPcyKmfHTw0DppzuVkb45RRCVN@clients';
 
@@ -65,9 +66,9 @@ export const createUserMutation = async (
       throw new Error('A valid invitation code is required.');
     }
   }
-  const newId = uuid();
+  const newUserId = uuid();
   const newUser = {
-    id: newId,
+    id: newUserId,
     email,
     firstName,
     lastName,
@@ -86,20 +87,21 @@ export const createUserMutation = async (
     await trx(SQL_TABLES.USERS).insert(newUser);
     if (invitation) {
       const { id: inviteId, eventId, type } = invitation;
-      await consumeInvitation(inviteId, newId, trx);
+      await consumeInvitation(inviteId, newUserId, trx);
       if (type === EVENT_INVITE_TYPE) {
+        await InvitationLog.insert({ newUserId, inviteId }).transacting(trx);
         notifyEventId = eventId;
-        // add new user id to the rsvp placeholder
-        const rsvp = await Rsvp.get({ eventId, inviteId });
-        if (!rsvp) {
-          throw new Error('invite rsvp not found');
+        // attempt to RSVP the user to the event for which they were invited
+        try {
+          await createRsvp(
+            trx,
+            { eventId: invitation.eventId, inviteId, userId: newUserId },
+            'add',
+            context.loaders
+          );
+        } catch (e) {
+          console.error('Unable to RSVP invited user');
         }
-
-        await Rsvp.update({
-          ...rsvp,
-          userId: newId,
-          updatedAt: sql.raw('now()'),
-        });
       }
     }
 
@@ -108,9 +110,9 @@ export const createUserMutation = async (
     }
   });
 
-  maybeUpdateFcm(preferences, newId, true);
-  await syncIntercomUser(newId);
-  return { user: getUser(newId, newId) };
+  maybeUpdateFcm(preferences, newUserId, true);
+  await syncIntercomUser(newUserId);
+  return { user: getUser(newUserId, newUserId) };
 };
 
 export const updateCurrentUser = (root, { input }, context) => {

@@ -11,6 +11,7 @@ export const SQL_TABLES = {
   RSVPS: 'rsvps',
   RSVP_LOG: 'rsvpLog',
   INVITATIONS: 'invitations',
+  INVITATION_LOG: 'invitationLog',
   EVENT_USER_METADATA: 'eventUserMetadata',
   SENT_NOTIFICATIONS: 'sentNotifications',
   SERVER_MESSAGES: 'serverMessages',
