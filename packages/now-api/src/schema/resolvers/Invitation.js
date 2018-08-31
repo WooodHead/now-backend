@@ -7,9 +7,8 @@ import uuid from 'uuid/v4';
 import sql from '../../db/sql';
 import { Invitation } from '../../db/repos';
 import { userQuery } from './User';
-import { createRsvp } from './Rsvp';
 import { sqlPaginatify, userIdFromContext } from '../util';
-import { notifyEventChange, joinableEventsQuery } from './Event';
+import { joinableEventsQuery } from './Event';
 import { NYC_TZ } from './Activity';
 import { AVAILABILITY_HOUR } from '../../db/constants';
 
@@ -173,23 +172,6 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
 
     await Invitation.insert(newInvitation).transacting(trx);
     const invitation = await Invitation.byId(id).transacting(trx);
-
-    // Inviter rsvp
-    await createRsvp(
-      trx,
-      { eventId: invitation.eventId, userId: inviterId },
-      'add',
-      context.loaders
-    );
-    // Invited rsvp placeholder
-    await createRsvp(
-      trx,
-      { eventId: invitation.eventId, inviteId: id },
-      'add',
-      context.loaders
-    );
-
-    notifyEventChange(eventId);
     return {
       invitation,
     };

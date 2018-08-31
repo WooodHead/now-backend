@@ -13,6 +13,7 @@ const messages = Object.entries({
   noActivityTitle: 'no activity title',
   noActivityMessage: 'no activity message',
   inviteExplain: 'invite explain',
+  inviteInstructions: 'invite instructions',
   inviteExpire: 'invite expire',
   oldClientTitle: 'old client title',
   oldClientMessageIos: 'old client message ios',
@@ -34,6 +35,7 @@ const query = gql`
     serverMessages {
       inviteExpire
       inviteExplain
+      inviteInstructions
       noActivityMessage
       noActivityTitle
     }
@@ -47,6 +49,7 @@ describe('server messages', () => {
       noActivityTitle: 'no activity title',
       noActivityMessage: 'no activity message',
       inviteExplain: 'invite explain',
+      inviteInstructions: 'invite instructions',
       inviteExpire: 'invite expire',
     });
   });
@@ -61,6 +64,7 @@ describe('server messages', () => {
       noActivityTitle: 'no activity title',
       noActivityMessage: 'no activity message',
       inviteExplain: 'invite explain',
+      inviteInstructions: 'invite instructions',
       inviteExpire: 'invite expire',
     });
   });
@@ -75,6 +79,7 @@ describe('server messages', () => {
       noActivityTitle: 'old client title',
       noActivityMessage: 'old client message android',
       inviteExplain: 'invite explain',
+      inviteInstructions: 'invite instructions',
       inviteExpire: 'invite expire',
     });
   });
@@ -89,6 +94,7 @@ describe('server messages', () => {
       noActivityTitle: 'old client title',
       noActivityMessage: 'old client message ios',
       inviteExplain: 'invite explain',
+      inviteInstructions: 'invite instructions',
       inviteExpire: 'invite expire',
     });
   });

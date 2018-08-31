@@ -1,7 +1,7 @@
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify } from '../util';
-import { Event, Rsvp, RsvpLog, Invitation } from '../../db/repos';
+import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange, joinableEventsQuery } from './Event';
@@ -117,32 +117,6 @@ const removeRsvp = (root, { input: { eventId } }, ctx) =>
         'remove',
         ctx.loaders
       );
-
-      const inviteRsvpData = await Invitation.get({
-        'invitations.eventId': eventId,
-        inviterId: userId,
-        active: true,
-      })
-        .innerJoin('rsvps', 'invitations.id', 'rsvps.inviteId')
-        .select('inviteId', 'inviteeId');
-
-      if (inviteRsvpData) {
-        const { inviteId } = inviteRsvpData;
-        if (!inviteRsvpData.inviteeId) {
-          // If the invitee has not accepted we burn the RSVP. We don't burn
-          // the RSVP if the invitee HAS accepted because it'd kick them out.
-          await createRsvp(
-            trx,
-            { eventId, inviteId },
-            'inviter-left',
-            ctx.loaders
-          );
-        }
-        // Whether or not the invitee accepted, flag the invitation as not
-        // active. Do this so the inviter can rejoin during the invite window.
-        await Invitation.update({ id: inviteId, active: false });
-      }
-
       return rsvpId;
     })
     .then(postRsvp(eventId, ctx));

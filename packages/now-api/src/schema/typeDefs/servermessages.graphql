@@ -17,6 +17,7 @@ type ServerMessages {
   noActivityMessage: String
   inviteExplain: String
   inviteExpire: String
+  inviteInstructions: String
 }
 
 type AdminMessage implements Node {
