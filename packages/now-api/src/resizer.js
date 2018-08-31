@@ -2,14 +2,32 @@ import sharp from 'sharp';
 
 import { NOW_IMAGE_BUCKET, s3, streamObject } from './s3';
 
-const scaleImage = (width, height, originalKey, scaledKey) =>
-  s3
-    .getObject({ Bucket: NOW_IMAGE_BUCKET, Key: originalKey })
+const CACHE_CONTROL = 'public, max-age=31536000';
+
+const scaleImage = (width, height, originalKey, ext, scaledKey) => {
+  let format;
+  let formatOpts;
+  let ContentType;
+
+  if (ext === 'jpg') {
+    format = 'jpeg';
+    formatOpts = { quality: 75, progressive: true };
+    ContentType = 'image/jpeg';
+  } else if (ext === 'webp') {
+    format = 'webp';
+    formatOpts = { quality: 75 };
+    ContentType = 'image/webp';
+  } else {
+    return Promise.reject(new Error('unsupported type'));
+  }
+
+  return s3
+    .getObject({ Bucket: NOW_IMAGE_BUCKET, Key: `${originalKey}.jpg` })
     .promise()
     .then(data =>
       sharp(data.Body)
         .resize(Number(width), Number(height))
-        .toFormat('png')
+        .toFormat(format, formatOpts)
         .toBuffer()
     )
     .then(buffer =>
@@ -17,39 +35,38 @@ const scaleImage = (width, height, originalKey, scaledKey) =>
         .putObject({
           Body: buffer,
           Bucket: NOW_IMAGE_BUCKET,
-          ContentType: 'image/png',
+          ContentType,
           Key: scaledKey,
         })
         .promise()
     );
+};
 
-const resizer = ({ params: { width, height, originalKey } }, res) => {
-  const scaledKey = `${width}x${height}/${originalKey}`;
+const resizer = ({ params: { width, height, originalKey, ext } }, res) => {
+  const scaledKey = `${width}x${height}/${originalKey}.${ext}`;
   const scaledParams = { Bucket: NOW_IMAGE_BUCKET, Key: scaledKey };
 
-  s3.headObject(scaledParams)
-    .promise()
-    .catch(e => {
-      if (e.statusCode === 404) {
-        return scaleImage(width, height, originalKey, scaledKey).catch(
-          scalingError => {
-            res.send(scalingError);
-          }
-        );
-      }
+  const onError = e => {
+    if (e.statusCode === 404) {
+      scaleImage(width, height, originalKey, ext, scaledKey)
+        .then(() =>
+          streamObject(res, scaledParams, () => res.send(500), CACHE_CONTROL)
+        )
+        .catch(ex => {
+          console.warn(ex);
+          res.sendStatus(400);
+        });
+    } else {
       console.error(
         `Error loading resized image key=%s, error=%s`,
         originalKey,
         e
       );
-      res.send(500);
-      return undefined;
-    })
-    .then(data => {
-      if (data) {
-        streamObject(res, scaledParams, data, 'public, max-age=31536000');
-      }
-    });
+      res.sendStatus(500);
+    }
+  };
+
+  streamObject(res, scaledParams, onError, CACHE_CONTROL);
 };
 
 export default resizer;

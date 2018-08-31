@@ -3,7 +3,7 @@ import express from 'express';
 import 'js-joda-timezone';
 
 import resizer from './resizer';
-import { s3, NOW_ADMIN_BUCKET, streamObject } from './s3';
+import { NOW_ADMIN_BUCKET, streamObject } from './s3';
 
 const isDev = process.env.NODE_ENV === 'development';
 export default app => {
@@ -15,7 +15,10 @@ export default app => {
     res.redirect('https://meetupinc.typeform.com/to/mYMKbB');
   });
 
-  app.get('/images/:width(\\d+)x:height(\\d+)/:originalKey(*)', resizer);
+  app.get(
+    '/images/:width(\\d+)x:height(\\d+)/:originalKey([a-z0-9/]+).:ext([a-z]+)',
+    resizer
+  );
 
   app.use('/public', express.static('public'));
   app.use('^/$', (req, res) => {
@@ -38,21 +41,14 @@ export default app => {
   } else {
     console.log(`Serving admin from s3://${NOW_ADMIN_BUCKET}`);
     app.get('/admin/?:path(*)', ({ params: { path: filePath } }, res) => {
-      const params = {
-        Bucket: NOW_ADMIN_BUCKET,
-        Key: filePath || 'index.html',
-      };
-      s3.headObject(params)
-        .promise()
-        .catch(e => {
-          res.send(e.statusCode);
-          return undefined;
-        })
-        .then(data => {
-          if (data) {
-            streamObject(res, params, data);
-          }
-        });
+      streamObject(
+        res,
+        {
+          Bucket: NOW_ADMIN_BUCKET,
+          Key: filePath || 'index.html',
+        },
+        () => res.send(404)
+      );
     });
   }
 };

@@ -46,12 +46,12 @@ export const getEvents = ({ id }, { first, last, after, before }) =>
     before,
   });
 
-const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }) => {
+const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }, args, ctx) => {
   if (headerPhotoId) {
     return {
       id: headerPhotoId,
       preview: headerPhotoPreview,
-      baseUrl: 'https://now.meetup.com/images',
+      baseUrl: ctx.imageUrl,
       blocked: false,
     };
   }

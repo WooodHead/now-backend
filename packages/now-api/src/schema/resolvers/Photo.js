@@ -13,7 +13,7 @@ const PREVIEW_HEIGHT = 40;
 const storePhoto = (file, key, ratio) =>
   file.then(upload => streamToPromise(upload.stream)).then(buffer =>
     sharp(buffer)
-      .toFormat('jpg')
+      .jpeg({ quality: 90 })
       .toBuffer({ resolveWithObject: true })
       .then(({ data: jpegBuffer, info: { height, width } }) => {
         const providedRatio = width / height;
@@ -28,17 +28,18 @@ const storePhoto = (file, key, ratio) =>
           Bucket: NOW_IMAGE_BUCKET,
           Key: key,
           Body: jpegBuffer,
+          ContentType: 'image/jpeg',
           ACL: 'public-read',
         }).promise();
       })
       .then(() =>
         sharp(buffer)
           .resize(PREVIEW_HEIGHT * ratio, PREVIEW_HEIGHT)
-          .toFormat('jpg')
+          .jpeg({ quality: 70 })
           .toBuffer()
           .then(
             (preview =>
-              `data:image/jpg;base64,${preview.toString('base64')}`: null)
+              `data:image/jpeg;base64,${preview.toString('base64')}`: null)
           )
           .catch(e => {
             console.error('error creating preview', e);

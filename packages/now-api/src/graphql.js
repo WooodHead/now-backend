@@ -95,7 +95,7 @@ export default app => {
         endpointURL: '/graphql',
         passHeader: `'Authorization': 'Bearer ${token}'`,
         subscriptionsEndpoint: url.format({
-          host: req.get('host'),
+          host: `//${req.get('host')}`,
           protocol: req.protocol === 'https' ? 'wss' : 'ws',
           pathname: '/subscriptions',
         }),

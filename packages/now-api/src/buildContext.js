@@ -15,6 +15,7 @@ export default (req, otherContext = {}) => {
     user: undefined,
     loaders: loaderContext({ currentUserId: null }),
     scopes: [],
+    imageUrl: `${req.protocol}://${req.get('host')}/images`,
   };
   if (!currentUserAuth0Id) {
     return Promise.resolve(context);

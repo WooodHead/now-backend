@@ -122,7 +122,7 @@ const photo = ({ id, photoId, photoPreview }, args, ctx) => {
       .then(blocks => ({
         id: photoId,
         preview: photoPreview,
-        baseUrl: 'https://now.meetup.com/images', // TODO: figure out how to get the server url in here
+        baseUrl: ctx.imageUrl,
         blocked: blocks.length > 0,
       }));
   }
