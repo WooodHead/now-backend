@@ -120,7 +120,7 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
 
     const inviterId = userIdFromContext(context);
 
-    if (event.limit - event.going < 2) {
+    if (event.limit - event.going < 1) {
       throw new Error("Sorry, there aren't enough spots left now");
     }
 
