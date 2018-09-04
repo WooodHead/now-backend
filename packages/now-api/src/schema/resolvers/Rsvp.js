@@ -5,6 +5,7 @@ import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange, joinableEventsQuery } from './Event';
+import { isAdmin } from '../AdminDirective';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
 const invite = ({ inviteId }, args, { loaders }) =>
@@ -95,22 +96,30 @@ const postRsvp = (eventId, ctx) => id => {
   };
 };
 
-const addRsvp = (root, { input: { eventId } }, ctx) =>
-  sql
+const getUserIdForRsvp = (inputUserId: ?string, ctx) => {
+  const myUserId = userIdFromContext(ctx);
+  if (!inputUserId || inputUserId === myUserId) {
+    return myUserId;
+  }
+  if (isAdmin(ctx)) {
+    return inputUserId;
+  }
+  throw new Error('You can not RSVP other users.');
+};
+
+const addRsvp = (root, { input: { eventId, userId: inputUserId } }, ctx) => {
+  const userId = getUserIdForRsvp(inputUserId, ctx);
+  return sql
     .transaction(trx =>
-      createRsvp(
-        trx,
-        { eventId, userId: userIdFromContext(ctx) },
-        'add',
-        ctx.loaders
-      )
+      createRsvp(trx, { eventId, userId }, 'add', ctx.loaders)
     )
     .then(postRsvp(eventId, ctx));
+};
 
-const removeRsvp = (root, { input: { eventId } }, ctx) =>
-  sql
+const removeRsvp = (root, { input: { eventId, userId: inputUserId } }, ctx) => {
+  const userId = getUserIdForRsvp(inputUserId, ctx);
+  return sql
     .transaction(async trx => {
-      const userId = userIdFromContext(ctx);
       const rsvpId = await createRsvp(
         trx,
         { eventId, userId },
@@ -120,6 +129,7 @@ const removeRsvp = (root, { input: { eventId } }, ctx) =>
       return rsvpId;
     })
     .then(postRsvp(eventId, ctx));
+};
 
 export const resolvers = { event, user, invite };
 export const mutations = { addRsvp, removeRsvp };

@@ -7,6 +7,9 @@ type Context = {
   scopes: Array<string>,
 };
 
+export const isAdmin = (context: { scopes: Array<string> }) =>
+  context.scopes.includes('admin');
+
 class AdminDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(field: GraphQLField<*, *>) {
     const { resolve = defaultFieldResolver } = field;
@@ -17,7 +20,7 @@ class AdminDirective extends SchemaDirectiveVisitor {
   wrap = <TSource>(
     baseResolver: GraphQLFieldResolver<TSource, Context>
   ): GraphQLFieldResolver<TSource, Context> => (root, args, context, info) => {
-    if (!context.scopes.includes('admin')) {
+    if (!isAdmin(context)) {
       throw new GraphQLError('You must be an admin.');
     }
     return baseResolver(root, args, context, info);

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { ZonedDateTime, ZoneId } from 'js-joda';
 
-import { client, USER_ID } from '../db/mock';
+import { client, setAdmin, USER_ID } from '../db/mock';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -23,11 +23,13 @@ const event = factory.build(
   { activity, location }
 );
 const user = factory.build('user', { id: USER_ID });
+const anotherUser = factory.build('user');
 
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
     sql(SQL_TABLES.INVITATIONS).truncate(),
+    sql(SQL_TABLES.INVITATION_LOG).truncate(),
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.RSVPS).truncate(),
@@ -41,7 +43,7 @@ beforeEach(() =>
       sql(SQL_TABLES.ACTIVITIES).insert(activity),
       sql(SQL_TABLES.EVENTS).insert(event),
       sql(SQL_TABLES.LOCATIONS).insert(location),
-      sql(SQL_TABLES.USERS).insert(user),
+      sql(SQL_TABLES.USERS).insert([user, anotherUser]),
     ])
   ));
 afterEach(() => truncateTables());
@@ -458,5 +460,50 @@ describe('Rsvp', () => {
         }),
       ]),
     });
+  });
+
+  it('blocks non-admin users from RSVPing other users', () => {
+    setAdmin(false);
+    return expect(
+      client.mutate({
+        mutation: gql`
+          mutation rsvp($input: CreateRsvpInput!) {
+            addRsvp(input: $input) {
+              rsvp {
+                id
+              }
+            }
+          }
+        `,
+        variables: { input: { eventId: event.id, userId: anotherUser.id } },
+      })
+    ).rejects.toMatchSnapshot();
+  });
+
+  it('allows admin users to RSVP other users', async () => {
+    setAdmin(true);
+    const {
+      data: {
+        addRsvp: { rsvp },
+      },
+    } = await client.mutate({
+      mutation: gql`
+        mutation rsvp($input: CreateRsvpInput!) {
+          addRsvp(input: $input) {
+            rsvp {
+              id
+              user {
+                firstName
+                id
+              }
+            }
+          }
+        }
+      `,
+      variables: { input: { eventId: event.id, userId: anotherUser.id } },
+    });
+
+    expect(rsvp.user.id).toEqual(anotherUser.id);
+    expect(rsvp.user.firstName).toEqual(anotherUser.firstName);
   });
 });

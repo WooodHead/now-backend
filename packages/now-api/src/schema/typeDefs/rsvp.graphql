@@ -55,6 +55,7 @@ type RootRsvpsEdge implements Edge {
 
 input CreateRsvpInput {
   eventId: ID!
+  userId: ID
 }
 
 type CreateRsvpPayload {
