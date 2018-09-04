@@ -89,7 +89,10 @@ export const createUserMutation = async (
       const { id: inviteId, eventId, type } = invitation;
       await consumeInvitation(inviteId, newUserId, trx);
       if (type === EVENT_INVITE_TYPE) {
-        await InvitationLog.insert({ newUserId, inviteId }).transacting(trx);
+        await InvitationLog.insert({
+          inviteeId: newUserId,
+          inviteId,
+        }).transacting(trx);
         notifyEventId = eventId;
         // attempt to RSVP the user to the event for which they were invited
         try {
