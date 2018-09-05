@@ -152,7 +152,7 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
       eventId,
       notes: '',
       expiresAt,
-      message: `Hey, I invited you to join tomorrow’s Meetup of the Day with me! You just have to get the app here: https://now.meetup.com/i and use this invite code: ${code}.`,
+      message: `Hey, I invited you to join a Meetup! You just have to get the app here: https://now.meetup.com/i and use this invite code: ${code}.`,
     };
 
     await Invitation.insert(newInvitation).transacting(trx);
