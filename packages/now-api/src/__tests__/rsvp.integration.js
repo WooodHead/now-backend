@@ -439,7 +439,7 @@ describe('Rsvp', () => {
     const { data } = results;
     expect(data.event.rsvps).toMatchObject({
       count: 2,
-      edges: expect.arrayContaining([
+      edges: [
         expect.objectContaining({
           node: expect.objectContaining({
             id: rsvp.id,
@@ -458,7 +458,7 @@ describe('Rsvp', () => {
             }),
           }),
         }),
-      ]),
+      ],
     });
   });
 

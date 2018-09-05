@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4';
 
-import { userIdFromContext, sqlPaginatify } from '../util';
+import { userIdFromContext, sqlPaginatify, buildEdge } from '../util';
 import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
@@ -134,13 +134,43 @@ const removeRsvp = (root, { input: { eventId, userId: inputUserId } }, ctx) => {
 export const resolvers = { event, user, invite };
 export const mutations = { addRsvp, removeRsvp };
 
-export const getEventRsvps = ({ eventId, first, last, after, before }) =>
-  sqlPaginatify('id', Rsvp.all({ action: 'add', eventId }), {
+export const getEventRsvps = async ({
+  eventId,
+  first,
+  last,
+  after,
+  before,
+  loggedInUserId,
+}) => {
+  let loggedInUserRsvp;
+  const rsvpQuery = Rsvp.all({ action: 'add', eventId }).where(builder => {
+    builder.whereNot('userId', loggedInUserId);
+    builder.orWhereNull('userId');
+  });
+  if (loggedInUserId && !after && !before) {
+    loggedInUserRsvp = await Rsvp.get({ userId: loggedInUserId, eventId });
+  }
+
+  const rsvps = sqlPaginatify('id', rsvpQuery, {
     first,
     last,
     after,
     before,
   });
+
+  if (loggedInUserRsvp) {
+    return rsvps.then(({ pageInfo, count, edges }) => ({
+      pageInfo,
+      count: count().then(result => result + 1),
+      edges: edges().then(rsvpsEdges => [
+        buildEdge('id', loggedInUserRsvp),
+        ...rsvpsEdges,
+      ]),
+    }));
+  }
+
+  return rsvps;
+};
 
 export const getUserRsvps = ({ userId, first, last, after, before }) =>
   sqlPaginatify(

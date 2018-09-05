@@ -40,8 +40,9 @@ export const inviteHasBeenAccepted = async (eventId, inviterId) => {
 const activityResolver = ({ activityId }, args, { loaders }) =>
   loaders.activities.load(activityId);
 
-const rsvpsResolver = (root, args) =>
+const rsvpsResolver = (root, args, ctx) =>
   getEventRsvps({
+    loggedInUserId: userIdFromContext(ctx),
     eventId: root.id,
     ...args,
   });
