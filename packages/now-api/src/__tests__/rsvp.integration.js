@@ -471,7 +471,6 @@ describe('Rsvp', () => {
     await Rsvp.insert(rsvp);
 
     const results = await client.query({
-      fetchPolicy: 'network-only',
       query: gql`
         query eventRsvps($id: ID!) {
           event(id: $id) {

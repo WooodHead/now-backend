@@ -17,6 +17,15 @@ export const mocks = {
 
 const apolloCache = new InMemoryCache();
 
+const noCache = {
+  watchQuery: {
+    fetchPolicy: 'network-only',
+  },
+  query: {
+    fetchPolicy: 'network-only',
+  },
+};
+
 let isAdmin = false;
 
 export const setAdmin = b => {
@@ -44,6 +53,7 @@ export const client = new ApolloClient({
     schema,
     context: defaultContext,
   }),
+  defaultOptions: noCache,
 });
 
 export const newUserClient = (currentUserAuth0Id, currentUserId) =>
@@ -58,6 +68,7 @@ export const newUserClient = (currentUserAuth0Id, currentUserId) =>
         loaders: loaders({ currentUserId }),
       },
     }),
+    defaultOptions: noCache,
   });
 
 export const userAgentClient = ua =>
@@ -67,4 +78,5 @@ export const userAgentClient = ua =>
       schema,
       context: () => ({ ...defaultContext(), userAgent: ua }),
     }),
+    defaultOptions: noCache,
   });

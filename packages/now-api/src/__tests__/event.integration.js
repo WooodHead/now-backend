@@ -174,7 +174,6 @@ describe('Event', () => {
           .toString()
       );
       const results = client.query({
-        fetchPolicy: 'network-only',
         query: gql`
           {
             events {
@@ -204,7 +203,6 @@ describe('Event', () => {
           .toString()
       );
       const results = client.query({
-        fetchPolicy: 'network-only',
         query: gql`
           {
             events {
@@ -325,7 +323,6 @@ describe('Event', () => {
           }
         `,
         variables: { id: event.id },
-        fetchPolicy: 'network-only',
       });
       const { data } = results;
       expect(data.event.messages).toMatchObject({
@@ -358,7 +355,6 @@ describe('Event', () => {
         variables: {
           id: event.id,
         },
-        fetchPolicy: 'network-only',
       });
       const { data } = results;
       expect(data.event.messages).toMatchObject({
@@ -388,7 +384,6 @@ describe('Event', () => {
             unreadMessagesCount
           }
         `,
-        fetchPolicy: 'network-only',
       });
       expect(data.unreadMessagesCount).toEqual(10);
     });
@@ -426,7 +421,6 @@ describe('Event', () => {
         variables: {
           id: event.id,
         },
-        fetchPolicy: 'network-only',
       });
       const { data } = results;
       expect(data.event.messages).toMatchObject({
