@@ -462,6 +462,46 @@ describe('Rsvp', () => {
     });
   });
 
+  it('you are no longer first if you leave a meetup', async () => {
+    const rsvp = factory.build('rsvp', {
+      action: 'remove',
+      eventId: event.id,
+      userId: USER_ID,
+    });
+    await Rsvp.insert(rsvp);
+
+    const results = await client.query({
+      fetchPolicy: 'network-only',
+      query: gql`
+        query eventRsvps($id: ID!) {
+          event(id: $id) {
+            rsvps {
+              count
+              edges {
+                node {
+                  id
+                  user {
+                    id
+                  }
+                  invite {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: { id: event.id },
+    });
+
+    const { data } = results;
+    expect(data.event.rsvps).toMatchObject({
+      count: 0,
+      edges: [],
+    });
+  });
+
   it('blocks non-admin users from RSVPing other users', () => {
     setAdmin(false);
     return expect(

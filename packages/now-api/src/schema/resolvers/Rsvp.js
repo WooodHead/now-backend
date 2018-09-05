@@ -148,7 +148,11 @@ export const getEventRsvps = async ({
     builder.orWhereNull('userId');
   });
   if (loggedInUserId && !after && !before) {
-    loggedInUserRsvp = await Rsvp.get({ userId: loggedInUserId, eventId });
+    loggedInUserRsvp = await Rsvp.get({
+      userId: loggedInUserId,
+      eventId,
+      action: 'add',
+    });
   }
 
   const rsvps = sqlPaginatify('id', rsvpQuery, {
