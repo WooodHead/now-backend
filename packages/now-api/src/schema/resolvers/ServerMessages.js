@@ -6,7 +6,7 @@ import { sqlPaginatify } from '../util';
 const serverMessages = async (root, args, { userAgent }) => {
   const expiredClient = expiredUserAgent(userAgent);
   const messages = (await ServerMessages.all()).reduce((acc, elt) => {
-    acc[elt.key] = elt.text;
+    acc[elt.key] = elt.text || elt.json;
     return acc;
   }, {});
 
@@ -38,8 +38,8 @@ export const queries = {
   allAdminMessages,
 };
 
-const updateAdminMessage = (root, { input: { id, text } }) =>
-  ServerMessages.update({ id, text, updatedAt: now() })
+const updateAdminMessage = (root, { input: { id, text, json } }) =>
+  ServerMessages.update({ id, text, json, updatedAt: now() })
     .returning('*')
     .then(([m]) => ({ adminMessage: m }));
 

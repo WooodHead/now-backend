@@ -18,12 +18,15 @@ type ServerMessages {
   inviteExplain: String
   inviteExpire: String
   inviteInstructions: String
+  featureVideo: String
+  featureThumbnail: Photo
 }
 
 type AdminMessage implements Node {
   id: ID!
   key: String!
   text: String
+  json: GraphQLJSON
   createdAt: ZonedDateTime!
   updatedAt: ZonedDateTime!
 }
@@ -42,6 +45,7 @@ type AdminMessagesEdge implements Edge {
 input UpdateAdminMessageInput {
   id: ID!
   text: String
+  json: GraphQLJSON
 }
 
 type UpdateAdminMessagePayload {
