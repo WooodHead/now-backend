@@ -74,7 +74,9 @@ export const createRsvp = async (
   }
 
   const going =
-    action === 'add' ? rsvpEvent.going + 1 : Math.max(0, rsvpEvent.going - 1);
+    action === 'add'
+      ? sql.raw('?? + 1', 'going')
+      : sql.raw('greatest(?? - 1, 0)', 'going');
 
   await Promise.all([
     rsvpCall.transacting(trx),
