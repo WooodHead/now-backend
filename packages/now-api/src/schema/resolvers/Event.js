@@ -40,12 +40,18 @@ export const inviteHasBeenAccepted = async (eventId, inviterId) => {
 const activityResolver = ({ activityId }, args, { loaders }) =>
   loaders.activities.load(activityId);
 
-const rsvpsResolver = (root, args, ctx) =>
-  getEventRsvps({
+const rsvpsResolver = (root, args, ctx) => {
+  const { first, last } = args;
+  const extraArgs =
+    first === undefined && last === undefined ? { first: 50 } : {};
+
+  return getEventRsvps({
     loggedInUserId: userIdFromContext(ctx),
     eventId: root.id,
     ...args,
+    ...extraArgs,
   });
+};
 
 const messagesResolver = async (root, args) => {
   const eventId = root.id;
