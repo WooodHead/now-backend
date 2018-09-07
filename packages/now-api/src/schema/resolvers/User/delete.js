@@ -22,7 +22,7 @@ import { deleteIntercomUser } from '../../../jobs';
 // present), you can't grab the spot, so just up the deleted users count
 const cleanUpEvents = async (trx, userId) => {
   const rsvps = await Rsvp.withTransaction(trx)
-    .all({ userId })
+    .all({ userId, action: 'add' })
     .innerJoin('events', 'rsvps.eventId', 'events.id')
     .column('rsvps.eventId', { past: trx.raw('?? < now()', 'events.time') });
   const [pastEvents, futureEvents] = partition(rsvps, ({ past }) => past);
