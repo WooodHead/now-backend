@@ -38,8 +38,8 @@ export const unblockUser = (blockerId: string, blockedId: string) =>
     .catch(() => null);
 
 /* Queries */
-const allUsers = (root, { input: { orderBy = 'id', ...pageParams } }) =>
-  sqlPaginatify(orderBy, User.all({}), pageParams);
+const allUsers = (root, { input, orderBy = 'id' }) =>
+  sqlPaginatify(orderBy, User.all({}), input);
 
 export const userQuery = (root, { id }, context) => {
   if (id) {

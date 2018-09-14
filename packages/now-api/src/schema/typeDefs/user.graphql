@@ -1,5 +1,5 @@
 type Query {
-  allUsers(input: AdminInput): RootUsersConnection! @admin
+  allUsers(input: AdminInput, orderBy: UserOrder): RootUsersConnection! @admin
   user(id: ID!): User
   currentUser: User!
 }
@@ -38,6 +38,14 @@ type User implements Node {
   tosCurrent: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+}
+
+enum UserOrder {
+  id
+  firstName
+  lastName
+  createdAt
+  updatedAt
 }
 
 type RootUsersConnection implements Connection {
