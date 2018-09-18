@@ -44,7 +44,7 @@ enum ActivityOrder {
 
 type RootActivitiesConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [RootActivitiesEdge!]!
 }
 

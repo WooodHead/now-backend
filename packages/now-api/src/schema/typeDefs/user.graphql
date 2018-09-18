@@ -50,7 +50,7 @@ enum UserOrder {
 
 type RootUsersConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [RootUsersEdge!]!
 }
 
@@ -61,7 +61,7 @@ type RootUsersEdge implements Edge {
 
 type UserRsvpsConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [UserRsvpsEdge!]!
 }
 

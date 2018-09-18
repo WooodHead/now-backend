@@ -33,7 +33,7 @@ type AdminMessage implements Node {
 
 type AdminMessagesConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [AdminMessagesEdge!]!
 }
 

@@ -25,7 +25,7 @@ interface Edge {
 
 interface Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [Edge!]!
 }
 

@@ -94,7 +94,7 @@ type CreateManyAppInvitationsPayload {
 
 type AppInvitationConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [AppInvitationEdge!]!
 }
 

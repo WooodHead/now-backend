@@ -51,7 +51,7 @@ enum LocationOrder {
 
 type RootLocationsConnection implements Connection {
   pageInfo: PageInfo!
-  count: Int
+  count: Int!
   edges: [RootLocationsEdge!]!
 }
 
