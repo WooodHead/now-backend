@@ -367,7 +367,7 @@ describe('Event', () => {
       await sql.transaction(trx =>
         createRsvp(
           trx,
-          { userId: USER_ID, eventId: event.id, ignoreVisible: true },
+          { userId: USER_ID, eventId: event.id, ignoreConstraints: true },
           'add'
         )
       );

@@ -16,11 +16,11 @@ const user = (rsvp, args, context) =>
 
 export const createRsvp = async (
   trx,
-  { eventId, userId, inviteId, ignoreVisible = false },
+  { eventId, userId, inviteId, ignoreConstraints = false },
   action,
   loaders
 ) => {
-  const query = ignoreVisible ? Event.get : joinableEventsQuery;
+  const query = ignoreConstraints ? Event.get : joinableEventsQuery;
   const rsvpEvent = await query()
     .where({ id: eventId })
     .transacting(trx)
@@ -43,7 +43,11 @@ export const createRsvp = async (
     return previousRsvp.id;
   }
 
-  if (rsvpEvent.going >= rsvpEvent.limit && action === 'add') {
+  if (
+    !ignoreConstraints &&
+    rsvpEvent.going >= rsvpEvent.limit &&
+    action === 'add'
+  ) {
     throw new Error(`Event ${eventId} full`);
   }
 
@@ -109,29 +113,25 @@ const getUserIdForRsvp = (inputUserId: ?string, ctx) => {
   throw new Error('You can not RSVP other users.');
 };
 
-const addRsvp = (root, { input: { eventId, userId: inputUserId } }, ctx) => {
+const shouldIgnoreVisible = (inputUserId, ctx) => isAdmin(ctx) && !!inputUserId;
+
+const mutateRsvp = (
+  action,
+  { input: { eventId, userId: inputUserId } },
+  ctx
+) => {
   const userId = getUserIdForRsvp(inputUserId, ctx);
+  const ignoreVisible = shouldIgnoreVisible(inputUserId, ctx);
   return sql
     .transaction(trx =>
-      createRsvp(trx, { eventId, userId }, 'add', ctx.loaders)
+      createRsvp(trx, { eventId, userId, ignoreVisible }, action, ctx.loaders)
     )
     .then(postRsvp(eventId, ctx));
 };
 
-const removeRsvp = (root, { input: { eventId, userId: inputUserId } }, ctx) => {
-  const userId = getUserIdForRsvp(inputUserId, ctx);
-  return sql
-    .transaction(async trx => {
-      const rsvpId = await createRsvp(
-        trx,
-        { eventId, userId },
-        'remove',
-        ctx.loaders
-      );
-      return rsvpId;
-    })
-    .then(postRsvp(eventId, ctx));
-};
+const addRsvp = (root, args, ctx) => mutateRsvp('add', args, ctx);
+
+const removeRsvp = (root, args, ctx) => mutateRsvp('remove', args, ctx);
 
 export const resolvers = { event, user, invite };
 export const mutations = { addRsvp, removeRsvp };
