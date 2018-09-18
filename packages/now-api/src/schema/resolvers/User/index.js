@@ -17,6 +17,9 @@ import { createUserMutation as createUser, updateCurrentUser } from './create';
 import { tosCurrent } from './tos';
 import { deleteCurrentUser } from './delete';
 
+const fullName = () =>
+  sql.raw("lower(?? || ' ' || ??)", ['firstName', 'lastName']);
+
 export const putPhoto = (id, photoId, preview) =>
   sql(SQL_TABLES.USERS)
     .where({ id })
@@ -38,8 +41,18 @@ export const unblockUser = (blockerId: string, blockedId: string) =>
     .catch(() => null);
 
 /* Queries */
-const allUsers = (root, { input, orderBy = 'id' }) =>
-  sqlPaginatify(orderBy, User.all({}), input);
+const allUsers = (root, { input, orderBy = 'id', prefix }) => {
+  const args =
+    prefix && prefix.length >= 1
+      ? [
+          fullName(),
+          'like',
+          sql.raw('lower(?)', `${prefix.replace(/[\\%_]/g, '')}%`),
+        ]
+      : [];
+  const order = orderBy === 'firstName' ? fullName() : orderBy;
+  return sqlPaginatify(order, User.all(...args), input);
+};
 
 export const userQuery = (root, { id }, context) => {
   if (id) {

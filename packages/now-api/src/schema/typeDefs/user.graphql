@@ -1,5 +1,9 @@
 type Query {
-  allUsers(input: AdminInput, orderBy: UserOrder): RootUsersConnection! @admin
+  allUsers(
+    input: AdminInput
+    orderBy: UserOrder
+    prefix: String
+  ): RootUsersConnection! @admin
   user(id: ID!): User
   currentUser: User!
 }

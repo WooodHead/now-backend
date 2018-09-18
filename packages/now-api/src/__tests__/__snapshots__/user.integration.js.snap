@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`allUsers blocks non-admins 1`] = `[Error: GraphQL error: You must be an admin.]`;
+
 exports[`user change user photo 1`] = `
 Object {
   "__typename": "Photo",

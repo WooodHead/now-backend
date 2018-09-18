@@ -113,7 +113,8 @@ const getUserIdForRsvp = (inputUserId: ?string, ctx) => {
   throw new Error('You can not RSVP other users.');
 };
 
-const shouldIgnoreVisible = (inputUserId, ctx) => isAdmin(ctx) && !!inputUserId;
+const shouldIgnoreConstraints = (inputUserId, ctx) =>
+  isAdmin(ctx) && !!inputUserId;
 
 const mutateRsvp = (
   action,
@@ -121,10 +122,15 @@ const mutateRsvp = (
   ctx
 ) => {
   const userId = getUserIdForRsvp(inputUserId, ctx);
-  const ignoreVisible = shouldIgnoreVisible(inputUserId, ctx);
+  const ignoreConstraints = shouldIgnoreConstraints(inputUserId, ctx);
   return sql
     .transaction(trx =>
-      createRsvp(trx, { eventId, userId, ignoreVisible }, action, ctx.loaders)
+      createRsvp(
+        trx,
+        { eventId, userId, ignoreConstraints },
+        action,
+        ctx.loaders
+      )
     )
     .then(postRsvp(eventId, ctx));
 };

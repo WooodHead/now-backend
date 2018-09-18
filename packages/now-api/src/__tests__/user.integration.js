@@ -4,7 +4,7 @@ import fs from 'fs';
 import { pick } from 'lodash';
 import { ZonedDateTime } from 'js-joda';
 
-import { USER_ID, client, newUserClient } from '../db/mock';
+import { USER_ID, client, newUserClient, setAdmin } from '../db/mock';
 import factory from '../db/factory';
 import { Invitation, User } from '../db/repos';
 import sql from '../db/sql';
@@ -26,10 +26,11 @@ const truncateTables = () =>
   ]);
 
 const user = factory.build('user', { id: USER_ID });
+const anotherUser = factory.build('user');
 
 beforeEach(() =>
   truncateTables().then(() =>
-    Promise.all([sql(SQL_TABLES.USERS).insert(user)])
+    Promise.all([sql(SQL_TABLES.USERS).insert([user, anotherUser])])
   ));
 afterEach(() => truncateTables());
 
@@ -210,4 +211,46 @@ describe('user', () => {
       expect(data.user.bio).toEqual(desiredOutput);
     }
   );
+});
+
+describe('allUsers', () => {
+  const allUsersQuery = gql`
+    query allUsers($prefix: String) {
+      allUsers(prefix: $prefix) {
+        count
+        edges {
+          node {
+            id
+            firstName
+            lastName
+          }
+        }
+      }
+    }
+  `;
+
+  it('blocks non-admins', () => {
+    setAdmin(false);
+    return expect(
+      client.query({
+        query: allUsersQuery,
+      })
+    ).rejects.toMatchSnapshot();
+  });
+
+  it('returns all users', async () => {
+    setAdmin(true);
+    const { data } = await client.query({ query: allUsersQuery });
+    expect(data.allUsers.count).toEqual(2);
+  });
+
+  it('returns one user given a prefix', async () => {
+    setAdmin(true);
+    const { data } = await client.query({
+      query: allUsersQuery,
+      variables: { prefix: user.firstName.substring(0, 2).toUpperCase() },
+    });
+    expect(data.allUsers.count).toEqual(1);
+    expect(data.allUsers.edges[0].node.firstName).toEqual(user.firstName);
+  });
 });

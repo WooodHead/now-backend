@@ -18,7 +18,11 @@ class Repo {
       .where(query)
       .first();
 
-  all = (query: mixed = {}) => this.sql(this.table).where(query);
+  // eslint-disable-next-line no-undef
+  all = (...args: $ReadOnlyArray<mixed>) => {
+    const knexArgs = args.length === 0 ? [{}] : args;
+    return this.sql(this.table).where(...knexArgs);
+  };
 
   insert = (obj: mixed) => this.sql(this.table).insert(obj);
 
