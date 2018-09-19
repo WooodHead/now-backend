@@ -5,6 +5,7 @@ import { Event, Rsvp, RsvpLog } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange, joinableEventsQuery } from './Event';
+import { notifyUserMessageCountChanged } from './Message';
 import { isAdmin } from '../AdminDirective';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
@@ -93,8 +94,9 @@ export const createRsvp = async (
   return id;
 };
 
-const postRsvp = (eventId, ctx) => id => {
+const postRsvp = (eventId, userId, ctx) => id => {
   notifyEventChange(eventId);
+  notifyUserMessageCountChanged(userId);
 
   return {
     rsvp: () => ctx.loaders.rsvps.load(id),
@@ -132,7 +134,7 @@ const mutateRsvp = (
         ctx.loaders
       )
     )
-    .then(postRsvp(eventId, ctx));
+    .then(postRsvp(eventId, userId, ctx));
 };
 
 const addRsvp = (root, args, ctx) => mutateRsvp('add', args, ctx);
