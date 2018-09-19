@@ -16,7 +16,6 @@ import * as Invitation from './Invitation';
 import * as Jobs from './Jobs';
 import * as ServerMessages from './ServerMessages';
 import Name from './Name';
-import Birthdate from './Birthdate';
 import { wrapResolvers } from '../authorization';
 
 export default wrapResolvers({
@@ -69,5 +68,4 @@ export default wrapResolvers({
   GraphQLJSON,
   Upload: GraphQLUpload,
   Name,
-  Birthdate,
 });

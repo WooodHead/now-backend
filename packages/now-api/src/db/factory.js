@@ -24,11 +24,6 @@ Factory.define('user')
   .attr('bio', lorem.paragraph)
   .attr('location', () => `${address.city()}, ${address.stateAbbr()}`)
   .attr('preferences', {})
-  .attr('birthday', () =>
-    LocalDate.now()
-      .minusYears(20)
-      .toString()
-  )
   .attr('photoId', md5)
   .attr(
     'photoPreview',

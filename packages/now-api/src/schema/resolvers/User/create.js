@@ -44,7 +44,6 @@ export const createUserMutation = async (
       bio,
       location,
       preferences = {},
-      birthday,
       invitationCode,
     },
   },
@@ -75,7 +74,6 @@ export const createUserMutation = async (
     bio,
     location,
     preferences,
-    birthday: birthday.toString(),
     auth0Id: context.currentUserAuth0Id,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
@@ -124,12 +122,9 @@ export const updateCurrentUser = (root, { input }, context) => {
     throw new Error('User must be authenticated in order to edit profile');
   }
 
-  const { birthday } = input;
-
   const newUser = {
     id,
     ...pick(input, ['firstName', 'lastName', 'bio', 'preferences']),
-    ...(birthday ? { birthday: birthday.toString() } : {}),
     updatedAt: sql.raw('now()'),
   };
 

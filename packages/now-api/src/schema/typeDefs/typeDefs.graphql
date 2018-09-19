@@ -10,8 +10,6 @@ scalar GraphQLJSON
 
 scalar Name
 
-scalar Birthdate
-
 scalar Upload
 
 interface Node {

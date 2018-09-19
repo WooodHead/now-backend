@@ -2,7 +2,7 @@ import { pick } from 'lodash';
 
 import { getUserRsvps } from '../Rsvp';
 import { getDevices } from '../Device';
-import { computeAge, userIdFromContext, sqlPaginatify } from '../../util';
+import { userIdFromContext, sqlPaginatify } from '../../util';
 import {
   SQL_TABLES,
   DELETED_USER_ID,
@@ -77,7 +77,7 @@ const filterAttributes = id => user => {
   ];
   // some fields are available only to the currently-authenticated user
   if (id === user.id) {
-    fields.push('email', 'birthday', 'preferences', 'tosVersion');
+    fields.push('email', 'preferences', 'tosVersion');
   }
   // other fields (including, notably, auth0Id) are not available to API clients at all
   return pick(user, fields);
@@ -142,8 +142,6 @@ const photo = ({ id, photoId, photoPreview }, args, ctx) => {
   return null;
 };
 
-const age = ({ birthday }) => (birthday ? computeAge(birthday) : null);
-
 const trimBio = ({ bio }) => {
   if (bio) {
     const trimmedBio = bio.replace(/\s+/g, ' ').trim();
@@ -182,7 +180,6 @@ const isDeleted = ({ id }) => id === DELETED_USER_ID;
 export const resolvers = {
   rsvps,
   photo,
-  age,
   bio: trimBio,
   devices,
   preferences: fillInDefaultPreferences,

@@ -34,8 +34,8 @@ type User implements Node {
   devices: [Device!]
   preferences: GraphQLJSON
   photo: Photo
-  birthday: Birthdate
-  age: Int
+  birthday: LocalDate @deprecated
+  age: Int @deprecated
   # returns true if this user is the currently-authenticated user
   isSelf: Boolean!
   isDeleted: Boolean
@@ -97,7 +97,7 @@ input CreateUserInput {
   bio: String
   location: String
   preferences: GraphQLJSON
-  birthday: Birthdate!
+  birthday: LocalDate @deprecated
   invitationCode: String
 }
 
@@ -114,7 +114,7 @@ input UpdateCurrentUserInput {
   bio: String
   location: String
   preferences: GraphQLJSON
-  birthday: Birthdate
+  birthday: LocalDate @deprecated
 }
 
 type UpdateCurrentUserPayload {

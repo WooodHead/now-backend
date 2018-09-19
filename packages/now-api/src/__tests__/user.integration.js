@@ -68,7 +68,7 @@ describe('user', () => {
     const authId = uuid();
     const userClient = newUserClient(authId);
     const newUser = factory.build('user');
-    const { email, firstName, lastName, bio, location, birthday } = newUser;
+    const { email, firstName, lastName, bio, location } = newUser;
     const invitationCodeResult = await InviteMutations.createAppInvitation(
       {},
       { input: { notes: 'test', expiresAt: ZonedDateTime.now().plusHours(1) } },
@@ -104,7 +104,6 @@ describe('user', () => {
           bio,
           location,
           preferences,
-          birthday,
           invitationCode,
         },
       },
@@ -119,7 +118,6 @@ describe('user', () => {
     } = res;
 
     const dbUser = await User.byId(id);
-    dbUser.birthday = dbUser.birthday.toString();
 
     expect(dbUser).toMatchObject({
       id,
@@ -129,7 +127,6 @@ describe('user', () => {
       bio,
       location,
       preferences,
-      birthday: expect.stringContaining(birthday),
     });
 
     const dbInvititation = await Invitation.get({ id: invitation.id });
