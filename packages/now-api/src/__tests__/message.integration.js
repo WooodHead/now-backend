@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import uuid from 'uuid/v4';
 
-import { client, USER_ID } from '../db/mock';
+import { client, USER_ID, subClient } from '../db/mock';
 import factory from '../db/factory';
 import { SQL_TABLES } from '../db/constants';
 import sql from '../db/sql';
@@ -173,8 +173,25 @@ describe('message', () => {
     expect(data).toMatchSnapshot();
   });
   describe('createMessage', () => {
-    it('send message', async () => {
-      const results = await client.mutate({
+    it('send message', async done => {
+      const sub = subClient();
+      sub
+        .subscribe({
+          query: gql`
+            subscription {
+              unreadMessagesCount
+            }
+          `,
+        })
+        .subscribe({
+          next: ({ data }) => {
+            // the 5 messages inserted at top, + the one inserted below
+            expect(data.unreadMessagesCount).toEqual(6);
+            done();
+          },
+        });
+
+      const results = await sub.mutate({
         mutation: gql`
           mutation message($input: CreateMessageInput!) {
             createMessage(input: $input) {
@@ -218,7 +235,6 @@ describe('message', () => {
       );
 
       const dbMessage = await Message.byId(id);
-
       expect(dbMessage).toMatchObject({
         eventId: event.id,
         id,

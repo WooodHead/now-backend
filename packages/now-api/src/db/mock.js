@@ -2,6 +2,12 @@
 import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { SchemaLink } from 'apollo-link-schema';
+import { Server, WebSocket } from 'mock-socket-with-protocol';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { WebSocketLink } from 'apollo-link-ws';
+import { split } from 'apollo-link';
+import { execute, subscribe } from 'graphql';
+import { getMainDefinition } from 'apollo-utilities';
 
 import loaders from './loaders';
 
@@ -46,6 +52,51 @@ const defaultContext = () => ({
   scopes: isAdmin ? ['admin'] : [],
   userAgent,
 });
+
+export const subClient = () => {
+  // To make the point clear that we are not opening any ports here we use a randomized string that will not produce a correct port number.
+  // This example of WebSocket client/server uses string matching to know to what server connect a given client.
+  // We are randomizing because we should use different string for every test to not share state.
+  const RANDOM_WS_PORT = Math.floor(Math.random() * 100000);
+  const customServer = new Server(`ws://localhost:${RANDOM_WS_PORT}`);
+
+  // We pass customServer instead of typical configuration of a default WebSocket server
+  SubscriptionServer.create(
+    {
+      schema,
+      execute,
+      subscribe,
+      onConnect: () => Promise.resolve(defaultContext()),
+    },
+    customServer
+  );
+
+  // The uri of the WebSocketLink has to match the customServer uri.
+  const wsLink = new WebSocketLink({
+    uri: `ws://localhost:${RANDOM_WS_PORT}`,
+    webSocketImpl: WebSocket,
+  });
+
+  const schemaLink = new SchemaLink({
+    schema,
+    context: defaultContext,
+  });
+
+  const client = new ApolloClient({
+    cache: apolloCache,
+    link: split(
+      ({ query }) => {
+        const { kind, operation } = getMainDefinition(query);
+        return kind === 'OperationDefinition' && operation === 'subscription';
+      },
+      wsLink,
+      schemaLink
+    ),
+    defaultOptions: noCache,
+  });
+
+  return client;
+};
 
 export const client = new ApolloClient({
   cache: apolloCache,
