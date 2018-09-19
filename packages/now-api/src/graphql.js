@@ -66,7 +66,24 @@ export default app => {
     cacheControl: true,
     introspection: true,
     logFunction: isDev || process.env.VERBOSE ? console.log : () => {},
-    // formatError: e => ({ message: e.message }),
+    formatError: error => {
+      console.error(error);
+
+      const startsWith = (message, matches) => {
+        for (let i = 0; i < matches.length; i += 1) {
+          if (message.startsWith(matches[i])) {
+            return true;
+          }
+        }
+        return false;
+      };
+      if (error.message) {
+        if (startsWith(error.message, ['select', 'update', 'insert'])) {
+          return { ...error, message: 'Internal Server Error' };
+        }
+      }
+      return error;
+    },
     subscriptions: {
       onConnect: ({ token }) =>
         new Promise((resolve, reject) => {
