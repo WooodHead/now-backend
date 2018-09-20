@@ -428,6 +428,35 @@ describe('Event', () => {
         count: 10,
       });
     });
+    it('ignores unpublished events', async () => {
+      await sql.transaction(trx =>
+        createRsvp(
+          trx,
+          { userId: USER_ID, eventId: event.id, ignoreConstraints: true },
+          'add'
+        )
+      );
+      const messages = factory.buildList(
+        'message',
+        10,
+        {},
+        { event, user: { id: USER_ID } }
+      );
+      await Promise.all([
+        sql(SQL_TABLES.MESSAGES).insert(messages),
+        sql(SQL_TABLES.EVENTS)
+          .where({ id: event.id })
+          .update({ visibleAt: null }),
+      ]);
+      const { data } = await client.query({
+        query: gql`
+          query unreadMessagesCount {
+            unreadMessagesCount
+          }
+        `,
+      });
+      expect(data.unreadMessagesCount).toEqual(0);
+    });
   });
 
   describe('markEventChatRead', () => {

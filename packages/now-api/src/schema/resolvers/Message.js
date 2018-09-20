@@ -17,6 +17,7 @@ const unreadMessagesCount = (root, args, context) =>
     .select(sql.raw('count(*)'))
     .from(SQL_TABLES.RSVPS)
     .innerJoin(SQL_TABLES.MESSAGES, { 'rsvps.eventId': 'messages.eventId' })
+    .innerJoin(SQL_TABLES.EVENTS, { 'rsvps.eventId': 'events.id' })
     .leftJoin(SQL_TABLES.EVENT_USER_METADATA, {
       'rsvps.eventId': 'eventUserMetadata.eventId',
       'rsvps.userId': 'eventUserMetadata.userId',
@@ -25,6 +26,7 @@ const unreadMessagesCount = (root, args, context) =>
       'rsvps.userId': userIdFromContext(context),
       'rsvps.action': 'add',
     })
+    .whereNotNull('events.visibleAt')
     .andWhere(
       sql.raw('(?? is null or ?? > ??)', [
         'eventUserMetadata.lastReadTs',

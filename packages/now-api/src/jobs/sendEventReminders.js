@@ -13,6 +13,7 @@ const sendEventReminders = async (): Promise<void> => {
   const events = await Event.all()
     .where('time', '>=', now.toString())
     .where('time', '<=', eventStartTime.toString())
+    .whereNotNull('visibleAt')
     .select('id', 'activityId');
 
   await Promise.all(
