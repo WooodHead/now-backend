@@ -6,7 +6,7 @@
  */
 
 const values = {
-  'require-invite': true,
+  'require-invite': false,
 };
 
 export default {
