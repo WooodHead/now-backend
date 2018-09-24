@@ -10,6 +10,7 @@ import user from './user.graphql';
 import message from './message.graphql';
 import jobs from './jobs.graphql';
 import servermessages from './servermessages.graphql';
+import templates from './templates.graphql';
 
 export default mergeTypes(
   [
@@ -23,6 +24,7 @@ export default mergeTypes(
     message,
     jobs,
     servermessages,
+    templates,
   ],
   {
     all: true,

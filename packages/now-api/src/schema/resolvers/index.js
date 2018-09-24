@@ -2,6 +2,7 @@ import { LocalDate, ZonedDateTime, ZoneId } from 'graphql-joda-types';
 import { GraphQLUpload } from 'apollo-upload-server';
 import GraphQLJSON from 'graphql-type-json';
 
+import * as Category from './Category';
 import * as Device from './Device';
 import * as Event from './Event';
 import * as EventMessagesConnection from './EventMessagesConnection';
@@ -15,6 +16,7 @@ import * as Location from './Location';
 import * as Invitation from './Invitation';
 import * as Jobs from './Jobs';
 import * as ServerMessages from './ServerMessages';
+import * as Template from './Template';
 import Name from './Name';
 import { wrapResolvers } from '../authorization';
 
@@ -28,6 +30,8 @@ export default wrapResolvers({
     ...Location.queries,
     ...Invitation.queries,
     ...ServerMessages.queries,
+    ...Template.queries,
+    ...Category.queries,
     userAgent: (root, args, { userAgent }) => userAgent,
   },
   Subscription: {
@@ -49,6 +53,7 @@ export default wrapResolvers({
     ...ServerMessages.mutations,
   },
   Activity: Activity.resolvers,
+  Category: Category.resolvers,
   Device: Device.resolvers,
   Event: Event.resolvers,
   Message: Message.resolvers,

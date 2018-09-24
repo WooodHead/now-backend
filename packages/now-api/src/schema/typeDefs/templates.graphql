@@ -1,0 +1,97 @@
+type Query {
+  template(id: ID): Template
+  category(id: ID): Category
+  categories: [Category]
+}
+
+type Mutation {
+  submitTemplate(input: SubmissionInput!): SubmitTemplatePayload
+}
+
+input SubmissionInput {
+  tmeplateId: String!
+  responses: [ResponseInput!]!
+}
+
+input ResponseInput {
+  fieldId: String
+  value: FieldValueInput
+}
+
+type SubmitTemplatePayload {
+  submission: Submission
+}
+
+type Category {
+  id: ID!
+  title: String
+  description: String
+  icon: Photo
+  templates: [Template!]!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type Template {
+  id: ID!
+  title: String
+  description: String
+  header: Photo
+  fields: [Field!]!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type Field {
+  id: ID!
+  label: String
+  placeholder: String
+  type: FieldType
+  defaultValue: FieldValue
+  params: GraphQLJSON
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type Submission {
+  id: ID!
+  template: Template
+  user: User
+  responses: [Response!]!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type Response {
+  id: ID!
+  field: Field
+  value: FieldValue
+  submission: Submission
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type StringFieldValue {
+  value: String
+}
+type IntFieldValue {
+  value: Int
+}
+type DateTimeFieldValue {
+  value: ZonedDateTime
+}
+
+union FieldValue = StringFieldValue | IntFieldValue | DateTimeFieldValue
+
+input FieldValueInput {
+  intValue: Int
+  stringValue: String
+  dateTimeValue: ZonedDateTime
+}
+
+enum FieldType {
+  Text
+  Number
+  Date
+  Location
+}
