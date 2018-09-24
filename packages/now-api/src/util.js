@@ -1,4 +1,4 @@
-import { assignWith, truncate } from 'lodash';
+import { assignWith, omit, truncate } from 'lodash';
 import { ChronoField } from 'js-joda';
 
 export const splitName = name => {
@@ -107,3 +107,5 @@ export const formatTime = when => {
   time += when.get(ChronoField.AMPM_OF_DAY) === 0 ? 'a.m.' : 'p.m.';
   return time;
 };
+
+export const filterHeaders = headers => omit(headers, 'authorization');

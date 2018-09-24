@@ -1,12 +1,14 @@
 import express from 'express';
+import expressWinston from 'express-winston';
 import 'js-joda-timezone';
-import morgan from 'morgan';
 import sharp from 'sharp';
 
 import { handler as jobs } from './jobs';
 
 import createStatic from './static';
 import createGraphql from './graphql';
+import logger from './logger';
+import { filterHeaders } from './util';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -18,7 +20,13 @@ const app = express();
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');
 
-app.use(morgan('common'));
+app.use(
+  expressWinston.logger({
+    winstonInstance: logger,
+    requestFilter: (req, propName) =>
+      propName === 'headers' ? filterHeaders(req[propName]) : req[propName],
+  })
+);
 
 app.use((req, res, next) => {
   const proto = req.get('X-Forwarded-Proto');

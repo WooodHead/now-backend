@@ -4,6 +4,7 @@ import 'js-joda-timezone';
 
 import resizer from './resizer';
 import { NOW_ADMIN_BUCKET, streamObject } from './s3';
+import logger from './logger';
 
 const isDev = process.env.NODE_ENV === 'development';
 export default app => {
@@ -36,10 +37,10 @@ export default app => {
 
   if (isDev) {
     const ADMIN_ROOT = path.join(process.cwd(), '../now-admin/dist');
-    console.log(`Serving admin from ${ADMIN_ROOT}`);
+    logger.info(`Serving admin from ${ADMIN_ROOT}`);
     app.use('/admin', express.static(ADMIN_ROOT));
   } else {
-    console.log(`Serving admin from s3://${NOW_ADMIN_BUCKET}`);
+    logger.info(`Serving admin from s3://${NOW_ADMIN_BUCKET}`);
     app.get('/admin/?:path(*)', ({ params: { path: filePath } }, res) => {
       streamObject(
         res,

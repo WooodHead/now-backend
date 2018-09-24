@@ -4,8 +4,8 @@ import bodyParser from 'body-parser';
 import { ChronoField, LocalTime } from 'js-joda';
 import type { $Request, $Response, NextFunction } from 'express';
 
+import logger from '../logger';
 import { promiseDelay } from '../util';
-import type { JobRequestNoDelay } from '.';
 import sayHello from './sayHello';
 import sendEventReminders from './sendEventReminders';
 import {
@@ -15,6 +15,7 @@ import {
   deleteIntercomUser,
 } from './intercom';
 import sendChatNotif from '../fcm/chat';
+import type { JobRequestNoDelay } from '.';
 
 const cronjobs: { [string]: ({ [string]: any }) => Promise<any> } = {
   sayHello,
@@ -36,7 +37,7 @@ const waitASecond = () => {
   const now = LocalTime.now();
   if (now.get(ChronoField.SECOND_OF_MINUTE) === 59) {
     const delay = 1000 - now.get(ChronoField.MILLI_OF_SECOND);
-    console.log(`delaying ${delay}ms before running job`);
+    logger.info(`delaying ${delay}ms before running job`);
     return promiseDelay(delay);
   }
   return Promise.resolve();
@@ -61,7 +62,7 @@ handler.post('/', (req, res, next) => {
       })
       .catch(next);
   } else {
-    console.error('invalid job', body);
+    logger.error('invalid job', body);
     res.sendStatus(400);
   }
 });

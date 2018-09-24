@@ -5,7 +5,7 @@ import type { ZonedDateTime } from 'js-joda';
 import { enqueue } from '.';
 import { User } from '../db/repos';
 import { SPECIAL_USER_IDS } from '../db/constants';
-import { isDev } from '../util';
+import logger from '../logger';
 
 const endpoint = 'https://api.intercom.io';
 const { INTERCOM_TOKEN: token } = process.env;
@@ -14,9 +14,7 @@ const FIELDS = ['id', 'email', 'firstName', 'lastName', 'createdAt'];
 
 const api = ({ path, ...opts }): Promise<Object> => {
   if (!token) {
-    if (isDev()) {
-      console.warn("Can't talk to intercom because no API key is set.");
-    }
+    logger.warn("Can't talk to intercom because no API key is set.");
     return Promise.resolve({});
   }
 

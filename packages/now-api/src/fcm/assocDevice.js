@@ -1,5 +1,6 @@
 import { messaging } from './client';
 import { NEW_EVENTS_TOPIC } from './constants';
+import logger from '../logger';
 import { getUser } from '../schema/resolvers/User';
 import { getDevices } from '../schema/resolvers/Device';
 
@@ -24,7 +25,7 @@ export const assocDevice = (token, { id, preferences }) => {
 
       return subOrUnsub(shouldSubscribe, [token]);
     })
-    .catch(e => console.warn("couldn't modify user subscription", e));
+    .catch(e => logger.warn("couldn't modify user subscription", e));
 };
 
 /*

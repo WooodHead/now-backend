@@ -1,6 +1,7 @@
 // @flow
+import logger from '../logger';
 
 export default (): Promise<void> => {
-  console.log('hi!!!');
+  logger.info('hi!!!');
   return Promise.resolve();
 };

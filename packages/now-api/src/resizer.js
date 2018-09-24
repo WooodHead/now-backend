@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 
 import { NOW_IMAGE_BUCKET, s3, streamObject } from './s3';
+import logger from './logger';
 
 const CACHE_CONTROL = 'public, max-age=31536000';
 
@@ -53,15 +54,14 @@ const resizer = ({ params: { width, height, originalKey, ext } }, res) => {
           streamObject(res, scaledParams, () => res.send(500), CACHE_CONTROL)
         )
         .catch(ex => {
-          console.warn(ex);
+          logger.warn(ex);
           res.sendStatus(400);
         });
     } else {
-      console.error(
-        `Error loading resized image key=%s, error=%s`,
+      logger.error('Error loading resized image', {
         originalKey,
-        e
-      );
+        e,
+      });
       res.sendStatus(500);
     }
   };

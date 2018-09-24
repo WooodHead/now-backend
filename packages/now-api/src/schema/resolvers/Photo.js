@@ -5,6 +5,7 @@ import streamToPromise from 'stream-to-promise';
 
 import { NOW_IMAGE_BUCKET, s3 } from '../../s3';
 import { userIdFromContext } from '../util';
+import { logger } from '../../logger';
 
 import { getUser, putPhoto } from './User';
 
@@ -42,7 +43,7 @@ const storePhoto = (file, key, ratio) =>
               `data:image/jpeg;base64,${preview.toString('base64')}`: null)
           )
           .catch(e => {
-            console.error('error creating preview', e);
+            logger.error('error creating preview', e);
           })
       )
   );
@@ -57,7 +58,7 @@ const setProfilePhoto = (root, { input: { photo } }, context) => {
     .then(preview => putPhoto(userId, photoKey, preview))
     .then(() => ({ user: getUser(userId, userId) }))
     .catch(e => {
-      console.error('error uploading photo', e);
+      logger.error('error uploading photo', e);
       throw new Error('Error uploading photo');
     });
 };
@@ -73,7 +74,7 @@ export const setActivityHeaderPhoto = (activityId, headerPhoto) => {
       key: photoKey,
     }))
     .catch(e => {
-      console.error('error uploading photo', e);
+      logger.error('error uploading photo', e);
       throw new Error('Error uploading photo');
     });
 };

@@ -3,10 +3,11 @@ import AWS from 'aws-sdk';
 import type { JobRequest } from '.';
 import { handleJob } from './dequeue';
 import { promiseDelay } from '../util';
+import logger from '../logger';
 
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 
-const { SQS_QUEUE_URL, VERBOSE } = process.env;
+const { SQS_QUEUE_URL } = process.env;
 
 const sqsEnqueue = ({ delay, ...data }: JobRequest) => {
   const message = {};
@@ -21,10 +22,8 @@ const sqsEnqueue = ({ delay, ...data }: JobRequest) => {
     .sendMessage(message)
     .promise()
     .then(response => {
-      if (VERBOSE === 'true') {
-        console.log(response);
-      }
-    }, console.error);
+      logger.verbose(response);
+    }, logger.error);
 };
 
 const directHandle = ({ delay = 0, ...data }: JobRequest) =>

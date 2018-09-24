@@ -11,6 +11,7 @@ import url from 'url';
 import schema from './schema';
 import buildUserForContext from './buildContext';
 import { endpoint as auth0Endpoint } from './auth0';
+import logger from './logger';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -65,9 +66,9 @@ export default app => {
     tracing: true,
     cacheControl: true,
     introspection: true,
-    logFunction: isDev || process.env.VERBOSE ? console.log : () => {},
+    logFunction: logger.verbose,
     formatError: error => {
-      console.error(error);
+      logger.error(error);
 
       const startsWith = (message, matches) => {
         for (let i = 0; i < matches.length; i += 1) {
@@ -145,10 +146,10 @@ export default app => {
     });
   } else {
     httpServer.listen(PORT, () => {
-      console.log(
+      logger.info(
         `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
       );
-      console.log(
+      logger.info(
         `🚀 Subscriptions ready at ws://localhost:${PORT}${
           server.subscriptionsPath
         }`

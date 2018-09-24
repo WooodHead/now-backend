@@ -2,6 +2,7 @@ import { messaging } from './client';
 import { getTokensForEvent } from './tokens';
 import { Activity, Event, User } from '../db/repos';
 import { NOTIFICATION_PREFERENCE_MESSAGES } from '../db/constants';
+import logger from '../logger';
 
 const getEventAndActivity = eventId =>
   Event.byId(eventId).then(event =>
@@ -31,6 +32,6 @@ const sendChatNotif = ({ eventId, userId, text }) =>
         },
       });
     })
-    .catch(console.warn);
+    .catch(logger.warn);
 
 export default sendChatNotif;

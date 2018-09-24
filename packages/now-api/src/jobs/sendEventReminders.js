@@ -2,6 +2,7 @@
 import { Duration, Instant } from 'js-joda';
 import { Event } from '../db/repos';
 import { logSentNotification, sendEventReminder } from '../fcm';
+import logger from '../logger';
 
 const NOTIF_SEND_TIME = Duration.ofHours(2); // if you change this, consider also changing the notif text
 const KEY = 'event_reminder';
@@ -19,7 +20,7 @@ const sendEventReminders = async (): Promise<void> => {
   await Promise.all(
     events.map(({ id, activityId }) =>
       logSentNotification(id, KEY).then(
-        () => sendEventReminder(id, activityId).catch(console.warn),
+        () => sendEventReminder(id, activityId).catch(logger.warn),
         () => {
           /* already sent notifications are ok, do nothing */
         }

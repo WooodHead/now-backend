@@ -6,8 +6,8 @@ WORKDIR /build
 COPY package.json .
 COPY yarn.lock .
 COPY . .
-RUN apk --no-cache add vips-dev fftw-dev --update-cache --repository https://dl-3.alpinelinux.org/alpine/edge/testing/ \
-  && apk --no-cache add  --virtual .build-dependencies g++ git make python2 \ 
+RUN apk --no-cache add vips-dev fftw-dev curl --update-cache --repository https://dl-3.alpinelinux.org/alpine/edge/testing/ \
+  && apk --no-cache add  --virtual .build-dependencies g++ git make python2 \
   && yarn install \
   && yarn build:prod \
   && yarn install --modules-folder ../node_modules --prod \

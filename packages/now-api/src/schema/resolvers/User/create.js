@@ -18,6 +18,7 @@ import { updatePref as updateFcmPref } from '../../../fcm';
 import { notifyEventChange } from '../Event';
 import { syncIntercomUser } from '../../../jobs';
 import { createRsvp } from '../Rsvp';
+import logger from '../../../logger';
 
 const PRE_LOGGED_IN_AUTH0_ID = 'CUV6mTWPcyKmfHTw0DppzuVkb45RRCVN@clients';
 
@@ -101,7 +102,7 @@ export const createUserMutation = async (
             context.loaders
           );
         } catch (e) {
-          console.error('Unable to RSVP invited user');
+          logger.error('Unable to RSVP invited user');
         }
       }
     }
