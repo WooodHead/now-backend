@@ -14,6 +14,7 @@ import {
   syncIntercomUser,
   deleteIntercomUser,
 } from './intercom';
+import syncAuth0Logs from './auth0logs';
 import sendChatNotif from '../fcm/chat';
 import type { JobRequestNoDelay } from '.';
 
@@ -21,6 +22,7 @@ const cronjobs: { [string]: ({ [string]: any }) => Promise<any> } = {
   sayHello,
   sendEventReminders,
   syncAllIntercomUsers,
+  syncAuth0Logs,
 };
 
 const jobs: { [string]: ({ [string]: any }) => Promise<any> } = {

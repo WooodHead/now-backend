@@ -1,3 +1,4 @@
 // @flow
 export { endpoint } from './credentials';
-export { getUser, deleteUser } from './api';
+export { getUser, deleteUser, getLogs } from './api';
+export { default as eventTypes } from './eventTypes';

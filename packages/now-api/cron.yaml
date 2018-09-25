@@ -6,3 +6,6 @@ cron:
   - name: "syncAllIntercomUsers"
     url: "/jobs/syncAllIntercomUsers"
     schedule: "58 6 * * 6"
+  - name: "syncAuth0Logs"
+    url: "/jobs/syncAuth0Logs"
+    schedule: "7,17,27,37,47,57 * * * *"

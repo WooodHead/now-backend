@@ -33,3 +33,10 @@ export const deleteUser = (id: string) =>
     method: 'DELETE',
     path: `users/${id}`,
   });
+
+export const getLogs = (from: ?string) =>
+  call({
+    method: 'GET',
+    path: 'logs',
+    qs: { from, take: '100' },
+  });
