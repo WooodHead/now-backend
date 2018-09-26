@@ -1,7 +1,7 @@
 type Query {
   template(id: ID): Template
   category(id: ID): Category
-  categories: [Category]
+  categories: [Category!]!
 }
 
 type Mutation {
