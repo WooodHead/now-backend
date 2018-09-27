@@ -16,6 +16,7 @@ type Rsvp implements Node {
   invite: EventInvitation
   action: RsvpAction
   lastReadTs: String
+  host: Boolean!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
 }
@@ -40,6 +41,7 @@ type RsvpLog {
   event: Event
   time: ZonedDateTime
   action: RsvpAction
+  host: Boolean!
 }
 
 type RootRsvpsConnection implements Connection {
@@ -56,6 +58,7 @@ type RootRsvpsEdge implements Edge {
 input CreateRsvpInput {
   eventId: ID!
   userId: ID
+  host: Boolean
 }
 
 type CreateRsvpPayload {

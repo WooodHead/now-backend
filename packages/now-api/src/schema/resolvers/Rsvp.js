@@ -15,9 +15,18 @@ const invite = ({ inviteId }, args, { loaders }) =>
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);
 
+const computeGoingClause = (action, previousRsvp) => {
+  if (previousRsvp && action === previousRsvp.action) {
+    return null;
+  }
+  return action === 'add'
+    ? sql.raw('?? + 1', 'going')
+    : sql.raw('greatest(?? - 1, 0)', 'going');
+};
+
 export const createRsvp = async (
   trx,
-  { eventId, userId, inviteId, ignoreConstraints = false },
+  { eventId, userId, inviteId, host = false, ignoreConstraints = false },
   action,
   loaders
 ) => {
@@ -40,14 +49,19 @@ export const createRsvp = async (
   }
 
   // idempotent
-  if (previousRsvp && previousRsvp.action === action) {
+  if (
+    previousRsvp &&
+    previousRsvp.action === action &&
+    previousRsvp.host === host
+  ) {
     return previousRsvp.id;
   }
 
   if (
     !ignoreConstraints &&
     rsvpEvent.going >= rsvpEvent.limit &&
-    action === 'add'
+    action === 'add' &&
+    (!previousRsvp || previousRsvp.action !== 'add')
   ) {
     throw new Error(`Event ${eventId} full`);
   }
@@ -61,6 +75,7 @@ export const createRsvp = async (
     const updatedRsvp = {
       id,
       action,
+      host,
       updatedAt: ISOString,
     };
     rsvpCall = Rsvp.update(updatedRsvp);
@@ -72,24 +87,28 @@ export const createRsvp = async (
       userId,
       inviteId,
       action,
+      host,
       createdAt: ISOString,
       updatedAt: ISOString,
     };
     rsvpCall = Rsvp.insert(newRsvp);
   }
 
-  const going =
-    action === 'add'
-      ? sql.raw('?? + 1', 'going')
-      : sql.raw('greatest(?? - 1, 0)', 'going');
+  const going = computeGoingClause(action, previousRsvp);
 
-  await Promise.all([
-    rsvpCall.transacting(trx),
-    RsvpLog.insert({ eventId, userId, action }).transacting(trx),
-    Event.byId(eventId)
-      .transacting(trx)
-      .update({ going }),
-  ]);
+  const actions = [];
+  actions.push(rsvpCall.transacting(trx));
+  actions.push(
+    RsvpLog.insert({ eventId, userId, action, host }).transacting(trx)
+  );
+  if (going) {
+    actions.push(
+      Event.byId(eventId)
+        .transacting(trx)
+        .update({ going })
+    );
+  }
+  await Promise.all(actions);
 
   return id;
 };
@@ -120,16 +139,19 @@ const shouldIgnoreConstraints = (inputUserId, ctx) =>
 
 const mutateRsvp = (
   action,
-  { input: { eventId, userId: inputUserId } },
+  { input: { eventId, userId: inputUserId, host = false } },
   ctx
 ) => {
   const userId = getUserIdForRsvp(inputUserId, ctx);
   const ignoreConstraints = shouldIgnoreConstraints(inputUserId, ctx);
+  if (!ignoreConstraints && host) {
+    throw new Error('You are not authorized to set this RSVP as a host.');
+  }
   return sql
     .transaction(trx =>
       createRsvp(
         trx,
-        { eventId, userId, ignoreConstraints },
+        { eventId, userId, host, ignoreConstraints },
         action,
         ctx.loaders
       )

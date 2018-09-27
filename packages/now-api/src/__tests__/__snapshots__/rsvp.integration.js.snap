@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Rsvp blocks non-admin users from RSVPing other users 1`] = `[Error: GraphQL error: You can not RSVP other users.]`;
+
+exports[`Rsvp blocks non-admin users from setting the host field to true 1`] = `[Error: GraphQL error: You are not authorized to set this RSVP as a host.]`;

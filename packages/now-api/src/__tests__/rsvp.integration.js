@@ -49,27 +49,32 @@ beforeEach(() =>
 afterEach(() => truncateTables());
 
 describe('Rsvp', () => {
+  const rsvpMutation = gql`
+    mutation rsvp($input: CreateRsvpInput!) {
+      addRsvp(input: $input) {
+        rsvp {
+          id
+          user {
+            id
+            firstName
+            lastName
+          }
+          event {
+            id
+            isAttending
+          }
+          host
+        }
+        event {
+          id
+        }
+      }
+    }
+  `;
+
   it('rsvp to event', async () => {
     const results = await client.mutate({
-      mutation: gql`
-        mutation rsvp($input: CreateRsvpInput!) {
-          addRsvp(input: $input) {
-            rsvp {
-              id
-              user {
-                id
-              }
-              event {
-                id
-                isAttending
-              }
-            }
-            event {
-              id
-            }
-          }
-        }
-      `,
+      mutation: rsvpMutation,
       variables: { input: { eventId: event.id } },
     });
     const { data } = results;
@@ -94,6 +99,7 @@ describe('Rsvp', () => {
             __typename: 'User',
             id: USER_ID,
           },
+          host: false,
         },
       },
     });
@@ -114,25 +120,7 @@ describe('Rsvp', () => {
   it('rsvp to event twice', async () => {
     const addRsvp = () =>
       client.mutate({
-        mutation: gql`
-          mutation rsvp($input: CreateRsvpInput!) {
-            addRsvp(input: $input) {
-              rsvp {
-                id
-                user {
-                  id
-                }
-                event {
-                  id
-                  isAttending
-                }
-              }
-              event {
-                id
-              }
-            }
-          }
-        `,
+        mutation: rsvpMutation,
         variables: { input: { eventId: event.id } },
       });
 
@@ -190,25 +178,7 @@ describe('Rsvp', () => {
     await Event.update({ id: event.id, going: 5 });
 
     const results = client.mutate({
-      mutation: gql`
-        mutation rsvp($input: CreateRsvpInput!) {
-          addRsvp(input: $input) {
-            rsvp {
-              id
-              user {
-                id
-              }
-              event {
-                id
-                isAttending
-              }
-            }
-            event {
-              id
-            }
-          }
-        }
-      `,
+      mutation: rsvpMutation,
       variables: { input: { eventId: event.id } },
     });
     expect.assertions(1);
@@ -226,25 +196,7 @@ describe('Rsvp', () => {
     await Event.update({ id: event.id, time });
 
     const results = client.mutate({
-      mutation: gql`
-        mutation rsvp($input: CreateRsvpInput!) {
-          addRsvp(input: $input) {
-            rsvp {
-              id
-              user {
-                id
-              }
-              event {
-                id
-                isAttending
-              }
-            }
-            event {
-              id
-            }
-          }
-        }
-      `,
+      mutation: rsvpMutation,
       variables: { input: { eventId: event.id } },
     });
     expect.assertions(1);
@@ -262,25 +214,7 @@ describe('Rsvp', () => {
     await Event.update({ id: event.id, visibleAt });
 
     const results = client.mutate({
-      mutation: gql`
-        mutation rsvp($input: CreateRsvpInput!) {
-          addRsvp(input: $input) {
-            rsvp {
-              id
-              user {
-                id
-              }
-              event {
-                id
-                isAttending
-              }
-            }
-            event {
-              id
-            }
-          }
-        }
-      `,
+      mutation: rsvpMutation,
       variables: { input: { eventId: event.id } },
     });
     expect.assertions(1);
@@ -505,15 +439,7 @@ describe('Rsvp', () => {
     setAdmin(false);
     return expect(
       client.mutate({
-        mutation: gql`
-          mutation rsvp($input: CreateRsvpInput!) {
-            addRsvp(input: $input) {
-              rsvp {
-                id
-              }
-            }
-          }
-        `,
+        mutation: rsvpMutation,
         variables: { input: { eventId: event.id, userId: anotherUser.id } },
       })
     ).rejects.toMatchSnapshot();
@@ -526,23 +452,51 @@ describe('Rsvp', () => {
         addRsvp: { rsvp },
       },
     } = await client.mutate({
-      mutation: gql`
-        mutation rsvp($input: CreateRsvpInput!) {
-          addRsvp(input: $input) {
-            rsvp {
-              id
-              user {
-                firstName
-                id
-              }
-            }
-          }
-        }
-      `,
+      mutation: rsvpMutation,
       variables: { input: { eventId: event.id, userId: anotherUser.id } },
     });
 
     expect(rsvp.user.id).toEqual(anotherUser.id);
+    expect(rsvp.host).toBe(false);
     expect(rsvp.user.firstName).toEqual(anotherUser.firstName);
+  });
+
+  it('blocks non-admin users from setting the host field to true', () => {
+    setAdmin(false);
+    return expect(
+      client.mutate({
+        mutation: rsvpMutation,
+        variables: { input: { eventId: event.id, host: true } },
+      })
+    ).rejects.toMatchSnapshot();
+  });
+
+  it('allows admin users to set and unset the host field', async () => {
+    setAdmin(true);
+    const {
+      data: {
+        addRsvp: { rsvp },
+      },
+    } = await client.mutate({
+      mutation: rsvpMutation,
+      variables: {
+        input: { eventId: event.id, userId: anotherUser.id, host: true },
+      },
+    });
+
+    expect(rsvp.host).toBe(true);
+
+    await client.mutate({
+      mutation: rsvpMutation,
+      variables: {
+        input: { eventId: event.id, userId: anotherUser.id, host: false },
+      },
+    });
+
+    expect(
+      (await sql(SQL_TABLES.EVENTS)
+        .where({ id: event.id })
+        .first()).going
+    ).toBe(1);
   });
 });
