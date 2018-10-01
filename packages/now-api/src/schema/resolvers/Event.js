@@ -67,6 +67,13 @@ const messagesResolver = async (root, args) => {
 const isAttendingResolver = ({ id }, { userId }, ctx) =>
   userDidRsvp({ eventId: id, userId: userId || userIdFromContext(ctx) });
 
+const isHostingResolver = ({ id }, { userId }, ctx) =>
+  userDidRsvp({
+    eventId: id,
+    userId: userId || userIdFromContext(ctx),
+    mustBeHost: true,
+  });
+
 const hasInvitedResolver = async ({ id }, { userId }, ctx) =>
   hasInvitedToEvent(id, userId || userIdFromContext(ctx));
 
@@ -97,6 +104,7 @@ export const resolvers = {
   rsvps: rsvpsResolver,
   messages: messagesResolver,
   isAttending: isAttendingResolver,
+  isHosting: isHostingResolver,
   hasInvited: hasInvitedResolver,
   inviteHasBeenAccepted: inviteHasBeenAcceptedResolver,
   state: stateResolver,

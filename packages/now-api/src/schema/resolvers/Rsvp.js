@@ -224,5 +224,10 @@ export const getUserRsvps = ({ userId, first, last, after, before }) =>
     }
   );
 
-export const userDidRsvp = ({ eventId, userId }) =>
-  Rsvp.get({ eventId, userId }).then(item => !!(item && item.action === 'add'));
+export const userDidRsvp = ({ eventId, userId, mustBeHost = false }) => {
+  const args = { eventId, userId, action: 'add' };
+  if (mustBeHost) {
+    args.host = true;
+  }
+  return Rsvp.get(args).then(item => !!item);
+};

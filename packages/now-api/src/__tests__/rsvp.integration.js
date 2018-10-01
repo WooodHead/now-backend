@@ -62,6 +62,7 @@ describe('Rsvp', () => {
           event {
             id
             isAttending
+            isHosting
           }
           host
         }
@@ -94,6 +95,7 @@ describe('Rsvp', () => {
             __typename: 'Event',
             id: event.id,
             isAttending: true,
+            isHosting: false,
           },
           user: {
             __typename: 'User',
@@ -144,6 +146,7 @@ describe('Rsvp', () => {
             __typename: 'Event',
             id: event.id,
             isAttending: true,
+            isHosting: false,
           },
           user: {
             __typename: 'User',
@@ -498,5 +501,27 @@ describe('Rsvp', () => {
         .where({ id: event.id })
         .first()).going
     ).toBe(1);
+  });
+
+  it('returns isHosting: true after setting the host field', async () => {
+    setAdmin(true);
+    await client.mutate({
+      mutation: rsvpMutation,
+      variables: { input: { eventId: event.id, userId: user.id, host: true } },
+    });
+    const { data } = await client.query({
+      query: gql`
+        query event($id: ID!) {
+          event(id: $id) {
+            isAttending
+            isHosting
+          }
+        }
+      `,
+      variables: { id: event.id },
+    });
+
+    expect(data.event.isAttending).toBe(true);
+    expect(data.event.isHosting).toBe(true);
   });
 });

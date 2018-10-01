@@ -76,6 +76,7 @@ type Event implements Node {
     before: String
   ): EventMessagesConnection!
   isAttending(userId: ID): Boolean
+  isHosting(userId: ID): Boolean
   hasInvited(userId: ID): Boolean
   inviteHasBeenAccepted(userId: ID): Boolean
   limit: Int
