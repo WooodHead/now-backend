@@ -44,8 +44,6 @@ type Template {
 
 type Field {
   id: ID!
-  label: String
-  placeholder: String
   type: FieldType
   defaultValue: FieldValue
   params: GraphQLJSON

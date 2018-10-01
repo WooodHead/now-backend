@@ -1,26 +1,37 @@
 const fields = [
   {
     id: '797cad62-68dd-45ed-b854-7f6a10806728',
-    label: 'Text description 1',
-    placeholder: 'A generic placeholder for text 1',
+    params: {
+      header: 'Now, tell us about your activity.',
+      label: "What We'll Do",
+      placeholder: 'A generic placeholder for text 1',
+    },
     type: 'Text',
   },
   {
     id: '983b8efb-12bf-4adf-bcf4-e37366a62e41',
-    label: 'Text description 2',
-    placeholder: 'A generic placeholder for text 2',
+    params: {
+      header: 'Now, tell us about your activity.',
+      label: "Who's This For",
+      placeholder: 'A generic placeholder for text 2',
+    },
     type: 'Text',
   },
   {
     id: '23a6de38-5cd1-4e70-aaed-c500ecb5773c',
-    label: 'Text descrionion 3',
-    placeholder: 'A generic placeholder for text 3',
+    params: {
+      header: 'Now, tell us about your activity.',
+      label: 'Any Requirements',
+      placeholder: 'A generic placeholder for text 3',
+    },
     type: 'Text',
   },
   {
     id: 'c3018c9d-a050-40b5-bef2-a77871e54ba6',
-    label: 'Text descrionion 4',
-    placeholder: 'A generic placeholder for text 4',
+    params: {
+      header: 'Finally, give your activity a title.',
+      placeholder: 'A generic placeholder for text 4',
+    },
     type: 'Text',
   },
 ];
