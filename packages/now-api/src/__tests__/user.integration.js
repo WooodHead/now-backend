@@ -208,6 +208,39 @@ describe('user', () => {
       expect(data.user.bio).toEqual(desiredOutput);
     }
   );
+
+  it('updates properly', async () => {
+    const updateUser = gql`
+      mutation updateCurrentUser($input: UpdateCurrentUserInput) {
+        updateCurrentUser(input: $input) {
+          user {
+            id
+          }
+        }
+      }
+    `;
+
+    await client.mutate({
+      mutation: updateUser,
+      variables: {
+        input: { firstName: 'aaaaaaaa', preferences: { a: false, b: true } },
+      },
+    });
+    expect(await User.byId(user.id)).toMatchObject({
+      firstName: 'aaaaaaaa',
+      preferences: { a: false, b: true },
+    });
+
+    await client.mutate({
+      mutation: updateUser,
+      variables: {
+        input: { preferences: { b: false, c: true } },
+      },
+    });
+    expect(await User.byId(user.id)).toMatchObject({
+      preferences: { a: false, b: false, c: true },
+    });
+  });
 });
 
 describe('allUsers', () => {

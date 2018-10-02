@@ -1,6 +1,5 @@
 import uuid from 'uuid/v4';
-
-import { pick } from 'lodash';
+import { isPlainObject, pick } from 'lodash';
 
 import { getUser } from './index';
 import { CURRENT_TOS_VERSION } from './tos';
@@ -125,9 +124,21 @@ export const updateCurrentUser = (root, { input }, context) => {
 
   const newUser = {
     id,
-    ...pick(input, ['firstName', 'lastName', 'bio', 'preferences']),
+    ...pick(input, ['firstName', 'lastName', 'bio']),
     updatedAt: sql.raw('now()'),
   };
+
+  if (
+    Object.prototype.hasOwnProperty.call(input, 'preferences') &&
+    isPlainObject(input.preferences)
+  ) {
+    // merge existing prefs with provided
+    // https://www.postgresql.org/docs/9.6/static/functions-json.html
+    newUser.preferences = sql.raw('?? || ?', [
+      'preferences',
+      input.preferences,
+    ]);
+  }
 
   context.loaders.members.clear(id);
   return putUser(newUser)
