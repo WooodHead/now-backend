@@ -61,7 +61,7 @@ export const userQuery = (root, { id }, context) => {
   return null;
 };
 
-const filterAttributes = id => user => {
+export const filterAttributes = id => user => {
   if (!user) return null;
   // many fields are always available
   const fields = [

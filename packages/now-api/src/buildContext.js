@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import { getByAuth0Id } from './schema/resolvers/User';
+import { filterAttributes, getByAuth0Id } from './schema/resolvers/User';
 import loaders from './db/loaders';
 import { processUserAgent } from './util';
 
@@ -23,7 +23,10 @@ export default (req, otherContext = {}) => {
   return getByAuth0Id(currentUserAuth0Id).then(user => {
     if (user) {
       const loadersWithContext = loaderContext({ currentUserId: user.id });
-      loadersWithContext.members.prime(user.id, user);
+      loadersWithContext.members.prime(
+        user.id,
+        filterAttributes(user.id)(user)
+      );
       return {
         ...context,
         user,
