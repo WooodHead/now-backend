@@ -60,11 +60,11 @@ const newMessageObject = ({ id, eventId, userId, text }) => ({
   id: id || uuid(),
 });
 
-const sendMessage = async (newMessage, sendNotification = false) => {
+const sendMessage = async (newMessage, sendNotification = false, trx) => {
   const potentialMessage = await Message.byId(newMessage.id);
   if (!potentialMessage) {
     const { eventId } = newMessage;
-    await Message.insert(newMessage);
+    await Message.withTransaction(trx).insert(newMessage);
 
     const edge = buildEdge(MESSAGE_CURSOR_ID, newMessage);
     const pubsub = getPubSub();
@@ -91,18 +91,28 @@ const sendMessage = async (newMessage, sendNotification = false) => {
   return potentialMessage;
 };
 
-const createBotMessage = (root, { input: { eventId, text, id } }) => {
+export const sendBotMessage = (message, notification = false, trx) => {
   const newMessage = newMessageObject({
-    eventId,
     userId: NOW_BOT_USER_ID,
-    text,
-    id,
+    id: uuid(),
+    ...message,
   });
 
-  return sendMessage(newMessage, true).then(message => ({
-    edge: buildEdge(MESSAGE_CURSOR_ID, message),
+  return sendMessage(newMessage, notification, trx).then(sentMessage => ({
+    edge: buildEdge(MESSAGE_CURSOR_ID, sentMessage),
   }));
 };
+
+const createBotMessage = (root, { input: { eventId, text, id } }) =>
+  sendBotMessage(
+    {
+      eventId,
+      userId: NOW_BOT_USER_ID,
+      text,
+      id,
+    },
+    true
+  );
 
 const createUserMessage = async (
   root,

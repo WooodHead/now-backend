@@ -6,6 +6,7 @@ import { userIdFromContext, sqlPaginatify } from '../../util';
 import {
   SQL_TABLES,
   DELETED_USER_ID,
+  NOW_BOT_USER_ID,
   NOTIFICATION_PREFERENCE_MESSAGES,
   NOTIFICATION_PREFERENCE_NEW_EVENT,
   NOTIFICATION_PREFERENCE_REMINDERS,
@@ -176,6 +177,7 @@ const fillInDefaultPreferences = (
 const isSelf = ({ id }, args, context) => id === userIdFromContext(context);
 
 const isDeleted = ({ id }) => id === DELETED_USER_ID;
+const isBot = ({ id }) => id === NOW_BOT_USER_ID;
 
 export const resolvers = {
   rsvps,
@@ -186,6 +188,7 @@ export const resolvers = {
   isSelf,
   tosCurrent,
   isDeleted,
+  isBot,
 };
 
 /* Mutations */

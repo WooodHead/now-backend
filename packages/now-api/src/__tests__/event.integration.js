@@ -12,6 +12,7 @@ import { mockNow, restoreNow } from '../../testutils/date';
 import * as Activity from '../schema/resolvers/Activity';
 import { createRsvp } from '../schema/resolvers/Rsvp';
 
+const user = factory.build('user', { id: USER_ID });
 const activity = factory.build('activity');
 const location = factory.build('location');
 const events = factory.buildList('event', 5, {}, { activity, location });
@@ -24,6 +25,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.ACTIVITIES).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.LOCATIONS).truncate(),
+    sql(SQL_TABLES.USERS).truncate(),
   ]);
 
 beforeEach(() =>
@@ -32,6 +34,7 @@ beforeEach(() =>
       sql(SQL_TABLES.ACTIVITIES).insert(activity),
       sql(SQL_TABLES.EVENTS).insert(events),
       sql(SQL_TABLES.LOCATIONS).insert(location),
+      sql(SQL_TABLES.USERS).insert(user),
     ])
   ));
 afterEach(() => {
@@ -385,7 +388,7 @@ describe('Event', () => {
           }
         `,
       });
-      expect(data.unreadMessagesCount).toEqual(10);
+      expect(data.unreadMessagesCount).toEqual(11);
     });
     it('unread correct when marked read', async () => {
       const messages = factory.buildList(

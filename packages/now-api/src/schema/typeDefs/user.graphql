@@ -39,6 +39,7 @@ type User implements Node {
   # returns true if this user is the currently-authenticated user
   isSelf: Boolean!
   isDeleted: Boolean
+  isBot: Boolean
   tosCurrent: Boolean
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime

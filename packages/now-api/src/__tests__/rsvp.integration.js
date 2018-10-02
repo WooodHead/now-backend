@@ -35,6 +35,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.RSVPS).truncate(),
     sql(SQL_TABLES.RSVP_LOG).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MESSAGES).truncate(),
   ]);
 
 beforeEach(() =>
@@ -63,6 +64,13 @@ describe('Rsvp', () => {
             id
             isAttending
             isHosting
+            messages {
+              edges {
+                node {
+                  text
+                }
+              }
+            }
           }
           host
         }
@@ -96,6 +104,11 @@ describe('Rsvp', () => {
             id: event.id,
             isAttending: true,
             isHosting: false,
+            messages: {
+              edges: [
+                { node: { text: `👋 ${user.firstName} joined this Meetup` } },
+              ],
+            },
           },
           user: {
             __typename: 'User',
@@ -240,6 +253,13 @@ describe('Rsvp', () => {
             }
             event {
               id
+              messages {
+                edges {
+                  node {
+                    text
+                  }
+                }
+              }
             }
           }
         }
@@ -253,6 +273,13 @@ describe('Rsvp', () => {
         event: {
           __typename: 'Event',
           id: event.id,
+          messages: {
+            edges: [
+              {
+                node: { text: `${user.firstName} left this Meetup` },
+              },
+            ],
+          },
         },
         rsvp: {
           __typename: 'Rsvp',

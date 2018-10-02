@@ -1,11 +1,11 @@
 import uuid from 'uuid/v4';
 
 import { userIdFromContext, sqlPaginatify, buildEdge } from '../util';
-import { Event, Rsvp, RsvpLog } from '../../db/repos';
+import { Event, Rsvp, RsvpLog, User } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
 import { notifyEventChange, joinableEventsQuery } from './Event';
-import { notifyUserMessageCountChanged } from './Message';
+import { notifyUserMessageCountChanged, sendBotMessage } from './Message';
 import { isAdmin } from '../AdminDirective';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
@@ -94,6 +94,8 @@ export const createRsvp = async (
     rsvpCall = Rsvp.insert(newRsvp);
   }
 
+  const rsvpUser = await User.byId(userId);
+
   const going = computeGoingClause(action, previousRsvp);
 
   const actions = [];
@@ -101,6 +103,31 @@ export const createRsvp = async (
   actions.push(
     RsvpLog.insert({ eventId, userId, action, host }).transacting(trx)
   );
+
+  if (action === 'add') {
+    actions.push(
+      sendBotMessage(
+        {
+          eventId,
+          text: `👋 ${rsvpUser.firstName} joined this Meetup`,
+        },
+        false,
+        trx
+      )
+    );
+  } else {
+    actions.push(
+      sendBotMessage(
+        {
+          eventId,
+          text: `${rsvpUser.firstName} left this Meetup`,
+        },
+        false,
+        trx
+      )
+    );
+  }
+
   if (going) {
     actions.push(
       Event.byId(eventId)
