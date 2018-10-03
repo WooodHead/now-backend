@@ -101,7 +101,7 @@ export const createUserMutation = async (
             context.loaders
           );
         } catch (e) {
-          logger.error('Unable to RSVP invited user');
+          logger.error(`Unable to RSVP invited user: ${e}`);
         }
       }
     }

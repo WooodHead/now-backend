@@ -94,7 +94,7 @@ export const createRsvp = async (
     rsvpCall = Rsvp.insert(newRsvp);
   }
 
-  const rsvpUser = await User.byId(userId);
+  const rsvpUser = await User.byId(userId).transacting(trx);
 
   const going = computeGoingClause(action, previousRsvp);
 
