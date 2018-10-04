@@ -6,14 +6,8 @@ import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 import { setActivityHeaderPhoto } from './Photo';
-import { expiredUserAgent } from '../../util';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
-
-export const getToday = () => {
-  const now = LocalDateTime.now(NYC_TZ);
-  return now.toLocalDate().toString();
-};
 
 const allActivities = (root, { input, orderBy = 'id' }) =>
   sqlPaginatify(orderBy, Activity.all({}), input);
@@ -24,15 +18,7 @@ const manyActivities = (root, { ids }, { loaders }) =>
 const activityQuery = (root, { id }, { loaders }) =>
   loaders.activities.load(id);
 
-const todayActivity = (root, args, { userAgent }) => {
-  if (expiredUserAgent(userAgent)) {
-    return null;
-  }
-  return Activity.get({ activityDate: getToday() });
-};
-
 export const queries = {
-  todayActivity,
   activity: activityQuery,
   allActivities,
   manyActivities,

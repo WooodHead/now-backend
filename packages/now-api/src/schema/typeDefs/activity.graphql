@@ -1,5 +1,5 @@
 type Query {
-  todayActivity: Activity
+  todayActivity: Activity @deprecated
   activity(id: ID!): Activity
   manyActivities(ids: [ID!]!): [Activity!]
   allActivities(

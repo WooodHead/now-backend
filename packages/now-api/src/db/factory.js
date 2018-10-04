@@ -83,10 +83,6 @@ Factory.define('activity')
   .attr('emoji', () => randomEmoji.random({ count: 1 })[0].character)
   .attr('description', hacker.phrase);
 
-Factory.define('todayActivity')
-  .extend('activity')
-  .attr('activityDate', () => new Date().toISOString().substring(0, 10));
-
 Factory.define('event')
   .option('activity', () => ({
     id: uuid(),

@@ -9,8 +9,6 @@ import factory from '../db/factory';
 import { Activity } from '../db/repos';
 
 const activities = factory.buildList('activity', 3);
-const todayActivity = factory.build('todayActivity');
-const event = factory.build('event', {}, { activity: todayActivity });
 const serverMessages = ['noActivityTitle', 'noActivityMessage'].map(key =>
   factory.build('serverMessage', { key })
 );
@@ -26,15 +24,13 @@ jest.mock('../s3', () => ({
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
-    sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.SERVER_MESSAGES).truncate(),
   ]);
 
 beforeAll(() =>
   truncateTables().then(() =>
     Promise.all([
-      sql(SQL_TABLES.ACTIVITIES).insert([...activities, todayActivity]),
-      sql(SQL_TABLES.EVENTS).insert(event),
+      sql(SQL_TABLES.ACTIVITIES).insert(activities),
       sql(SQL_TABLES.SERVER_MESSAGES).insert(serverMessages),
     ])
   ));
@@ -76,10 +72,10 @@ describe('activity', () => {
     const { data } = await results;
     expect(data).toHaveProperty('allActivities');
 
-    expect(data.allActivities.edges).toHaveLength(4);
+    expect(data.allActivities.edges).toHaveLength(3);
     expect(data.allActivities.edges).toEqual(
       expect.arrayContaining(
-        [...activities, todayActivity].map(a =>
+        activities.map(a =>
           expect.objectContaining({
             __typename: 'RootActivitiesEdge',
             [Symbol('id')]: expect.anything(),
@@ -128,59 +124,6 @@ describe('activity', () => {
           /T00:00-04:00\[America\/New_York\]$/
         ),
         header: null,
-      },
-    });
-  });
-
-  it("gets today's activity", async () => {
-    const res = client.query({
-      query: gql`
-        {
-          serverMessages {
-            noActivityTitle
-            noActivityMessage
-          }
-          todayActivity {
-            id
-            title
-            emoji
-            description
-            activityDate
-            events {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        }
-      `,
-    });
-
-    const { data } = await res;
-    expect(data).toMatchObject({
-      serverMessages: {
-        noActivityTitle: expect.any(String),
-        noActivityMessage: expect.any(String),
-      },
-      todayActivity: {
-        __typename: 'Activity',
-        [Symbol('id')]: `Activity:${todayActivity.id}`,
-        ...todayActivity,
-        events: {
-          edges: expect.arrayContaining([
-            expect.objectContaining({
-              __typename: 'ActivityEventsEdge',
-              [Symbol('id')]: `$Activity:${todayActivity.id}.events.edges.0`,
-              node: expect.objectContaining({
-                __typename: 'Event',
-                id: event.id,
-                [Symbol('id')]: `Event:${event.id}`,
-              }),
-            }),
-          ]),
-        },
       },
     });
   });
