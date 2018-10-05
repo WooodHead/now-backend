@@ -4,7 +4,7 @@ import uuid from 'uuid/v4';
 import { LocalDate } from 'js-joda';
 
 import { client, setAdmin, USER_ID } from '../db/mock';
-import { SQL_TABLES } from '../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { EventUserMetadata } from '../db/repos';
@@ -15,10 +15,12 @@ import { createRsvp } from '../schema/resolvers/Rsvp';
 const user = factory.build('user', { id: USER_ID });
 const activity = factory.build('activity');
 const location = factory.build('location');
-const events = factory.buildList('event', 5, {}, { activity, location });
+const events = factory.buildList('event', 6, {}, { activity, location });
 const event = events[0];
 event.time = '2018-05-30 20:00:00+00';
 event.timezone = 'Asia/Calcutta';
+const privateEvent = events[5];
+privateEvent.communityId = uuid();
 
 const truncateTables = () =>
   Promise.all([
@@ -91,6 +93,7 @@ describe('Event', () => {
               ...omit(e, [
                 'locationId',
                 'activityId',
+                'communityId',
                 'timezone',
                 'duration',
                 'visibleAt',
@@ -255,6 +258,10 @@ describe('Event', () => {
               country
               neighborhood
             }
+            community {
+              id
+              name
+            }
             rsvps {
               edges {
                 node {
@@ -284,6 +291,10 @@ describe('Event', () => {
           'going',
         ]),
         activity,
+        community: {
+          id: GLOBAL_COMMUNITY_ID,
+          name: 'Global Community',
+        },
       },
     });
   });

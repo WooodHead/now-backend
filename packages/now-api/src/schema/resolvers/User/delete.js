@@ -12,6 +12,8 @@ import {
   Rsvp,
   RsvpLog,
   User,
+  MembershipLog,
+  Membership,
 } from '../../../db/repos';
 import { notifyEventChange } from '../Event';
 import { SQL_TABLES, DELETED_USER_ID } from '../../../db/constants';
@@ -55,6 +57,10 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
             EventUserMetadata.withTransaction(trx).delete({ userId }),
             Rsvp.withTransaction(trx).delete({ userId }),
             RsvpLog.withTransaction(trx)
+              .all({ userId })
+              .update({ userId: DELETED_USER_ID }),
+            Membership.withTransaction(trx).delete({ userId }),
+            MembershipLog.withTransaction(trx)
               .all({ userId })
               .update({ userId: DELETED_USER_ID }),
             Message.withTransaction(trx)

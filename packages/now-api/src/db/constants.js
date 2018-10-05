@@ -2,6 +2,9 @@ import { LocalTime } from 'js-joda';
 
 export const SQL_TABLES = {
   USERS: 'users',
+  COMMUNITIES: 'communities',
+  MEMBERSHIPS: 'memberships',
+  MEMBERSHIP_LOG: 'membershipLog',
   BLOCKED_USERS: 'blockedUsers',
   DEVICES: 'devices',
   ACTIVITIES: 'activities',
@@ -20,6 +23,7 @@ export const SQL_TABLES = {
 
 export const NOW_BOT_USER_ID = 'ec6c81d8-7bb4-11e8-ba5d-2bc28925de05';
 export const DELETED_USER_ID = '7cb43790-3bed-4e23-9825-43d913074ee0';
+export const GLOBAL_COMMUNITY_ID = '89b4d825-1b46-4eb8-8e3f-f6b7e30d0296';
 
 export const SPECIAL_USER_IDS = [NOW_BOT_USER_ID, DELETED_USER_ID];
 

@@ -1,0 +1,30 @@
+type Community implements Node {
+  id: ID!
+  name: String
+  users: CommunityUsersConnection!
+  events: CommunityEventsConnection!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
+}
+
+type CommunityUsersConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [CommunityUsersEdge!]!
+}
+
+type CommunityUsersEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+type CommunityEventsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [CommunityEventsEdge!]!
+}
+
+type CommunityEventsEdge implements Edge {
+  cursor: String!
+  node: Event!
+}

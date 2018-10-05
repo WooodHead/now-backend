@@ -6,9 +6,9 @@ import { ZonedDateTime } from 'js-joda';
 
 import { USER_ID, client, newUserClient, setAdmin } from '../db/mock';
 import factory from '../db/factory';
-import { Invitation, User } from '../db/repos';
+import { Invitation, User, Membership } from '../db/repos';
 import sql from '../db/sql';
-import { SQL_TABLES } from '../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import { mutations as InviteMutations } from '../schema/resolvers/Invitation';
 
 jest.mock('../s3', () => ({
@@ -22,6 +22,7 @@ jest.mock('../s3', () => ({
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MEMBERSHIPS).truncate(),
     sql(SQL_TABLES.INVITATIONS).truncate(),
   ]);
 
@@ -128,6 +129,14 @@ describe('user', () => {
       location,
       preferences,
     });
+
+    const dbMemberships = await Membership.all({
+      userId: id,
+      communityId: GLOBAL_COMMUNITY_ID,
+    });
+
+    expect(dbMemberships).toHaveLength(1);
+    expect(dbMemberships[0]).toMatchObject({ userId: id });
 
     const dbInvititation = await Invitation.get({ id: invitation.id });
     expect(dbInvititation.code).toEqual(invitationCode);

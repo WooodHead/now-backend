@@ -12,9 +12,10 @@ import {
   EVENT_INVITE_TYPE,
 } from '../Invitation';
 import { userIdFromContext } from '../../util';
-import { SQL_TABLES } from '../../../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
 import { notifyEventChange } from '../Event';
+import { createMembership } from '../Membership';
 import { syncIntercomUser } from '../../../jobs';
 import { createRsvp } from '../Rsvp';
 import logger from '../../../logger';
@@ -90,6 +91,10 @@ export const createUserMutation = async (
         inviteeId: newUserId,
         inviteId,
       }).transacting(trx);
+
+      // All users are members of the global community
+      await createMembership(newUserId, GLOBAL_COMMUNITY_ID, trx);
+
       if (type === EVENT_INVITE_TYPE) {
         notifyEventId = eventId;
         // attempt to RSVP the user to the event for which they were invited

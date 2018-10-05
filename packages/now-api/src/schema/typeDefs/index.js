@@ -11,11 +11,13 @@ import message from './message.graphql';
 import jobs from './jobs.graphql';
 import servermessages from './servermessages.graphql';
 import templates from './templates.graphql';
+import community from './community.graphql';
 
 export default mergeTypes(
   [
     base,
     activity,
+    community,
     event,
     rsvp,
     location,

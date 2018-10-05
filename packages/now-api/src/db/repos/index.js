@@ -51,6 +51,9 @@ class Repo {
 }
 
 export const User = new Repo(SQL_TABLES.USERS);
+export const Community = new Repo(SQL_TABLES.COMMUNITIES);
+export const Membership = new Repo(SQL_TABLES.MEMBERSHIPS);
+export const MembershipLog = new Repo(SQL_TABLES.MEMBERSHIP_LOG);
 export const Device = new Repo(SQL_TABLES.DEVICES);
 export const Activity = new Repo(SQL_TABLES.ACTIVITIES);
 export const Event = new Repo(SQL_TABLES.EVENTS);

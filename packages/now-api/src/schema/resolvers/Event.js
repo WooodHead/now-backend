@@ -93,6 +93,9 @@ const stateResolver = ({ time }) => {
 const locationResolver = ({ locationId }, args, { loaders }) =>
   loaders.locations.load(locationId);
 
+const communityResolver = ({ communityId }, args, { loaders }) =>
+  loaders.communities.load(communityId);
+
 const timeResolver = ({ time, timezone }) =>
   time
     .withZoneSameInstant(ZoneId.of(timezone))
@@ -110,6 +113,7 @@ export const resolvers = {
   state: stateResolver,
   location: locationResolver,
   time: timeResolver,
+  community: communityResolver,
 };
 
 export const visibleEventsQuery = () => {

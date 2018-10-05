@@ -63,6 +63,7 @@ type Event implements Node {
   visibleAt: ZonedDateTime
   duration: Int
   activity: Activity
+  community: Community
   rsvps(
     first: Int
     last: Int

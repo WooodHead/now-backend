@@ -1,6 +1,13 @@
 import DataLoader from 'dataloader';
 import { getUserBatch } from '../schema/resolvers/User';
-import { Event, Activity, Rsvp, Location, Invitation } from './repos';
+import {
+  Event,
+  Activity,
+  Rsvp,
+  Location,
+  Invitation,
+  Community,
+} from './repos';
 
 const maxBatchSize = 100;
 export default ({ currentUserId }) => ({
@@ -20,6 +27,9 @@ export default ({ currentUserId }) => ({
     maxBatchSize,
   }),
   invitations: new DataLoader(ids => Invitation.batch(ids), {
+    maxBatchSize,
+  }),
+  communities: new DataLoader(ids => Community.batch(ids), {
     maxBatchSize,
   }),
 });
