@@ -1,5 +1,18 @@
 const fields = [
   {
+    id: '797cad62-68dd-45ed-b854-7f6a10806729',
+    params: {
+      header: 'How many people can join?',
+      minLabel: 'Minimum',
+      min: 4,
+      maxLabel: 'Maximum',
+      max: 12,
+      placeholder:
+        'If less than 4 people join your activity by the start time, it’ll have to be cancelled :(',
+    },
+    type: 'NumberRange',
+  },
+  {
     id: '797cad62-68dd-45ed-b854-7f6a10806728',
     params: {
       header: 'Now, tell us about your activity.',

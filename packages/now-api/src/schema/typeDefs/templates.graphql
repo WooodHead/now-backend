@@ -89,7 +89,6 @@ input FieldValueInput {
 
 enum FieldType {
   Text
-  Number
-  Date
+  NumberRange
   Location
 }
