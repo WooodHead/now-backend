@@ -1,75 +1,104 @@
-const fields = [
-  {
-    id: '797cad62-68dd-45ed-b854-7f6a10806729',
+export const fieldOrder = [
+  'eventWhen',
+  'eventWhere',
+  'eventSize',
+  'eventWhat',
+  'eventWho',
+  'eventHow',
+  'eventTitle',
+];
+export const fields = {
+  eventWho: {
+    id: '507fa987-94a4-4b41-8aa3-aabf5ca72faa',
+    type: 'Text',
+    params: {
+      header: `Who's this for`,
+      placeholder:
+        'Who can participate in your activity? Who might really enjoy it?',
+    },
+  },
+  eventWhat: {
+    id: '67d913bd-cca2-4671-8925-d9c8ff7b991d',
+    type: 'Text',
+    params: {
+      header: `What we'll do`,
+      placeholder:
+        'Explain what your activity is about and what people attending can expect',
+    },
+  },
+  eventWhere: {
+    id: '8498faed-78e4-4c0d-9c96-776d46caeeae',
+    type: 'Location',
+    params: {
+      header: 'Where is it going to be?',
+      label: 'Placeholder label',
+      placeholder: 'Placeholder...placeholder',
+    },
+  },
+  eventWhen: {
+    id: '09792458-e2eb-4926-aab5-25281e71c6f2',
+    type: 'Text', // should be date range
+    params: {
+      header: 'When is your activity?',
+      placeholder: 'This is some placeholder text',
+    },
+  },
+  eventHow: {
+    id: '91ed52b9-0eb0-4f04-8cc3-727697df15b0',
+    type: 'Text',
+    params: {
+      header: 'Any requirements',
+      placeholder:
+        'Is there anything participants should bring? Do participants require any special knowledge?',
+    },
+  },
+  eventSize: {
+    id: '8c6429d2-c13c-4bf2-8cb5-afadf6e5b15e',
+    type: 'NumberRange',
     params: {
       header: 'How many people can join?',
       minLabel: 'Minimum',
       min: 4,
       maxLabel: 'Maximum',
       max: 12,
-      placeholder:
+      hint:
         'If less than 4 people join your activity by the start time, it’ll have to be cancelled :(',
     },
-    type: 'NumberRange',
   },
-  {
-    id: '797cad62-68dd-45ed-b854-7f6a10806728',
-    params: {
-      header: 'Now, tell us about your activity.',
-      label: "What We'll Do",
-      placeholder: 'A generic placeholder for text 1',
-    },
+  eventTitle: {
+    id: '349c804f-4d8f-4362-bb1c-dc093366879f',
     type: 'Text',
-  },
-  {
-    id: '983b8efb-12bf-4adf-bcf4-e37366a62e41',
     params: {
-      header: 'Now, tell us about your activity.',
-      label: "Who's This For",
-      placeholder: 'A generic placeholder for text 2',
+      header: 'Finally, give your activity a title',
+      placeholder: `Let's...`,
     },
-    type: 'Text',
   },
-  {
-    id: '23a6de38-5cd1-4e70-aaed-c500ecb5773c',
-    params: {
-      header: 'Now, tell us about your activity.',
-      label: 'Any Requirements',
-      placeholder: 'A generic placeholder for text 3',
-    },
-    type: 'Text',
-  },
-  {
-    id: 'c3018c9d-a050-40b5-bef2-a77871e54ba6',
-    params: {
-      header: 'Finally, give your activity a title.',
-      placeholder: 'A generic placeholder for text 4',
-    },
-    type: 'Text',
-  },
-];
+};
 
 export const tempTemplates = {
   'a959a300-c018-11e8-b62d-db7fbb06ca6d': {
     id: 'a959a300-c018-11e8-b62d-db7fbb06ca6d',
-    title: 'Ask Me Anything About',
+    title: 'Ask Me Anything',
     description:
-      'Allowing people to learn from your experiences will expand their beliefs and increase their empathy for the world around them.',
-    fields,
+      'Open up about an experience or an aspect of your identity that allows people to better understand the world around them.',
+    ...fields,
+    fieldOrder,
   },
   'a9b0eba6-c018-11e8-b09c-134125e0116b': {
     id: 'a9b0eba6-c018-11e8-b09c-134125e0116b',
-    title: 'Am I The Only One Who',
+    title: 'Am I The Only One',
     description:
       'Making yourself vulnerable is tough, but you might just find you’re not as alone as you think.',
-    fields,
+    ...fields,
+    fieldOrder,
   },
   'aa000880-c018-11e8-8218-f7becb600c0d': {
     id: 'aa000880-c018-11e8-8218-f7becb600c0d',
     title: 'Party Time',
     description:
       'Allowing people to learn from your party skills and experiences.',
-    fields,
+    ...fields,
+    fieldOrder,
   },
 };
 

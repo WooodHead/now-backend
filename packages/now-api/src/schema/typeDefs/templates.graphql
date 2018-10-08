@@ -37,7 +37,14 @@ type Template {
   title: String
   description: String
   header: Photo
-  fields: [Field!]!
+  eventWho: Field
+  eventWhat: Field
+  eventWhere: Field
+  eventWhen: Field
+  eventHow: Field
+  eventSize: Field
+  eventTitle: Field
+  fieldOrder: [String!]!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
 }
