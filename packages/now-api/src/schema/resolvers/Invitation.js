@@ -108,8 +108,9 @@ export const generateCode = async trx => {
 
 const createEventInvitation = async (root, { input: { eventId } }, context) =>
   sql.transaction(async trx => {
-    const event = await joinableEventsQuery()
-      .where({ id: eventId })
+    const inviterId = userIdFromContext(context);
+    const event = await joinableEventsQuery(inviterId)
+      .where({ 'events.id': eventId })
       .transacting(trx)
       .forUpdate()
       .first();
@@ -117,8 +118,6 @@ const createEventInvitation = async (root, { input: { eventId } }, context) =>
     if (!event) {
       throw new Error(`Event ${eventId} not found`);
     }
-
-    const inviterId = userIdFromContext(context);
 
     if (event.limit - event.going < 1) {
       throw new Error("Sorry, there aren't enough spots left now");

@@ -9,6 +9,7 @@ import { getMessages, notifyMessagesRead } from './Message';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
+import { SQL_TABLES } from '../../db/constants';
 
 const topicName = eventId => `event-changes-${eventId}`;
 
@@ -116,11 +117,21 @@ export const resolvers = {
   community: communityResolver,
 };
 
-export const visibleEventsQuery = () => {
+const memberEvents = userId => {
+  const query = Event.all()
+    .innerJoin(SQL_TABLES.MEMBERSHIPS, {
+      'memberships.communityId': 'events.communityId',
+    })
+    .where({ 'memberships.userId': userId });
+
+  return query;
+};
+
+export const visibleEventsQuery = userId => {
   const now = LocalDateTime.now(NYC_TZ);
   const today = now.toLocalDate();
   const todayStart = today.atStartOfDay();
-  const query = Event.all();
+  const query = memberEvents(userId);
 
   query.where('time', '>=', todayStart.toString());
   query.where('visibleAt', '<=', Instant.now().toString());
@@ -129,9 +140,9 @@ export const visibleEventsQuery = () => {
   return query;
 };
 
-export const joinableEventsQuery = () => {
+export const joinableEventsQuery = userId => {
   const now = Instant.now().toString();
-  const query = Event.all();
+  const query = memberEvents(userId);
   query.where('time', '>', now);
   query.where('visibleAt', '<', now);
 
@@ -144,10 +155,30 @@ const allEvents = (root, { input, orderBy = 'id' }) =>
 
 const manyEvents = (root, { ids }, { loaders }) => loaders.events.loadMany(ids);
 
-const eventQuery = (root, { id }, { loaders }) => loaders.events.load(id);
+const eventQuery = async (root, { id }, ctx) => {
+  const { loaders } = ctx;
+  const userId = userIdFromContext(ctx);
+  const event = await loaders.events.load(id);
 
-const eventsQuery = (root, { input, orderBy = 'time' }) =>
-  sqlPaginatify(orderBy, visibleEventsQuery(), input);
+  const memberships = await loaders.userMemberships.load(userId);
+
+  if (
+    memberships
+      .map(({ communityId }) => communityId)
+      .includes(event.communityId)
+  ) {
+    return event;
+  }
+
+  return null;
+};
+
+const eventsQuery = (root, { input, orderBy = 'time' }, ctx) =>
+  sqlPaginatify(
+    `events.${orderBy}`,
+    visibleEventsQuery(userIdFromContext(ctx)),
+    { ...input, select: 'events.*' }
+  );
 
 export const queries = {
   event: eventQuery,

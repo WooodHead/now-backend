@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 import { ZonedDateTime, ZoneId } from 'js-joda';
+import uuid from 'uuid/v4';
 
 import { client, setAdmin, USER_ID } from '../db/mock';
-import { SQL_TABLES } from '../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { Event, Rsvp, RsvpLog, Invitation } from '../db/repos';
@@ -23,6 +24,11 @@ const event = factory.build(
   { activity, location }
 );
 const user = factory.build('user', { id: USER_ID });
+const membership = {
+  id: uuid(),
+  userId: USER_ID,
+  communityId: GLOBAL_COMMUNITY_ID,
+};
 const anotherUser = factory.build('user');
 
 const truncateTables = () =>
@@ -36,6 +42,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.RSVP_LOG).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
     sql(SQL_TABLES.MESSAGES).truncate(),
+    sql(SQL_TABLES.MEMBERSHIPS).truncate(),
   ]);
 
 beforeEach(() =>
@@ -44,6 +51,7 @@ beforeEach(() =>
       sql(SQL_TABLES.ACTIVITIES).insert(activity),
       sql(SQL_TABLES.EVENTS).insert(event),
       sql(SQL_TABLES.LOCATIONS).insert(location),
+      sql(SQL_TABLES.MEMBERSHIPS).insert(membership),
       sql(SQL_TABLES.USERS).insert([user, anotherUser]),
     ])
   ));
@@ -200,6 +208,19 @@ describe('Rsvp', () => {
     expect.assertions(1);
     await expect(results).rejects.toEqual(
       new Error(`GraphQL error: Event ${event.id} full`)
+    );
+  });
+
+  it("Doesn't rsvp to private event if not a member", async () => {
+    await Event.update({ id: event.id, communityId: uuid() });
+
+    const results = client.mutate({
+      mutation: rsvpMutation,
+      variables: { input: { eventId: event.id } },
+    });
+    expect.assertions(1);
+    await expect(results).rejects.toEqual(
+      new Error(`GraphQL error: Event ${event.id} not found`)
     );
   });
 

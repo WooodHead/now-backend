@@ -3,7 +3,7 @@ import uuid from 'uuid/v4';
 
 import { client, USER_ID, subClient } from '../db/mock';
 import factory from '../db/factory';
-import { SQL_TABLES } from '../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import sql from '../db/sql';
 import chat from '../fcm/chat';
 import { Message, Rsvp } from '../db/repos';
@@ -21,6 +21,19 @@ const user1 = factory.build('user', {
 const user2 = factory.build('user', {
   id: 'e5380f3c-57c8-11e8-b397-7be415c41792',
 });
+
+const memberships = [
+  {
+    id: uuid(),
+    userId: user1.id,
+    communityId: GLOBAL_COMMUNITY_ID,
+  },
+  {
+    id: uuid(),
+    userId: user2.id,
+    communityId: GLOBAL_COMMUNITY_ID,
+  },
+];
 
 const rsvp1 = factory.build('rsvp', {}, { event, user: user1 });
 
@@ -70,6 +83,7 @@ const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MEMBERSHIPS).truncate(),
     sql(SQL_TABLES.MESSAGES).truncate(),
     sql(SQL_TABLES.RSVPS).truncate(),
   ]);
@@ -79,6 +93,7 @@ describe('message', () => {
     truncateTables().then(() =>
       Promise.all([
         sql(SQL_TABLES.EVENTS).insert(event),
+        sql(SQL_TABLES.MEMBERSHIPS).insert(memberships),
         sql(SQL_TABLES.USERS).insert([user1, user2]),
         sql(SQL_TABLES.RSVPS).insert([rsvp1, rsvp2]),
         sql(SQL_TABLES.MESSAGES).insert([

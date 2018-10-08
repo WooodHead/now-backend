@@ -22,12 +22,19 @@ event.timezone = 'Asia/Calcutta';
 const privateEvent = events[5];
 privateEvent.communityId = uuid();
 
+const membership = {
+  id: uuid(),
+  userId: USER_ID,
+  communityId: GLOBAL_COMMUNITY_ID,
+};
+
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MEMBERSHIPS).truncate(),
   ]);
 
 beforeEach(() =>
@@ -37,6 +44,7 @@ beforeEach(() =>
       sql(SQL_TABLES.EVENTS).insert(events),
       sql(SQL_TABLES.LOCATIONS).insert(location),
       sql(SQL_TABLES.USERS).insert(user),
+      sql(SQL_TABLES.MEMBERSHIPS).insert(membership),
     ])
   ));
 afterEach(() => {
@@ -106,9 +114,38 @@ describe('Event', () => {
       ),
     });
   });
+  it('return last 1 allEvents', async () => {
+    setAdmin(true);
+    const results = client.query({
+      query: gql`
+        {
+          allEvents(input: { last: 1 }) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      `,
+    });
+    const { data } = await results;
+    expect(data.allEvents).toMatchObject({
+      edges: [
+        expect.objectContaining({
+          __typename: 'RootEventsEdge',
+          [Symbol('id')]: expect.anything(),
+          node: expect.objectContaining({
+            id: events.sort((a, b) => a.id > b.id)[5].id,
+          }),
+        }),
+      ],
+    });
+  });
 
   describe('events visible to user', () => {
     let eventToday;
+    let privateEventToday;
     let eventTomorrow;
     let eventLastWeek;
     beforeEach(async () => {
@@ -123,6 +160,19 @@ describe('Event', () => {
             .minusDays(1)
             .atTime(14, 0)
             .toString(),
+        },
+        { activity, location }
+      );
+      privateEventToday = factory.build(
+        'event',
+        {
+          time: today.atTime(15, 0).toString(),
+          timezone: Activity.NYC_TZ.id(),
+          visibleAt: today
+            .minusDays(1)
+            .atTime(14, 0)
+            .toString(),
+          communityId: uuid(),
         },
         { activity, location }
       );
@@ -167,11 +217,47 @@ describe('Event', () => {
         eventToday,
         eventTomorrow,
         eventNotPublished,
+        privateEventToday,
       ]);
     });
     afterEach(() => {
       restoreNow();
       return sql(SQL_TABLES.EVENTS).truncate();
+    });
+    it('events if member of more than one community', async () => {
+      const privateMembership = {
+        id: uuid(),
+        userId: USER_ID,
+        communityId: privateEventToday.communityId,
+      };
+      await sql(SQL_TABLES.MEMBERSHIPS).insert(privateMembership);
+
+      mockNow(
+        LocalDate.now()
+          .atTime(14, 0)
+          .toString()
+      );
+      const results = client.query({
+        query: gql`
+          {
+            events {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        `,
+      });
+
+      const { data } = await results;
+
+      expect(data.events.edges.map(({ node }) => node.id)).toEqual([
+        eventToday.id,
+        privateEventToday.id,
+        eventTomorrow.id,
+      ]);
     });
     it('before early availability', async () => {
       mockNow(
@@ -314,6 +400,22 @@ describe('Event', () => {
     });
     const foundTime = result.data.event.time;
     expect(foundTime).toEqual('2018-05-31T01:30+05:30');
+  });
+
+  it('not found if not in community', async () => {
+    const result = await client.query({
+      query: gql`
+        query getEventTime($id: ID!) {
+          event(id: $id) {
+            id
+            time
+          }
+        }
+      `,
+      variables: { id: privateEvent.id },
+    });
+
+    expect(result.data.event).toBeNull();
   });
 
   describe('message counting', () => {

@@ -30,9 +30,9 @@ export const createRsvp = async (
   action,
   loaders
 ) => {
-  const query = ignoreConstraints ? Event.get : joinableEventsQuery;
-  const rsvpEvent = await query()
-    .where({ id: eventId })
+  const query = ignoreConstraints ? Event.get() : joinableEventsQuery(userId);
+  const rsvpEvent = await query
+    .where({ 'events.id': eventId })
     .transacting(trx)
     .forUpdate()
     .first();
@@ -238,8 +238,12 @@ export const getEventRsvps = async ({
 export const getUserRsvps = ({ userId, first, last, after, before }) =>
   sqlPaginatify(
     'events.time',
-    Rsvp.all({ action: 'add', userId })
+    Rsvp.all({ action: 'add', 'rsvps.userId': userId })
       .innerJoin('events', 'events.id', 'rsvps.eventId')
+      .innerJoin('memberships', {
+        'memberships.userId': 'rsvps.userId',
+        'memberships.communityId': 'events.communityId',
+      })
       .whereNotNull('events.visibleAt'),
     {
       first,

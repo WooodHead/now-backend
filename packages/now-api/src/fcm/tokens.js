@@ -11,17 +11,22 @@ import { validUserPref } from './util';
  */
 export const getTokensForEvent = (eventId, prefName, excludeUsers = []) => {
   const userIds = sql(SQL_TABLES.RSVPS)
-    .distinct('userId')
-    .select()
+    .distinct('rsvps.userId')
+    .innerJoin(SQL_TABLES.EVENTS, 'rsvps.eventId', 'events.id')
     .innerJoin(SQL_TABLES.USERS, 'rsvps.userId', 'users.id')
-    .whereNotIn('userId', excludeUsers)
+    .innerJoin(SQL_TABLES.MEMBERSHIPS, {
+      'memberships.userId': 'rsvps.userId',
+      'memberships.communityId': 'events.communityId',
+    })
+    .whereNotIn('rsvps.userId', excludeUsers)
     .andWhere({ eventId, 'rsvps.action': 'add' })
     .andWhere(
       sql.raw('coalesce(users.preferences->?, ?)=?', [prefName, 'true', 'true'])
     );
+
   return Device.all()
     .select('token')
-    .whereIn('userId', userIds)
+    .whereIn('devices.userId', userIds)
     .then(results => results.map(({ token }) => token));
 };
 

@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 import { LocalDate, LocalDateTime, ZoneId } from 'js-joda';
+import uuid from 'uuid/v4';
 
 import { client, USER_ID } from '../db/mock';
-import { SQL_TABLES } from '../db/constants';
+import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
 import { Invitation } from '../db/repos';
@@ -11,6 +12,11 @@ import * as Activity from '../schema/resolvers/Activity';
 
 const location = factory.build('location');
 const user = factory.build('user', { id: USER_ID });
+const membership = {
+  id: uuid(),
+  userId: USER_ID,
+  communityId: GLOBAL_COMMUNITY_ID,
+};
 
 const createEventInvite = eventId =>
   client.mutate({
@@ -59,6 +65,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.RSVPS).truncate(),
     sql(SQL_TABLES.RSVP_LOG).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
+    sql(SQL_TABLES.MEMBERSHIPS).truncate(),
   ]);
 
 beforeEach(() =>
@@ -66,6 +73,7 @@ beforeEach(() =>
     Promise.all([
       sql(SQL_TABLES.LOCATIONS).insert(location),
       sql(SQL_TABLES.USERS).insert(user),
+      sql(SQL_TABLES.MEMBERSHIPS).insert(membership),
     ])
   ));
 afterEach(() => truncateTables());

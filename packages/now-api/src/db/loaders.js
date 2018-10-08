@@ -7,6 +7,7 @@ import {
   Location,
   Invitation,
   Community,
+  Membership,
 } from './repos';
 
 const maxBatchSize = 100;
@@ -32,4 +33,10 @@ export default ({ currentUserId }) => ({
   communities: new DataLoader(ids => Community.batch(ids), {
     maxBatchSize,
   }),
+  userMemberships: new DataLoader(
+    ids => Promise.all(ids.map(id => Membership.all({ userId: id }))),
+    {
+      maxBatchSize,
+    }
+  ),
 });
