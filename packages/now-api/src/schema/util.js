@@ -8,8 +8,11 @@ const fromBase64 = str => Buffer.from(str, 'base64').toString();
 
 export const identity = a => a;
 
+export const defaultCursorSerializer = (cursorId, node) =>
+  toBase64(String(node[cursorId]));
+
 export const buildEdge = (cursorId, node) => ({
-  cursor: toBase64(String(node[cursorId])),
+  cursor: defaultCursorSerializer(cursorId, node),
   node,
 });
 
@@ -25,6 +28,7 @@ export const sqlPaginatify = async (
     reverse = false,
     offset = undefined,
     select = '*',
+    edgeBuilder = buildEdge,
   } = {}
 ) => {
   const builderForCount = builder.clone();
@@ -110,7 +114,7 @@ export const sqlPaginatify = async (
     pageInfo: () => lazy().then(({ pageInfo }) => pageInfo),
     count,
     edges: () =>
-      lazy().then(({ data }) => data.map(d => buildEdge(cursorId, d))),
+      lazy().then(({ data }) => data.map(d => edgeBuilder(cursorId, d))),
   };
 };
 

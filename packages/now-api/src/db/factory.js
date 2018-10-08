@@ -142,4 +142,8 @@ Factory.define('serverMessage')
   .attr('key')
   .attr('text', lorem.sentences());
 
+Factory.define('community')
+  .attr('id', uuid)
+  .attr('name', hacker.phrase);
+
 export default Factory;

@@ -1,7 +1,20 @@
+type Query {
+  allCommunities(
+    input: AdminInput
+    order: CommunityOrder
+  ): RootCommunitiesConnection @admin
+  community(id: ID!): Community
+}
+
+type Mutation {
+  createCommunity(input: CreateCommunityInput!): CreateCommunityPayload @admin
+  updateCommunity(input: UpdateCommunityInput!): CreateCommunityPayload @admin
+}
+
 type Community implements Node {
   id: ID!
   name: String
-  users: CommunityUsersConnection!
+  users(input: AdminInput): CommunityUsersConnection! @admin
   events: CommunityEventsConnection!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
@@ -16,6 +29,8 @@ type CommunityUsersConnection implements Connection {
 type CommunityUsersEdge implements Edge {
   cursor: String!
   node: User!
+  createdAt: ZonedDateTime
+  updatedAt: ZonedDateTime
 }
 
 type CommunityEventsConnection implements Connection {
@@ -27,4 +42,34 @@ type CommunityEventsConnection implements Connection {
 type CommunityEventsEdge implements Edge {
   cursor: String!
   node: Event!
+}
+
+enum CommunityOrder {
+  id
+  name
+  createdAt
+}
+
+type RootCommunitiesConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [RootCommunitiesEdge!]!
+}
+
+type RootCommunitiesEdge implements Edge {
+  cursor: String!
+  node: Community!
+}
+
+type CreateCommunityPayload {
+  community: Community
+}
+
+input CreateCommunityInput {
+  name: String!
+}
+
+input UpdateCommunityInput {
+  id: ID!
+  name: String
 }

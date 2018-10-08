@@ -17,6 +17,7 @@ import * as Invitation from './Invitation';
 import * as Jobs from './Jobs';
 import * as ServerMessages from './ServerMessages';
 import * as Template from './Template';
+import * as Community from './Community';
 import Name from './Name';
 import { wrapResolvers } from '../authorization';
 
@@ -32,6 +33,7 @@ export default wrapResolvers({
     ...ServerMessages.queries,
     ...Template.queries,
     ...Category.queries,
+    ...Community.queries,
     userAgent: (root, args, { userAgent }) => userAgent,
   },
   Subscription: {
@@ -51,6 +53,7 @@ export default wrapResolvers({
     ...Invitation.mutations,
     ...Jobs.mutations,
     ...ServerMessages.mutations,
+    ...Community.mutations,
   },
   Activity: Activity.resolvers,
   Category: Category.resolvers,
@@ -62,6 +65,7 @@ export default wrapResolvers({
   Invitation: Invitation.resolvers,
   EventMessagesConnection: EventMessagesConnection.resolvers,
   Location: Location.resolvers,
+  Community: Community.resolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,
