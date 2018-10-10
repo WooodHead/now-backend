@@ -9,7 +9,7 @@ type Mutation {
 }
 
 input SubmissionInput {
-  tmeplateId: String!
+  templateId: String!
   responses: [ResponseInput!]!
 }
 

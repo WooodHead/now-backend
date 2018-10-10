@@ -38,6 +38,8 @@ const query = gql`
       inviteInstructions
       noActivityMessage
       noActivityTitle
+      categoriesHeading
+      categoriesSubheading
     }
   }
 `;

@@ -18,6 +18,8 @@ type ServerMessages {
   inviteExplain: String
   inviteExpire: String
   inviteInstructions: String
+  categoriesHeading: String
+  categoriesSubheading: String
   featureVideo: String
   featureThumbnail: Photo
 }
