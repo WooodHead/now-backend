@@ -18,6 +18,7 @@ import * as Jobs from './Jobs';
 import * as ServerMessages from './ServerMessages';
 import * as Template from './Template';
 import * as Community from './Community';
+import * as Membership from './Membership';
 import Name from './Name';
 import { wrapResolvers } from '../authorization';
 
@@ -54,6 +55,7 @@ export default wrapResolvers({
     ...Jobs.mutations,
     ...ServerMessages.mutations,
     ...Community.mutations,
+    ...Membership.mutations,
   },
   Activity: Activity.resolvers,
   Category: Category.resolvers,

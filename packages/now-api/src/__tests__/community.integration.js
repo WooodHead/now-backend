@@ -1,4 +1,6 @@
 import gql from 'graphql-tag';
+import uuid from 'uuid/v4';
+
 import { client, setAdmin, USER_ID } from '../db/mock';
 import { GLOBAL_COMMUNITY_ID, SQL_TABLES } from '../db/constants';
 import sql, { genRandomUuid } from '../db/sql';
@@ -22,6 +24,7 @@ const truncateTables = () =>
         })
       ),
     sql(SQL_TABLES.MEMBERSHIPS).truncate(),
+    sql(SQL_TABLES.MEMBERSHIP_LOG).truncate(),
   ]);
 
 beforeEach(() =>
@@ -71,6 +74,26 @@ const communityUsersQuery = gql`
   }
 `;
 
+const join = gql`
+  mutation createMembership($communityId: ID!, $userId: ID!) {
+    createMembership(input: { communityId: $communityId, userId: $userId }) {
+      community {
+        id
+      }
+    }
+  }
+`;
+
+const leave = gql`
+  mutation removeMembership($communityId: ID!, $userId: ID!) {
+    removeMembership(input: { communityId: $communityId, userId: $userId }) {
+      community {
+        id
+      }
+    }
+  }
+`;
+
 describe('Community', () => {
   it("lets you fetch a community you're in", async () => {
     const community = communities[0];
@@ -102,21 +125,25 @@ describe('Community', () => {
     expect(data.community).toBeNull();
   });
 
-  it('lets admins know the members of a community', async () => {
+  it('lets admins modify and learn about the members of a community', async () => {
     setAdmin(true);
     const community = communities[2];
-    await sql(SQL_TABLES.MEMBERSHIPS).insert([
-      {
-        id: genRandomUuid(),
-        userId: users[1].id,
-        communityId: community.id,
-      },
-      {
-        id: genRandomUuid(),
-        userId: users[2].id,
-        communityId: community.id,
-      },
-    ]);
+    await client.mutate({
+      mutation: join,
+      variables: { userId: users[1].id, communityId: community.id },
+    });
+    await client.mutate({
+      mutation: join,
+      variables: { userId: users[2].id, communityId: community.id },
+    });
+    await client.mutate({
+      mutation: join,
+      variables: { userId: users[3].id, communityId: community.id },
+    });
+    await client.mutate({
+      mutation: leave,
+      variables: { userId: users[3].id, communityId: community.id },
+    });
 
     const { data } = await client.query({
       query: communityUsersQuery,
@@ -136,5 +163,29 @@ describe('Community', () => {
         firstName: users[2].firstName,
       })
     );
+
+    const logs = await sql(SQL_TABLES.MEMBERSHIP_LOG);
+    expect(logs).toHaveLength(4);
+    expect(logs.filter(l => l.action === 'add')).toHaveLength(3);
+    expect(logs.filter(l => l.action === 'remove')).toHaveLength(1);
+    expect(logs.filter(l => l.action === 'remove')[0]).toMatchObject({
+      userId: users[3].id,
+      communityId: community.id,
+    });
+  });
+
+  it("doesn't let admins do invalid things", async () => {
+    setAdmin(true);
+    const badCommunityId = client.mutate({
+      mutation: join,
+      variables: { userId: users[1].id, communityId: uuid() },
+    });
+    await expect(badCommunityId).rejects.toMatchSnapshot();
+
+    const badUserId = client.mutate({
+      mutation: join,
+      variables: { userId: uuid(), communityId: communities[1].id },
+    });
+    await expect(badUserId).rejects.toMatchSnapshot();
   });
 });

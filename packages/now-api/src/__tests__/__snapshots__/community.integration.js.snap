@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Community doesn't let admins do invalid things 1`] = `[Error: GraphQL error: invalid community id]`;
+
+exports[`Community doesn't let admins do invalid things 2`] = `[Error: GraphQL error: invalid user id]`;

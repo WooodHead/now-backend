@@ -9,6 +9,10 @@ type Query {
 type Mutation {
   createCommunity(input: CreateCommunityInput!): CreateCommunityPayload @admin
   updateCommunity(input: UpdateCommunityInput!): CreateCommunityPayload @admin
+  createMembership(input: CreateMembershipInput!): CreateMembershipPayload
+    @admin
+  removeMembership(input: CreateMembershipInput!): CreateMembershipPayload
+    @admin
 }
 
 type Community implements Node {
@@ -72,4 +76,14 @@ input CreateCommunityInput {
 input UpdateCommunityInput {
   id: ID!
   name: String
+}
+
+input CreateMembershipInput {
+  userId: ID!
+  communityId: ID!
+}
+
+type CreateMembershipPayload {
+  user: User
+  community: Community @admin
 }

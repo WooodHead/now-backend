@@ -93,7 +93,7 @@ export const createUserMutation = async (
       }).transacting(trx);
 
       // All users are members of the global community
-      await createMembership(newUserId, GLOBAL_COMMUNITY_ID, trx);
+      await createMembership(newUserId, GLOBAL_COMMUNITY_ID, trx, false);
 
       if (type === EVENT_INVITE_TYPE) {
         notifyEventId = eventId;
