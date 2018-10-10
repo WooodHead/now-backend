@@ -1,5 +1,3 @@
-import { LocalTime } from 'js-joda';
-
 import {
   splitName,
   concatMapOfArrays,
@@ -9,7 +7,7 @@ import {
   MIN_ANDROID,
   expiredUserAgent,
   processUserAgent,
-  formatTime,
+  withHashId,
 } from '../util';
 
 describe('splitName', () => {
@@ -133,17 +131,16 @@ describe('processUserAgent', () => {
   });
 });
 
-describe('formatTime', () => {
-  it('hours', () => {
-    expect(formatTime(LocalTime.parse('10:00'))).toEqual('10 a.m.');
-    expect(formatTime(LocalTime.parse('21:00'))).toEqual('9 p.m.');
-  });
-  it('minutes', () => {
-    expect(formatTime(LocalTime.parse('21:03'))).toEqual('9:03 p.m.');
-    expect(formatTime(LocalTime.parse('21:30'))).toEqual('9:30 p.m.');
-  });
-  it('noon and midnight', () => {
-    expect(formatTime(LocalTime.parse('00:00'))).toEqual('12 a.m.');
-    expect(formatTime(LocalTime.parse('12:35'))).toEqual('12:35 p.m.');
+describe('withHashId', () => {
+  it('puts some garbage in the object', () => {
+    const o = {
+      okay: 9,
+      whatever: 'something',
+    };
+    expect(withHashId(o)).toMatchObject({
+      okay: 9,
+      whatever: 'something',
+      id: '97a1ca6bda2ebe645a679d29c1e463f7e0196026',
+    });
   });
 });

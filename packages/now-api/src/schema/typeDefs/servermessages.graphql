@@ -1,5 +1,6 @@
 type Query {
   serverMessages: ServerMessages
+  hostGuidelines: HostGuidelines!
 
   adminMessage(id: ID!): AdminMessage @admin
   manyAdminMessages(ids: [ID!]!): [AdminMessage!] @admin
@@ -52,4 +53,21 @@ input UpdateAdminMessageInput {
 
 type UpdateAdminMessagePayload {
   adminMessage: AdminMessage
+}
+
+type HostGuidelinesBullet {
+  id: ID!
+  imageName: String
+  title: String
+  description: String
+}
+
+type HostGuidelines {
+  title: String
+  description: String
+  imageName: String
+  howToHeading: String
+  bullets: [HostGuidelinesBullet]
+  conclusion: String
+  buttonText: String
 }

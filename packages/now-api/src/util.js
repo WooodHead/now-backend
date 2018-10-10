@@ -1,7 +1,8 @@
+// @flow
 import { assignWith, omit, truncate } from 'lodash';
-import { ChronoField } from 'js-joda';
+import * as crypto from 'crypto';
 
-export const splitName = name => {
+export const splitName = (name: string) => {
   const re = /[\s]+/;
   const match = re.exec(name);
 
@@ -16,17 +17,21 @@ export const splitName = name => {
 export const isDev = () => process.env.NODE_ENV === 'development';
 
 /** Returns a promise which will resolve after the specified number of milliseconds */
-export const promiseDelay = ms =>
+export const promiseDelay = (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-export const concatMapOfArrays = (...sources) =>
+export const concatMapOfArrays = (...sources: Array<{}>) =>
   assignWith(
     {},
     ...sources,
     (objValue, srcValue) => (objValue ? objValue.concat(srcValue) : srcValue)
   );
 
-export const putInOrder = (objects, ids, idProp = 'id') => {
+export const putInOrder = (
+  objects: Array<{}>,
+  ids: Array<string | number>,
+  idProp: string = 'id'
+) => {
   const lookup = {};
   objects.forEach(obj => {
     if (!obj) {
@@ -41,7 +46,7 @@ export const putInOrder = (objects, ids, idProp = 'id') => {
 // eslint-disable-next-line no-useless-escape
 const unicodeSpace = /[\p{Separator}]+/u;
 
-export const ellipsize = (text, length) =>
+export const ellipsize = (text: string, length: number) =>
   text.length > length
     ? truncate(text, { length, omission: '…', separator: unicodeSpace })
     : text;
@@ -49,8 +54,24 @@ export const ellipsize = (text, length) =>
 export const MIN_IOS = 2479;
 export const MIN_ANDROID = 16671;
 
-export const expiredUserAgent = ({ client, platform, buildNumber }) => {
-  if (client !== 'Meetup-Now' || buildNumber === 1) {
+export type UserAgent = {
+  client: string,
+  clientVersion: string,
+  platform: string,
+  osVersion: string,
+  buildNumber: number | 'unknown',
+};
+
+export const expiredUserAgent = ({
+  client,
+  platform,
+  buildNumber,
+}: UserAgent): boolean => {
+  if (
+    client !== 'Meetup-Now' ||
+    buildNumber === 1 ||
+    buildNumber === 'unknown'
+  ) {
     return false;
   }
   if (platform === 'Ios' && buildNumber < MIN_IOS) {
@@ -63,7 +84,7 @@ export const expiredUserAgent = ({ client, platform, buildNumber }) => {
 };
 
 const USER_AGENT_REGEX = /^([^/]*)\/([^ ]*) ([^/]*)\/([^ ]*) Build ([\d.]+)$/;
-export const processUserAgent = (userAgent = '') => {
+export const processUserAgent = (userAgent: string = ''): UserAgent => {
   // Meetup-Now/1.1.0 Ios/11.4 Build 1
   const matched = userAgent.match(USER_AGENT_REGEX);
   // 0:"Meetup-Now/1.1.0 Ios/11.4 Build 1"
@@ -92,20 +113,18 @@ export const processUserAgent = (userAgent = '') => {
   };
 };
 
-export const formatTime = when => {
-  const hour = when.get(ChronoField.HOUR_OF_AMPM);
-  let time = hour === 0 ? '12' : String(hour);
-  const minutes = when.get(ChronoField.MINUTE_OF_HOUR);
-  if (minutes !== 0) {
-    time += ':';
-    if (minutes < 10) {
-      time += '0';
-    }
-    time += `${minutes}`;
-  }
-  time += ' ';
-  time += when.get(ChronoField.AMPM_OF_DAY) === 0 ? 'a.m.' : 'p.m.';
-  return time;
-};
+export const filterHeaders = (headers: {}) => omit(headers, 'authorization');
 
-export const filterHeaders = headers => omit(headers, 'authorization');
+const NUL = Buffer.from([0x00]);
+
+export const withHashId = <T: {}>(base: T): { ...T, id: string } => {
+  const hash = crypto.createHash('sha1');
+  Object.entries(base).forEach(([k, v]) => {
+    hash.update(k);
+    hash.update(NUL);
+    hash.update(JSON.stringify(v));
+    hash.update(NUL);
+  });
+
+  return { ...base, id: hash.digest('hex') };
+};
