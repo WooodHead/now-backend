@@ -21,6 +21,14 @@ type ServerMessages {
   inviteInstructions: String
   categoriesHeading: String
   categoriesSubheading: String
+  confirmationHeading: String
+  confirmationSubheading: String
+  confirmationButton: String
+  previewWhat: String
+  previewWho: String
+  previewHow: String
+  previewInstructions: String
+  previewButton: String
   featureVideo: String
   featureThumbnail: Photo
 }
