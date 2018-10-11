@@ -1,32 +1,64 @@
 import { tempTemplates } from './Template';
 
 const tempCategories = {
-  '39c7359a-c011-11e8-a203-0bedd5070da4': {
-    id: '39c7359a-c011-11e8-a203-0bedd5070da4',
+  'd2ec5baa-638e-44f1-88d3-a67af0e1e9d0': {
+    id: 'd2ec5baa-638e-44f1-88d3-a67af0e1e9d0',
     title: 'Explore',
     description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus eget mauris ipsum.',
-    templateIds: ['a959a300-c018-11e8-b62d-db7fbb06ca6d'],
-  },
-  '3ad0c348-c011-11e8-a459-271050f53c12': {
-    id: '3ad0c348-c011-11e8-a459-271050f53c12',
-    title: 'Watch',
-    description: 'Nam vel nisl ac velit scelerisque tincidunt quis et nunc.',
+      'Choose the activity that best allows you to discover new places, events, food, and more with others.',
     templateIds: [
-      'a959a300-c018-11e8-b62d-db7fbb06ca6d',
-      'a9b0eba6-c018-11e8-b09c-134125e0116b',
-      'aa000880-c018-11e8-8218-f7becb600c0d',
+      'ebf997e5-cf24-407f-b98d-5108d73b4044',
+      'f2a7b3a5-b00f-4b23-a224-2db4049fec27',
     ],
   },
-  '3aa4b47e-c011-11e8-9743-0775211e350d': {
-    id: '3aa4b47e-c011-11e8-9743-0775211e350d',
+  'ec9c43f0-bdaf-4d5d-bfdc-830cc38ad50d': {
+    id: 'ec9c43f0-bdaf-4d5d-bfdc-830cc38ad50d',
+    title: 'Watch',
+    description:
+      'Choose the activity that best allows you to connect with others through shows, movies, concerts, and more.',
+    templateIds: [
+      'ef7ec7d3-6a3b-4c63-8450-ac5c1c3ce819',
+      'ff18f172-74c3-4bcc-9c3e-45966c721869',
+    ],
+  },
+  '5e27e0dc-5491-4dcf-99de-e33e20c13eeb': {
+    id: '5e27e0dc-5491-4dcf-99de-e33e20c13eeb',
     title: 'Discuss',
     description:
-      'Select the activity that best allows you to connect with others through conversation.',
+      'Choose the activity that best allows you to connect with others through conversation.',
     templateIds: [
-      'a959a300-c018-11e8-b62d-db7fbb06ca6d',
-      'a9b0eba6-c018-11e8-b09c-134125e0116b',
+      '8f0f400f-0cd5-43dd-b357-3cc3f07be2bf',
+      '0b721d9e-ead6-4a35-9b98-82b780ebd32a',
+      'c26283a6-8aac-46ba-862c-889c42817dfa',
+      'b5096d9f-7bba-4259-9bd2-2b2497e361b4',
     ],
+  },
+  'c5d89a42-3b04-43ea-90ae-e7a4e27aff5d': {
+    id: 'c5d89a42-3b04-43ea-90ae-e7a4e27aff5d',
+    title: 'Play',
+    description:
+      'Choose the activity that best allows you to connect with others through fun competition.',
+    templateIds: [
+      '6deb37cb-9f39-4ede-936a-20339a1b258c',
+      '54d49999-4731-48ee-88a1-db8fe803f048',
+    ],
+  },
+  '20cb2104-3f4a-477e-b792-e5595b9c5069': {
+    id: '20cb2104-3f4a-477e-b792-e5595b9c5069',
+    title: 'Learn',
+    description:
+      'Choose the activity that allows you to connect with others through sharing your skills, hobbies, and more.',
+    templateIds: [
+      'f6676ffa-f182-4067-9138-35223a6bf4e8',
+      '46b8e494-bdc9-4b71-8e11-4cb325e01df9',
+    ],
+  },
+  '716157ed-64a8-4036-ae88-a4c6cf19b04a': {
+    id: '716157ed-64a8-4036-ae88-a4c6cf19b04a',
+    title: 'Hang Out',
+    description:
+      'Choose the activity that best allows you to connect with others through social gatherings.',
+    templateIds: ['d95e9bc7-dd14-48de-a800-e7fc1fe28228'],
   },
 };
 
