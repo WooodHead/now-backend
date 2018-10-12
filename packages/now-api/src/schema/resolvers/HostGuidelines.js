@@ -25,7 +25,7 @@ const bullets: Array<HostGuidelinesBullet> = [
     imageName: 'bullet-calendar',
     title: 'Be accountable',
     description:
-      'Commit to the dates, times, and locations you schedule your acticities for. No last minute surprises, please!',
+      'Commit to the dates, times, and locations you schedule your activities for. No last minute surprises, please!',
   },
   {
     imageName: 'bullet-ribbon',
@@ -36,7 +36,7 @@ const bullets: Array<HostGuidelinesBullet> = [
     imageName: 'bullet-crowd',
     title: 'Be inclusive',
     description:
-      'Never exclude guests based on identity, meaning gender, race, religion, or sexuality amongs others.',
+      'Never exclude guests based on identity, meaning gender, race, religion, or sexuality among others.',
   },
   {
     imageName: 'bullet-stars',
