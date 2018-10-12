@@ -52,7 +52,7 @@ type Template {
 type Field {
   id: ID!
   type: FieldType
-  defaultValue: FieldValue
+  defaultValue: FieldValue @deprecated
   params: GraphQLJSON
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
@@ -84,6 +84,7 @@ type IntFieldValue {
 }
 type DateTimeFieldValue {
   value: ZonedDateTime
+  duration: Int
 }
 
 union FieldValue = StringFieldValue | IntFieldValue | DateTimeFieldValue
@@ -92,10 +93,12 @@ input FieldValueInput {
   intValue: Int
   stringValue: String
   dateTimeValue: ZonedDateTime
+  durationValue: Int
 }
 
 enum FieldType {
   Text
   NumberRange
   Location
+  DateTimeDuration
 }

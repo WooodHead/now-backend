@@ -1,3 +1,5 @@
+import { Duration } from 'js-joda';
+
 export const fieldOrder = [
   'eventWhen',
   'eventWhere',
@@ -8,16 +10,21 @@ export const fieldOrder = [
   'eventTitle',
 ];
 
+const duration = (h, m) =>
+  Duration.ofHours(h)
+    .plusMinutes(m)
+    .toMillis();
+
 export const exhibitFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d511',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to visit the museum exhibit?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Sun Sep 11, 1:00 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 45 minutes',
+      defaultDuration: duration(1, 45),
     },
   },
   eventWhere: {
@@ -80,13 +87,13 @@ export const exhibitFields = {
 export const neighborhoodFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d522',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to explore?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Sun Sep 11, 1:30 p.m.`,
       durationLabel: 'Duration',
-      durationPlaceholder: `1 hour 30 minutes`,
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -149,13 +156,13 @@ export const neighborhoodFields = {
 export const movieFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d533',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to see the movie?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Thu Sep 8, 7:30 p.m.`,
       durationLabel: 'Duration',
-      durationPlaceholder: `1 hour 30 minutes`,
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -218,13 +225,13 @@ export const movieFields = {
 export const tvFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d544',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to watch the show?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Thu Sep 8, 7:30 p.m.`,
       durationLabel: 'Duration',
-      durationPlaceholder: `1 hour 45 minutes`,
+      defaultDuration: duration(1, 45),
     },
   },
   eventWhere: {
@@ -287,13 +294,13 @@ export const tvFields = {
 export const amaFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d555',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your AMA?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Thu Sep 8, 6:30 p.m.`,
       durationLabel: 'Duration',
-      durationPlaceholder: `1 hour 30 minutes`,
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -356,13 +363,13 @@ export const amaFields = {
 export const onlyOneFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d566',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your discussion?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Thu Sep 8, 6:30 p.m.`,
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -425,13 +432,13 @@ export const onlyOneFields = {
 export const discussFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d577',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your discussion?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Thu Sep 8, 6:30 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -494,13 +501,13 @@ export const discussFields = {
 export const debateFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d588',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your discussion?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Thu Sep 8, 6:30 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -563,13 +570,13 @@ export const debateFields = {
 export const gamesFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d599',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to game?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Thu Sep 8, 6:30 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -632,13 +639,13 @@ export const gamesFields = {
 export const sportsFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d500',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to play?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Sat Sep 10, 2:00 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
@@ -701,13 +708,13 @@ export const sportsFields = {
 export const skillsFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d5aa',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your activity?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Sun Sep 11, 3:30 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 45 minutes',
+      defaultDuration: duration(1, 45),
     },
   },
   eventWhere: {
@@ -770,13 +777,13 @@ export const skillsFields = {
 export const hobbyFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d5bb',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When is your activity?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Sun Sep 11, 3:30 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 45 minutes',
+      defaultDuration: duration(1, 45),
     },
   },
   eventWhere: {
@@ -839,13 +846,13 @@ export const hobbyFields = {
 export const karaokeFields = {
   eventWhen: {
     id: '42388918-defc-4364-b9dd-79f41019d5cc',
-    type: 'Text', // should be date range
+    type: 'DateTimeDuration',
     params: {
       header: 'When do you want to karaoke?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Today, 9:00 p.m.',
       durationLabel: 'Duration',
-      durationPlaceholder: '1 hour 30 minutes',
+      defaultDuration: duration(1, 30),
     },
   },
   eventWhere: {
