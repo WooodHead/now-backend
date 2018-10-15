@@ -1,6 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies  */
 import ApolloClient from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import {
+  InMemoryCache,
+  IntrospectionFragmentMatcher,
+} from 'apollo-cache-inmemory';
 import { SchemaLink } from 'apollo-link-schema';
 import { Server, WebSocket } from 'mock-socket-with-protocol';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
@@ -9,8 +12,8 @@ import { split } from 'apollo-link';
 import { execute, subscribe } from 'graphql';
 import { getMainDefinition } from 'apollo-utilities';
 
+import introspectionQueryResultData from './fragmentTypes.json';
 import loaders from './loaders';
-
 import schema from '../schema';
 
 export const USER_ID = 'aea68a98-591c-11e8-9cdb-872a15ebfd30';
@@ -20,8 +23,6 @@ export const mockPromise = (resolver, rejecter) =>
 export const mocks = {
   loadMember: jest.fn(),
 };
-
-const apolloCache = new InMemoryCache();
 
 const noCache = {
   watchQuery: {
@@ -52,6 +53,12 @@ const defaultContext = () => ({
   scopes: isAdmin ? ['admin'] : [],
   userAgent,
 });
+
+const fragmentMatcher = new IntrospectionFragmentMatcher({
+  introspectionQueryResultData,
+});
+
+const apolloCache = new InMemoryCache({ fragmentMatcher });
 
 export const subClient = () => {
   // To make the point clear that we are not opening any ports here we use a randomized string that will not produce a correct port number.

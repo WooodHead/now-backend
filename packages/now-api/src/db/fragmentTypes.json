@@ -1,0 +1,79 @@
+{
+  "__schema": {
+    "types": [
+      {
+        "kind": "INTERFACE",
+        "name": "Node",
+        "possibleTypes": [
+          { "name": "Activity" },
+          { "name": "Event" },
+          { "name": "Community" },
+          { "name": "User" },
+          { "name": "Rsvp" },
+          { "name": "EventInvitation" },
+          { "name": "Message" },
+          { "name": "Location" },
+          { "name": "AppInvitation" },
+          { "name": "AdminMessage" }
+        ]
+      },
+      {
+        "kind": "INTERFACE",
+        "name": "Connection",
+        "possibleTypes": [
+          { "name": "ActivityEventsConnection" },
+          { "name": "CommunityUsersConnection" },
+          { "name": "UserRsvpsConnection" },
+          { "name": "CommunityEventsConnection" },
+          { "name": "EventRsvpsConnection" },
+          { "name": "EventMessagesConnection" },
+          { "name": "RootActivitiesConnection" },
+          { "name": "RootCommunitiesConnection" },
+          { "name": "RootEventsConnection" },
+          { "name": "RootRsvpsConnection" },
+          { "name": "RootLocationsConnection" },
+          { "name": "AppInvitationConnection" },
+          { "name": "RootUsersConnection" },
+          { "name": "AdminMessagesConnection" }
+        ]
+      },
+      {
+        "kind": "INTERFACE",
+        "name": "Edge",
+        "possibleTypes": [
+          { "name": "ActivityEventsEdge" },
+          { "name": "CommunityUsersEdge" },
+          { "name": "UserRsvpsEdge" },
+          { "name": "CommunityEventsEdge" },
+          { "name": "EventRsvpsEdge" },
+          { "name": "EventMessagesEdge" },
+          { "name": "RootActivitiesEdge" },
+          { "name": "RootCommunitiesEdge" },
+          { "name": "RootEventsEdge" },
+          { "name": "RootRsvpsEdge" },
+          { "name": "RootLocationsEdge" },
+          { "name": "AppInvitationEdge" },
+          { "name": "RootUsersEdge" },
+          { "name": "AdminMessagesEdge" }
+        ]
+      },
+      {
+        "kind": "INTERFACE",
+        "name": "Invitation",
+        "possibleTypes": [
+          { "name": "EventInvitation" },
+          { "name": "AppInvitation" }
+        ]
+      },
+      {
+        "kind": "UNION",
+        "name": "FieldValue",
+        "possibleTypes": [
+          { "name": "StringFieldValue" },
+          { "name": "IntFieldValue" },
+          { "name": "DateTimeFieldValue" }
+        ]
+      }
+    ]
+  }
+}

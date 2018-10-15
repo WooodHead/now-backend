@@ -19,6 +19,7 @@ export const SQL_TABLES = {
   SENT_NOTIFICATIONS: 'sentNotifications',
   SERVER_MESSAGES: 'serverMessages',
   SERVER_STATE: 'serverState',
+  SUBMISSIONS: 'submissions',
 };
 
 export const NOW_BOT_USER_ID = 'ec6c81d8-7bb4-11e8-ba5d-2bc28925de05';

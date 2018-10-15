@@ -20,6 +20,7 @@ import * as Template from './Template';
 import * as Community from './Community';
 import * as Membership from './Membership';
 import * as User from './User';
+import * as Submission from './Submission';
 import Name from './Name';
 import { wrapResolvers } from '../authorization';
 
@@ -37,6 +38,7 @@ export default wrapResolvers({
     ...Category.queries,
     ...Community.queries,
     ...HostGuidelines.queries,
+    ...Submission.queries,
     userAgent: (root, args, { userAgent }) => userAgent,
   },
   Subscription: {
@@ -58,6 +60,7 @@ export default wrapResolvers({
     ...ServerMessages.mutations,
     ...Community.mutations,
     ...Membership.mutations,
+    ...Submission.mutations,
   },
   Activity: Activity.resolvers,
   Category: Category.resolvers,
@@ -70,6 +73,9 @@ export default wrapResolvers({
   EventMessagesConnection: EventMessagesConnection.resolvers,
   Location: Location.resolvers,
   Community: Community.resolvers,
+  Submission: Submission.resolvers,
+  Response: Submission.responseResolvers,
+  FieldValue: Submission.fieldValueResolvers,
   EventMessagesEdge: {
     node: root => ({
       ...root.node,

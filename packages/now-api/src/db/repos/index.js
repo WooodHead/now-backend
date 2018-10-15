@@ -65,3 +65,4 @@ export const Invitation = new Repo(SQL_TABLES.INVITATIONS);
 export const InvitationLog = new Repo(SQL_TABLES.INVITATION_LOG);
 export const EventUserMetadata = new Repo(SQL_TABLES.EVENT_USER_METADATA);
 export const ServerMessages = new Repo(SQL_TABLES.SERVER_MESSAGES);
+export const Submissions = new Repo(SQL_TABLES.SUBMISSIONS);

@@ -212,6 +212,12 @@ export const tempTemplates = {
   },
 };
 
+// fake async so we don't have to refactor calling code when it becomes really async
+export const findTemplate = id =>
+  Object.prototype.hasOwnProperty.call(tempTemplates, id)
+    ? Promise.resolve(tempTemplates[id])
+    : Promise.reject(new Error('no such template'));
+
 const getTemplate = (root, { id }) => tempTemplates[id];
 
 export const queries = { template: getTemplate };

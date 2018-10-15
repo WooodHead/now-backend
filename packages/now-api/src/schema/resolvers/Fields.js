@@ -911,3 +911,26 @@ export const karaokeFields = {
     },
   },
 };
+
+const allFields = Object.assign(
+  {},
+  ...[
+    exhibitFields,
+    neighborhoodFields,
+    movieFields,
+    tvFields,
+    amaFields,
+    onlyOneFields,
+    discussFields,
+    debateFields,
+    gamesFields,
+    sportsFields,
+    skillsFields,
+    hobbyFields,
+    karaokeFields,
+  ].map(fields =>
+    Object.assign({}, ...Object.values(fields).map(f => ({ [f.id]: f })))
+  )
+);
+
+export const findField = id => new Promise(resolve => resolve(allFields[id]));

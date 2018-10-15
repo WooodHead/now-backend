@@ -30,7 +30,8 @@
     "apollo:publish": "yarn apollo schema:publish --endpoint=${ENDPOINT} --header=\"Authorization: Bearer ${MACHINE_TOKEN}\" --key=\"${ENGINE_KEY}\"",
     "apollo:publish:local": "ENDPOINT=http://localhost:3000/graphql yarn apollo:publish",
     "apollo:publish:staging": "ENDPOINT=https://now-staging.meetup.com/graphql yarn apollo:publish",
-    "apollo:publish:prod": "ENDPOINT=https://now.meetup.com/graphql yarn apollo:publish"
+    "apollo:publish:prod": "ENDPOINT=https://now.meetup.com/graphql yarn apollo:publish",
+    "fragments": "bin/fragments.js"
   },
   "dependencies": {
     "apollo-engine": "^1.1.2",

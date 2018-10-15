@@ -2,6 +2,7 @@ type Query {
   template(id: ID): Template
   category(id: ID): Category
   categories: [Category!]!
+  submission(id: ID): Submission
 }
 
 type Mutation {
@@ -68,12 +69,8 @@ type Submission {
 }
 
 type Response {
-  id: ID!
   field: Field
   value: FieldValue
-  submission: Submission
-  createdAt: ZonedDateTime
-  updatedAt: ZonedDateTime
 }
 
 type StringFieldValue {
