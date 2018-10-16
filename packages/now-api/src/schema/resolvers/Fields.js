@@ -56,6 +56,7 @@ export const exhibitFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited about the museum exhibit and give them a little bit of background on what the museum exhibit is. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -64,6 +65,7 @@ export const exhibitFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this activity is for, whether it’s avid museum goers, someone who’s just interested in this particular exhibit, or all the above. `,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -72,6 +74,7 @@ export const exhibitFields = {
     params: {
       header: 'Anything museum goers should know?',
       placeholder: `Let members know how much admission tickets cost, if they’ll need to bring anything with them, if they need to be prepared for long lines, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -80,6 +83,7 @@ export const exhibitFields = {
     params: {
       header: 'Finally, give your museum adventure a title',
       placeholder: `Explore The Heavenly Bodies Exhibit At The MET Museum`,
+      maxLength: 70,
     },
   },
 };
@@ -125,6 +129,7 @@ export const neighborhoodFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited about exploring this particular area, where to meet you, and what other places in the area you plan on checking out. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -133,6 +138,7 @@ export const neighborhoodFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this activity is for, whether it’s people who’ve never been to that area, people who live there and want to meet their neighbors, or just anyone who’s interested in exploring that area with others.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -141,6 +147,7 @@ export const neighborhoodFields = {
     params: {
       header: 'Anything people joining should know?',
       placeholder: `Let members know if they’ll need to have cash on them for certain bars/restaurants, if they need to be prepared for long lines, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -149,6 +156,7 @@ export const neighborhoodFields = {
     params: {
       header: 'Finally, give your neighborhood tour a name',
       placeholder: `Explore Flushing, Queens With A Dumpling Food Crawl`,
+      maxLength: 70,
     },
   },
 };
@@ -194,6 +202,7 @@ export const movieFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited about seeing this movie, what designated spot to meet you at — one that will be easy to find, and whether you’d like to discuss the movie before/after seeing it. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -202,6 +211,7 @@ export const movieFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this activity is for, whether it’s people who’ve been obsessively waiting for the movie to come out, people who know nothing about the movie but want to see it, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -210,6 +220,7 @@ export const movieFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know how much the movie tickets costs, if you’ll be buying the tickets together, if they’ll need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -218,6 +229,7 @@ export const movieFields = {
     params: {
       header: 'Finally, give your theater visit a title',
       placeholder: `Calling All Avengers Fans! Let’s See The Movie Together`,
+      maxLength: 70,
     },
   },
 };
@@ -263,6 +275,7 @@ export const tvFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited about watching this show and which episodes you’ll watch together. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -271,6 +284,7 @@ export const tvFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this activity is for whether it’s people who’ve been obsessively waiting for this show to come back, people who who know nothing about the show, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -279,6 +293,7 @@ export const tvFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if they’ll need to bring drinks and popcorn with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -287,6 +302,7 @@ export const tvFields = {
     params: {
       header: 'Finally, give your show-watching party a title',
       placeholder: `Come Watch The Game Of Thrones Season Premiere`,
+      maxLength: 70,
     },
   },
 };
@@ -332,6 +348,7 @@ export const amaFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited to share your identity and experiences with them, what types of questions they’re welcome to ask, and what you hope they’ll take away from the conversation. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -340,6 +357,7 @@ export const amaFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this AMA is and isn’t for.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -348,6 +366,7 @@ export const amaFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if they’ll need special instructions to access the location, if they’ll need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -356,6 +375,7 @@ export const amaFields = {
     params: {
       header: 'Finally, give your AMA a title',
       placeholder: `Ask Me Anything About Being Raised By Immigrant Parents`,
+      maxLength: 70,
     },
   },
 };
@@ -401,6 +421,7 @@ export const onlyOneFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited to connect about the things you feel alone in, what topics you want to cover, and what you hope they’ll take away from the conversation. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -409,6 +430,7 @@ export const onlyOneFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this discussion is and isn’t for. `,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -417,6 +439,7 @@ export const onlyOneFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if they’ll need special instructions to access the location, if they’ll need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -425,6 +448,7 @@ export const onlyOneFields = {
     params: {
       header: 'Finally, give your discussion a title',
       placeholder: `Am I The Only One Who Has A Love/Hate Relationship With NYC`,
+      maxLength: 70,
     },
   },
 };
@@ -470,6 +494,7 @@ export const discussFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what topics you’re excited to talk about, why you think those topics are important, and what you hope they’ll take away from the conversation. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -478,6 +503,7 @@ export const discussFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who this discussion is and isn’t for.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -486,6 +512,7 @@ export const discussFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if they’ll need special instructions to access the location, if they’ll need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -494,6 +521,7 @@ export const discussFields = {
     params: {
       header: 'Finally, give your discussion a title',
       placeholder: `Let’s Discuss How To Travel Through Europe On A Budget`,
+      maxLength: 70,
     },
   },
 };
@@ -539,6 +567,7 @@ export const debateFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what topic you’re excited to debate on, the rules of the debate, and what you hope they’ll take away from the conversation. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -547,6 +576,7 @@ export const debateFields = {
     params: {
       header: `Who's this for?`,
       placeholder: `Let members know who is and isn’t allowed to join this debate.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -555,6 +585,7 @@ export const debateFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if they’ll need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -563,6 +594,7 @@ export const debateFields = {
     params: {
       header: 'Finally, give your discussion a title',
       placeholder: `Should Brands Like Nike Take A Stance On Political Issues`,
+      maxLength: 70,
     },
   },
 };
@@ -608,6 +640,7 @@ export const gamesFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what board game(s) you’re excited to play and a brief explanation of the game(s). Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -616,6 +649,7 @@ export const gamesFields = {
     params: {
       header: `Who can play?`,
       placeholder: `Let members know who this activity is for whether it’s people who already know how to play the game(s), people who are new to the game(s), or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -624,6 +658,7 @@ export const gamesFields = {
     params: {
       header: 'Anything gamers should know?',
       placeholder: `Let members know if they’ll need to bring anything with them, like drinks or snacks, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -632,6 +667,7 @@ export const gamesFields = {
     params: {
       header: 'Finally, give your board game hangout a title',
       placeholder: `Let’s Play The Settlers Of Catan, A Strategy Board Game`,
+      maxLength: 70,
     },
   },
 };
@@ -677,6 +713,7 @@ export const sportsFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what sport you’re excited to play and what designated spot to meet you at — one that will be easy to find. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -685,6 +722,7 @@ export const sportsFields = {
     params: {
       header: `Who can play?`,
       placeholder: `Let members know what skill level this activity is for, whether it’s beginner, intermediate, advanced, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -693,6 +731,7 @@ export const sportsFields = {
     params: {
       header: 'Anything players should know?',
       placeholder: `Let members know if they’ll need to bring anything with them, like water, a certain shirt color, a ball, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -701,6 +740,7 @@ export const sportsFields = {
     params: {
       header: 'Finally, give your pickup game a title',
       placeholder: `Come Play Pickup Soccer In Central Park`,
+      maxLength: 70,
     },
   },
 };
@@ -746,6 +786,7 @@ export const skillsFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what skill you’re interested in sharing/teaching, a brief explanation of why you think that skill is important, and what you hope they’ll get from attending. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -754,6 +795,7 @@ export const skillsFields = {
     params: {
       header: `Who can join?`,
       placeholder: `Let members know who this activity is for whether it’s people who already know have experience with the skill, people who are new to the skill, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -762,6 +804,7 @@ export const skillsFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if the activity will cost money, if they’ll need to bring materials with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -770,6 +813,7 @@ export const skillsFields = {
     params: {
       header: 'Finally, give your activity a title',
       placeholder: `Learn How To Hem Your Clothing In A Few Easy Steps`,
+      maxLength: 70,
     },
   },
 };
@@ -815,6 +859,7 @@ export const hobbyFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members what ritual or hobby you’re interested in sharing/teaching, a brief explanation of why you think that ritual or hobby is important, and what you hope they’ll get from attending. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -823,6 +868,7 @@ export const hobbyFields = {
     params: {
       header: `Who can join?`,
       placeholder: `Let members know who this activity is for whether it’s people who already have experience with the ritual or hobby, people who are new to it, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -831,6 +877,7 @@ export const hobbyFields = {
     params: {
       header: 'Anything people should know?',
       placeholder: `Let members know if the activity will cost money, if they’ll need to bring materials with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -839,6 +886,7 @@ export const hobbyFields = {
     params: {
       header: 'Finally, give your activity a title',
       placeholder: `Learn These Easy Techniques For Practicing Meditation`,
+      maxLength: 70,
     },
   },
 };
@@ -884,6 +932,7 @@ export const karaokeFields = {
     params: {
       header: `What we'll do`,
       placeholder: `Tell members why you’re excited about karaoke, what music you can’t wait to sing, and why joining will be a ton of fun. Remember to also include specific details about your itinerary so members know what to expect.`,
+      maxLength: 500,
     },
   },
   eventWho: {
@@ -892,6 +941,7 @@ export const karaokeFields = {
     params: {
       header: `What type of singer is this for?`,
       placeholder: `Let members know who this activity is for, whether it’s karaoke veterans, someone who’s never sang into a mic before, or all the above.`,
+      maxLength: 300,
     },
   },
   eventHow: {
@@ -900,6 +950,7 @@ export const karaokeFields = {
     params: {
       header: 'Is there anything singers need to bring or know about?',
       placeholder: `Let members who join know how much the karaoke reservation costs, if they need to bring anything with them, etc.`,
+      maxLength: 200,
     },
   },
   eventTitle: {
@@ -908,6 +959,7 @@ export const karaokeFields = {
     params: {
       header: 'Finally, give your karaoke session a title',
       placeholder: `Grab A Mic And Sing Your Heart Out At Karaoke Night`,
+      maxLength: 70,
     },
   },
 };
