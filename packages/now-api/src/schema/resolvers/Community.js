@@ -26,7 +26,14 @@ const communityQuery = (root, { id }, context) =>
     return community;
   });
 
-export const queries = { allCommunities, community: communityQuery };
+const manyCommunities = (root, { ids }, { loaders }) =>
+  loaders.communities.loadMany(ids);
+
+export const queries = {
+  allCommunities,
+  community: communityQuery,
+  manyCommunities,
+};
 
 const createCommunity = (root, { input: { name } }, { loaders }) =>
   Community.insert({ id: genRandomUuid(), name })
@@ -70,3 +77,13 @@ const users = ({ id: communityId }, { input = {} }, context) =>
   });
 
 export const resolvers = { users };
+
+// utility function for other resolvers to make sure a community exists and
+// is visible
+export const verifyCommunity = (communityId, context) =>
+  communityQuery({}, { id: communityId }, context).then(community => {
+    if (!community) {
+      throw new Error('No Such Community');
+    }
+    return true;
+  });

@@ -40,6 +40,7 @@ input CreateEventInput {
   duration: Int!
   limit: Int!
   locationId: ID!
+  communityId: ID
 }
 
 input UpdateEventInput {
@@ -51,6 +52,7 @@ input UpdateEventInput {
   duration: Int!
   limit: Int!
   locationId: ID!
+  communityId: ID
 }
 
 type CreateEventPayload {
@@ -81,7 +83,7 @@ type Event implements Node {
   hasInvited(userId: ID): Boolean
   inviteHasBeenAccepted(userId: ID): Boolean
   limit: Int
-  instigator: User
+  instigator: User @deprecated
   location: Location!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime

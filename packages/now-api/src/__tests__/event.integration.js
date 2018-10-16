@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { omit, sortBy } from 'lodash';
 import uuid from 'uuid/v4';
-import { LocalDate } from 'js-joda';
+import { LocalDate, ZonedDateTime } from 'js-joda';
 
 import { client, setAdmin, USER_ID } from '../db/mock';
 import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
@@ -12,6 +12,7 @@ import { mockNow, restoreNow } from '../../testutils/date';
 import * as Activity from '../schema/resolvers/Activity';
 import { createRsvp } from '../schema/resolvers/Rsvp';
 
+const { NYC_TZ } = Activity;
 const user = factory.build('user', { id: USER_ID });
 const activity = factory.build('activity');
 const location = factory.build('location');
@@ -19,8 +20,9 @@ const events = factory.buildList('event', 6, {}, { activity, location });
 const event = events[0];
 event.time = '2018-05-30 20:00:00+00';
 event.timezone = 'Asia/Calcutta';
+const privateCommunity = factory.build('community');
 const privateEvent = events[5];
-privateEvent.communityId = uuid();
+privateEvent.communityId = privateCommunity.id;
 
 const membership = {
   id: uuid(),
@@ -35,6 +37,14 @@ const truncateTables = () =>
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.USERS).truncate(),
     sql(SQL_TABLES.MEMBERSHIPS).truncate(),
+    sql(SQL_TABLES.COMMUNITIES)
+      .truncate()
+      .then(() =>
+        sql(SQL_TABLES.COMMUNITIES).insert({
+          id: GLOBAL_COMMUNITY_ID,
+          name: 'Global Community',
+        })
+      ),
   ]);
 
 beforeEach(() =>
@@ -45,6 +55,7 @@ beforeEach(() =>
       sql(SQL_TABLES.LOCATIONS).insert(location),
       sql(SQL_TABLES.USERS).insert(user),
       sql(SQL_TABLES.MEMBERSHIPS).insert(membership),
+      sql(SQL_TABLES.COMMUNITIES).insert(privateCommunity),
     ])
   ));
 afterEach(() => {
@@ -679,6 +690,120 @@ describe('Event', () => {
         eventId: event.id,
         lastReadTs: '654321',
       });
+    });
+  });
+
+  describe('createEvent', () => {
+    const createEvent = gql`
+      mutation createEvent(
+        $activityId: ID!
+        $time: ZonedDateTime!
+        $visibleAt: ZonedDateTime
+        $timezone: ZoneId!
+        $duration: Int!
+        $limit: Int!
+        $locationId: ID!
+        $communityId: ID
+      ) {
+        createEvent(
+          input: {
+            activityId: $activityId
+            time: $time
+            visibleAt: $visibleAt
+            timezone: $timezone
+            duration: $duration
+            limit: $limit
+            locationId: $locationId
+            communityId: $communityId
+          }
+        ) {
+          event {
+            id
+            limit
+            duration
+            community {
+              id
+              name
+            }
+            activity {
+              id
+              title
+            }
+          }
+        }
+      }
+    `;
+
+    it('creates an event, defaulting to the global community', async () => {
+      setAdmin(true);
+      const {
+        data: {
+          createEvent: { event: e },
+        },
+      } = await client.mutate({
+        mutation: createEvent,
+        variables: {
+          activityId: activity.id,
+          time: ZonedDateTime.now(NYC_TZ)
+            .plusDays(4)
+            .withFixedOffsetZone()
+            .toString(),
+          timezone: NYC_TZ.id(),
+          duration: 120,
+          limit: 10,
+          locationId: location.id,
+        },
+      });
+
+      expect(e.activity.title).toEqual(activity.title);
+      expect(e.community.id).toEqual(GLOBAL_COMMUNITY_ID);
+    });
+
+    it('lets you set the community id', async () => {
+      setAdmin(true);
+      const {
+        data: {
+          createEvent: { event: e },
+        },
+      } = await client.mutate({
+        mutation: createEvent,
+        variables: {
+          activityId: activity.id,
+          time: ZonedDateTime.now(NYC_TZ)
+            .plusDays(4)
+            .withFixedOffsetZone()
+            .toString(),
+          timezone: NYC_TZ.id(),
+          duration: 120,
+          limit: 10,
+          locationId: location.id,
+          communityId: privateCommunity.id,
+        },
+      });
+
+      expect(e.activity.title).toEqual(activity.title);
+      expect(e.community.name).toEqual(privateCommunity.name);
+    });
+
+    it('rejects an invalid community id', async () => {
+      setAdmin(true);
+      await expect(
+        client.mutate({
+          mutation: createEvent,
+          variables: {
+            activityId: activity.id,
+            time: ZonedDateTime.now(NYC_TZ)
+              .plusDays(4)
+              .withFixedOffsetZone()
+              .toString(),
+            timezone: NYC_TZ.id(),
+            duration: 120,
+            limit: 10,
+            locationId: location.id,
+            communityId: uuid(),
+          },
+        })
+      ).rejects.toMatchSnapshot();
     });
   });
 });

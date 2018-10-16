@@ -6,10 +6,11 @@ import { userIdFromContext, sqlPaginatify } from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { NYC_TZ } from './Activity';
 import { getMessages, notifyMessagesRead } from './Message';
+import { verifyCommunity } from './Community';
 import { getPubSub } from '../../subscriptions';
 import { Event, EventUserMetadata, Rsvp, Invitation } from '../../db/repos';
 import sql from '../../db/sql';
-import { SQL_TABLES } from '../../db/constants';
+import { GLOBAL_COMMUNITY_ID, SQL_TABLES } from '../../db/constants';
 
 const topicName = eventId => `event-changes-${eventId}`;
 
@@ -187,7 +188,7 @@ export const queries = {
   events: eventsQuery,
 };
 
-const createEvent = (
+const createEvent = async (
   root,
   {
     input: {
@@ -198,10 +199,14 @@ const createEvent = (
       activityId,
       limit,
       locationId,
+      communityId = GLOBAL_COMMUNITY_ID,
     },
   },
-  { loaders }
+  context
 ) => {
+  await verifyCommunity(communityId, context);
+
+  const { loaders } = context;
   const newId = uuid();
   const newEvent = {
     id: newId,
@@ -212,18 +217,20 @@ const createEvent = (
     timezone: timezone.id(),
     duration,
     visibleAt: visibleAt ? visibleAt.toString() : null,
+    communityId,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
 
   loaders.events.clear(newId);
 
-  return Event.insert(newEvent).then(() => ({
+  await Event.insert(newEvent);
+  return {
     event: loaders.events.load(newId),
-  }));
+  };
 };
 
-const updateEvent = (
+const updateEvent = async (
   root,
   {
     input: {
@@ -235,10 +242,16 @@ const updateEvent = (
       activityId,
       limit,
       locationId,
+      communityId,
     },
   },
-  { loaders }
+  context
 ) => {
+  if (communityId) {
+    await verifyCommunity(communityId, context);
+  }
+
+  const { loaders } = context;
   const updatedEvent = {
     id,
     locationId,
@@ -248,18 +261,19 @@ const updateEvent = (
     timezone: timezone.id(),
     duration,
     visibleAt: visibleAt ? visibleAt.toString() : null,
+    communityId,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
   };
 
   loaders.events.clear(id);
 
-  return Event.update(updatedEvent).then(() => {
-    notifyEventChange(id);
-    return {
-      event: loaders.events.load(id),
-    };
-  });
+  await Event.update(updatedEvent);
+
+  notifyEventChange(id);
+  return {
+    event: loaders.events.load(id),
+  };
 };
 
 const markEventChatRead = async (root, { input: { eventId, ts } }, ctx) => {

@@ -4,6 +4,7 @@ type Query {
     order: CommunityOrder
   ): RootCommunitiesConnection @admin
   community(id: ID!): Community
+  manyCommunities(ids: [ID!]!): [Community!]! @admin
 }
 
 type Mutation {

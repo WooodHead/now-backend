@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Event createEvent rejects an invalid community id 1`] = `[Error: GraphQL error: No Such Community]`;
