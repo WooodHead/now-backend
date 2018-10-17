@@ -27,31 +27,29 @@ const submit = gql`
         responses: [
           {
             fieldId: "42388918-defc-4364-b9dd-79f41019d511"
-            value: { dateTimeValue: $when, durationValue: 6300000 }
+            dateTimeValue: $when
+            durationValue: 6300000
           }
           {
             fieldId: "28e86c72-9961-4d0f-9fd1-9479ba148611"
-            value: { stringValue: "the museum" }
+            stringValue: "the museum"
           }
-          {
-            fieldId: "7071f2d9-85e8-430f-9f10-f94614cfb311"
-            value: { intValue: 8 }
-          }
+          { fieldId: "7071f2d9-85e8-430f-9f10-f94614cfb311", intValue: 8 }
           {
             fieldId: "3aaf4489-9ce1-409d-b656-a576ff4de011"
-            value: { stringValue: "we'll do some stuff" }
+            stringValue: "we'll do some stuff"
           }
           {
             fieldId: "3df93f43-306d-44b5-9a39-d2d92f242011"
-            value: { stringValue: "it's for my mates" }
+            stringValue: "it's for my mates"
           }
           {
             fieldId: "d6675c14-752d-4692-bcde-3894ff701011"
-            value: { stringValue: "knowledge is power" }
+            stringValue: "knowledge is power"
           }
           {
             fieldId: "b5c15ff6-8e5e-4652-a3ac-8ca108fb1311"
-            value: { stringValue: "my awesome title" }
+            stringValue: "my awesome title"
           }
         ]
       }

@@ -15,8 +15,15 @@ input SubmissionInput {
 }
 
 input ResponseInput {
-  fieldId: String
-  value: FieldValueInput
+  fieldId: ID
+  intValue: Int
+  stringValue: String
+  dateTimeValue: ZonedDateTime
+  durationValue: Int
+  minValue: Int
+  maxValue: Int
+  locationNameValue: String
+  locationAddressValue: String
 }
 
 type SubmitTemplatePayload {
@@ -85,13 +92,6 @@ type DateTimeFieldValue {
 }
 
 union FieldValue = StringFieldValue | IntFieldValue | DateTimeFieldValue
-
-input FieldValueInput {
-  intValue: Int
-  stringValue: String
-  dateTimeValue: ZonedDateTime
-  durationValue: Int
-}
 
 enum FieldType {
   Text

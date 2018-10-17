@@ -21,7 +21,7 @@ const userResolver = ({ userId }, args, { loaders: { members } }) =>
 const templateResolver = ({ templateId }) => findTemplate(templateId);
 
 const responsesResolver = ({ submissionData }) =>
-  submissionData.map(({ fieldId, value: inputValue }) => {
+  submissionData.map(({ fieldId, ...inputValue }) => {
     let value = null;
     if ('intValue' in inputValue) {
       value = { value: inputValue.intValue, t: 'IntFieldValue' };
