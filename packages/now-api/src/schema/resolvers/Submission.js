@@ -4,9 +4,10 @@ import { Duration } from 'js-joda';
 import { findField } from './Fields';
 import { findTemplate } from './Template';
 import { isAdmin } from '../AdminDirective';
+import { sqlPaginatify, userIdFromContext } from '../util';
 import { Submissions } from '../../db/repos';
 import { genRandomUuid } from '../../db/sql';
-import { userIdFromContext } from '../util';
+import { notifySubmission } from '../../jobs';
 import { sha1 } from '../../util';
 
 const submissionQuery = (root, { id }, context) =>
@@ -17,7 +18,17 @@ const submissionQuery = (root, { id }, context) =>
         : null
   );
 
-export const queries = { submission: submissionQuery };
+const allSubmissions = (root, { input, orderBy = 'createdAt' }) =>
+  sqlPaginatify(orderBy, Submissions.all({}), input);
+
+const manySubmissions = (root, { ids }, context) =>
+  Promise.all(ids.map(id => submissionQuery(root, { id }, context)));
+
+export const queries = {
+  submission: submissionQuery,
+  allSubmissions,
+  manySubmissions,
+};
 
 const userResolver = ({ userId }, args, { loaders: { members } }) =>
   members.load(userId);
@@ -126,17 +137,29 @@ export const fieldValueResolvers = {
   __resolveType: ({ t }) => t,
 };
 
-const submitTemplate = (root, { input: { templateId, responses } }, context) =>
+const submitTemplate = async (
+  root,
+  { input: { templateId, responses } },
+  context
+) => {
+  await findTemplate(templateId); // throws if invalid template id provided
+
   // TODO: validate, like, anything at all?
-  findTemplate(templateId)
-    .then(() =>
-      Submissions.insert({
-        id: genRandomUuid(),
-        templateId,
-        userId: userIdFromContext(context),
-        submissionData: JSON.stringify(responses), // node-postgres does the wrong thing with JSON arrays unless we stringify first
-      }).returning('id')
-    )
-    .then(([id]) => ({ submission: submissionQuery({}, { id }, context) }));
+  const [id] = await Submissions.insert({
+    id: genRandomUuid(),
+    templateId,
+    userId: userIdFromContext(context),
+    submissionData: JSON.stringify(responses), // node-postgres does the wrong thing with JSON arrays unless we stringify first
+  }).returning('id');
+
+  // TODO: figure out how to compute the body inside the job so we don't have to do it now
+  const body = await formattedResponse({
+    templateId,
+    submissionData: responses,
+  });
+  await notifySubmission(id, body, context.user);
+
+  return { submission: submissionQuery({}, { id }, context) };
+};
 
 export const mutations = { submitTemplate };

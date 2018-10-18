@@ -14,6 +14,7 @@ import {
   syncIntercomUser,
   deleteIntercomUser,
 } from './intercom';
+import notifySubmission from './notifySubmission';
 import syncAuth0Logs from './auth0logs';
 import sendChatNotif from '../fcm/chat';
 import type { JobRequestNoDelay } from '.';
@@ -31,6 +32,7 @@ const jobs: { [string]: ({ [string]: any }) => Promise<any> } = {
   updateIntercomUser,
   syncIntercomUser,
   deleteIntercomUser,
+  notifySubmission,
 };
 
 export const handler = express();

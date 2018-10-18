@@ -77,7 +77,7 @@ export const deleteIntercomUser = ({
   );
 
 // given a user id, fetch info from DB, then sync to intercom
-export const syncIntercomUser = async ({ userId }: { userId: string }) =>
+export const syncIntercomUser = ({ userId }: { userId: string }) =>
   User.byId(userId)
     .select(FIELDS)
     .then(user => updateIntercomUser(user));

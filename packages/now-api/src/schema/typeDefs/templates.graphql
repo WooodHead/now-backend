@@ -3,6 +3,11 @@ type Query {
   category(id: ID): Category
   categories: [Category!]!
   submission(id: ID): Submission
+  allSubmissions(
+    input: AdminInput
+    orderBy: SubmissionOrder
+  ): RootSubmissionsConnection! @admin
+  manySubmissions(ids: [ID!]!): [Submission!]!
 }
 
 type Mutation {
@@ -66,7 +71,7 @@ type Field {
   updatedAt: ZonedDateTime
 }
 
-type Submission {
+type Submission implements Node {
   id: ID!
   template: Template
   user: User
@@ -113,4 +118,21 @@ enum FieldType {
   NumberRange
   Location
   DateTimeDuration
+}
+
+type RootSubmissionsConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [RootSubmissionsEdge!]!
+}
+
+type RootSubmissionsEdge implements Edge {
+  cursor: String!
+  node: Submission!
+}
+
+enum SubmissionOrder {
+  id
+  createdAt
+  updatedAt
 }

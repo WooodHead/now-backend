@@ -25,3 +25,9 @@ export const syncIntercomUser = (userId: string) =>
 
 export const deleteIntercomUser = (userId: string) =>
   enqueue({ name: 'deleteIntercomUser', userId });
+
+export const notifySubmission = (
+  submissionId: string,
+  body: string,
+  user: {}
+) => enqueue({ name: 'notifySubmission', submissionId, body, user });
