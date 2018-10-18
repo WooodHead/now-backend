@@ -182,7 +182,7 @@ export const tempTemplates = {
   },
   '46b8e494-bdc9-4b71-8e11-4cb325e01df9': {
     id: '46b8e494-bdc9-4b71-8e11-4cb325e01df9',
-    title: `Learn About A Ritual/Hobby`,
+    title: `Share A Hobby Or Practice`,
     imageName: 'learn-about-a-ritual-hobby',
     header: {
       id: 'activity/5f53eaebf8eb071604dab10d8b14ec68.jpg',
@@ -191,7 +191,7 @@ export const tempTemplates = {
         'data:image/jpeg;base64,/9j/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAoADwDASIAAhEBAxEB/8QAGwABAAIDAQEAAAAAAAAAAAAAAAECAwQFBgf/xAAoEAACAgEDAwMEAwAAAAAAAAABAgADEQQSIQUTMUFRcRQiMoFhkaH/xAAZAQACAwEAAAAAAAAAAAAAAAAAAwECBAX/xAAeEQACAgICAwAAAAAAAAAAAAAAAQIRAxIEMSFhof/aAAwDAQACEQMRAD8A+sREhvHnE0HIIexUGWOBIW1XYhTnacHia1q29lwzoyEHhx6fMxaO623RrjCbs5f1J9xK+boesa02s6MTX7jBQoI4gWMDknP7jNWJo2IkI25QfeTKkCVs5Qy0EZEAOX1Sxk0TDP5EDzLU6vSITphYm+mlXdfGBI6tSPonbcMIQ2PX2nn+h7NRQeqX2FTq8gK5yNoP2/4IrJJptr0dTjYY5ccU+k3fw9LVcbF3tSE5wBuzn+ZmBBOO2P7nB6FpOoabqmopayqzQuO6rFMOrHjaMceAJ6Ko1kHtsG9yDmOhJOKMfIhpkaqi4GBgSYiQZxERACllQswGzj1Hv8zVt6To72pL0qew++sDgA4I8D5iIFlKUemWr6dVVqBdXZap9UDnaf1M9VFdO7trt3tubk8mIgEpyl2zJERAqf/Z',
       blocked: false,
     },
-    description: `Share your favorite hobby or ritual with people who might be interested in trying something new.`,
+    description: `Share your favorite hobby or practice with people who might be interested in trying something new.`,
     ...hobbyFields,
     fieldOrder,
   },

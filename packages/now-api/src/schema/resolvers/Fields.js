@@ -35,7 +35,7 @@ export const exhibitFields = {
       nameLabel: 'Location Name',
       namePlaceholder: 'Metropolitan Museum of Art',
       addressLabel: 'Location Address',
-      addressPlaceholder: '1000 5th Ave, New York, NY 10028',
+      addressPlaceholder: '1000 5th Ave, New York',
     },
   },
   eventSize: {
@@ -54,8 +54,8 @@ export const exhibitFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de011',
     type: 'Text',
     params: {
-      header: `What we'll do`,
-      placeholder: `Let’s go to the Met Museum... `,
+      header: `What will you do?`,
+      placeholder: `Let’s go to the museum to see... `,
       maxLength: 500,
     },
   },
@@ -127,7 +127,7 @@ export const neighborhoodFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de022',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s eat our way through Flushing...`,
       maxLength: 500,
     },
@@ -137,7 +137,7 @@ export const neighborhoodFields = {
     type: 'Text',
     params: {
       header: `Who's this for?`,
-      placeholder: `People interested in Flushing’s culture...`,
+      placeholder: `People interested in food and culture...`,
       maxLength: 300,
     },
   },
@@ -146,7 +146,7 @@ export const neighborhoodFields = {
     type: 'Text',
     params: {
       header: 'What should they know?',
-      placeholder: `Bring cash, we’ll be visiting multiple spots...`,
+      placeholder: `Make sure to bring cash just in case...`,
       maxLength: 200,
     },
   },
@@ -155,7 +155,7 @@ export const neighborhoodFields = {
     type: 'Text',
     params: {
       header: 'Name your exploration',
-      placeholder: `Explore Flushing, Queens by dumpling tour`,
+      placeholder: `Explore Flushing by dumpling tour`,
       maxLength: 70,
     },
   },
@@ -200,7 +200,7 @@ export const movieFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de033',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s meet outside the theater before...`,
       maxLength: 500,
     },
@@ -239,7 +239,7 @@ export const tvFields = {
     id: '42388918-defc-4364-b9dd-79f41019d544',
     type: 'DateTimeDuration',
     params: {
-      header: 'When is a good time?',
+      header: 'When would you like to watch?',
       dateLabel: 'Date and Time',
       datePlaceholder: `Thu Sep 8, 7:30 p.m.`,
       durationLabel: 'Duration',
@@ -250,7 +250,7 @@ export const tvFields = {
     id: '28e86c72-9961-4d0f-9fd1-9479ba148644',
     type: 'Location',
     params: {
-      header: 'Where will it be?',
+      header: 'Where would you like to watch?',
       nameLabel: 'Location Name',
       namePlaceholder: `Meetup HQ`,
       addressLabel: 'Location Address',
@@ -266,14 +266,13 @@ export const tvFields = {
       min: 4,
       maxLabel: 'Maximum',
       max: 12,
-      hint: `Unfortunately, if less than 4 people join your activity by the start time, it’ll have to be cancelled.`,
     },
   },
   eventWhat: {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de044',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s watch the season premiere of...`,
       maxLength: 500,
     },
@@ -283,7 +282,7 @@ export const tvFields = {
     type: 'Text',
     params: {
       header: `Who's this for?`,
-      placeholder: `Anyone who’s caught up on the show...`,
+      placeholder: `Everyone, die-hard fans and newbies...`,
       maxLength: 300,
     },
   },
@@ -292,7 +291,7 @@ export const tvFields = {
     type: 'Text',
     params: {
       header: 'What should they know?',
-      placeholder: `Drinks will be provided, but bring snacks...`,
+      placeholder: `Drinks will be provided, but bring...`,
       maxLength: 200,
     },
   },
@@ -346,8 +345,8 @@ export const amaFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de055',
     type: 'Text',
     params: {
-      header: `What we'll do`,
-      placeholder: `Come ask me specific questions such as...`,
+      header: `What will you do?`,
+      placeholder: `Come ask me specific questions about...`,
       maxLength: 500,
     },
   },
@@ -365,7 +364,7 @@ export const amaFields = {
     type: 'Text',
     params: {
       header: 'What should they know?',
-      placeholder: `Building security will need you to show ID...`,
+      placeholder: `Building security will need to see an ID...`,
       maxLength: 200,
     },
   },
@@ -374,7 +373,7 @@ export const amaFields = {
     type: 'Text',
     params: {
       header: 'Give your AMA a title',
-      placeholder: `Ask me anything about being an immigrant`,
+      placeholder: `AMA about being an immigrant`,
       maxLength: 70,
     },
   },
@@ -419,7 +418,7 @@ export const onlyOneFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de066',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s exchange thoughts and experiences...`,
       maxLength: 500,
     },
@@ -492,7 +491,7 @@ export const discussFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de077',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s share tips on how to travel for less...`,
       maxLength: 500,
     },
@@ -520,7 +519,7 @@ export const discussFields = {
     type: 'Text',
     params: {
       header: 'Name your discussion',
-      placeholder: `How to travel through Europe on a budget`,
+      placeholder: `Let's discuss Europe travel tips`,
       maxLength: 70,
     },
   },
@@ -565,7 +564,7 @@ export const debateFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de088',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Come share your stance on whether...`,
       maxLength: 500,
     },
@@ -615,7 +614,7 @@ export const gamesFields = {
     id: '28e86c72-9961-4d0f-9fd1-9479ba148699',
     type: 'Location',
     params: {
-      header: 'Where would be best?',
+      header: 'Where would you like to play?',
       nameLabel: 'Location Name',
       namePlaceholder: `WeWork Chelsea`,
       addressLabel: 'Location Address',
@@ -638,7 +637,7 @@ export const gamesFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de099',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Come hangout and play board games...`,
       maxLength: 500,
     },
@@ -648,7 +647,7 @@ export const gamesFields = {
     type: 'Text',
     params: {
       header: `Who can play?`,
-      placeholder: `Everyone, whether you’ve played before...`,
+      placeholder: `Everyone, experienced players and new...`,
       maxLength: 300,
     },
   },
@@ -688,7 +687,7 @@ export const sportsFields = {
     id: '28e86c72-9961-4d0f-9fd1-9479ba148600',
     type: 'Location',
     params: {
-      header: 'Where would be best?',
+      header: 'Where would you like to play?',
       nameLabel: 'Location Name',
       namePlaceholder: `Sheep Meadow`,
       addressLabel: 'Location Address',
@@ -711,7 +710,7 @@ export const sportsFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de000',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Let’s play pickup soccer in Central Park...`,
       maxLength: 500,
     },
@@ -784,7 +783,7 @@ export const skillsFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de0aa',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `I’ll teach you to hem your clothes through...`,
       maxLength: 500,
     },
@@ -823,7 +822,7 @@ export const hobbyFields = {
     id: '42388918-defc-4364-b9dd-79f41019d5bb',
     type: 'DateTimeDuration',
     params: {
-      header: 'When is your activity?',
+      header: 'When do you want to share?',
       dateLabel: 'Date and Time',
       datePlaceholder: 'Sun Sep 11, 3:30 p.m.',
       durationLabel: 'Duration',
@@ -834,7 +833,7 @@ export const hobbyFields = {
     id: '28e86c72-9961-4d0f-9fd1-9479ba1486bb',
     type: 'Location',
     params: {
-      header: 'Where is your activity?',
+      header: 'Where will you share?',
       nameLabel: 'Location Name',
       namePlaceholder: `WeWork Dumbo Heights`,
       addressLabel: 'Location Address',
@@ -857,7 +856,7 @@ export const hobbyFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de0bb',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `I’ll walk you through simple meditation...`,
       maxLength: 500,
     },
@@ -930,7 +929,7 @@ export const karaokeFields = {
     id: '3aaf4489-9ce1-409d-b656-a576ff4de0cc',
     type: 'Text',
     params: {
-      header: `What we'll do`,
+      header: `What will you do?`,
       placeholder: `Come grab a mic and sing your favorite...`,
       maxLength: 500,
     },
@@ -949,7 +948,7 @@ export const karaokeFields = {
     type: 'Text',
     params: {
       header: 'What should they know?',
-      placeholder: `The reservation will probably cost $8 per...`,
+      placeholder: `The reservation will probably cost $8...`,
       maxLength: 200,
     },
   },

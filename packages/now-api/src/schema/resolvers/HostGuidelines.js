@@ -53,10 +53,10 @@ const bullets: Array<HostGuidelinesBullet> = [
 ].map(withHashId);
 
 const guidelines: HostGuidelines = {
-  title: `You're seconds away from hosting your first activity!`,
+  title: `You're seconds away from hosting your activity!`,
   description: [
     'Do you want to see a movie, discuss the news, play a board game, or all of the above and more?',
-    `Get started by reviewing the guidelines below and you'll be on your way towards hosting an activity you're excited about in no time.`,
+    `Get started by reviewing the guidelines below and you'll be on your way towards hosting an activity you're excited about in no time!`,
   ].join('\n\n'),
   imageName: 'group-selfie',
   howToHeading: 'How can I host awesome activities?',
