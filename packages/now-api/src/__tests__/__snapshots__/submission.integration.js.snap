@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`submission can post a submission and then retrieve it 1`] = `
+"# my awesome title
+
+## Details
+
+at the museum  
+One Museum Street  
+2020\\\\-10\\\\-18T18:30\\\\-04:00  
+105 minutes long  
+4–10 spots
+
+## Description
+
+### Who's this for?
+
+it's for my mates
+
+### What will you do?
+
+we'll do some stuff
+
+### What should they know?
+
+knowledge is power
+"
+`;

@@ -73,9 +73,11 @@ type Submission {
   responses: [Response!]!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+  formattedResponse: String
 }
 
 type Response {
+  id: ID!
   field: Field
   value: FieldValue
 }
@@ -90,8 +92,21 @@ type DateTimeFieldValue {
   value: ZonedDateTime
   duration: Int
 }
+type RangeFieldValue {
+  min: Int
+  max: Int
+}
+type LocationFieldValue {
+  name: String
+  address: String
+}
 
-union FieldValue = StringFieldValue | IntFieldValue | DateTimeFieldValue
+union FieldValue =
+    StringFieldValue
+  | IntFieldValue
+  | RangeFieldValue
+  | DateTimeFieldValue
+  | LocationFieldValue
 
 enum FieldType {
   Text

@@ -1,5 +1,4 @@
 import gql from 'graphql-tag';
-import { ZonedDateTime } from 'js-joda';
 
 import { client, USER_ID } from '../db/mock';
 import sql from '../db/sql';
@@ -20,21 +19,26 @@ beforeEach(() =>
 afterEach(() => truncateTables());
 
 const submit = gql`
-  mutation submit($when: ZonedDateTime!) {
+  mutation submit {
     submitTemplate(
       input: {
         templateId: "ebf997e5-cf24-407f-b98d-5108d73b4044"
         responses: [
           {
             fieldId: "42388918-defc-4364-b9dd-79f41019d511"
-            dateTimeValue: $when
+            dateTimeValue: "2020-10-18T18:30:00-04:00"
             durationValue: 6300000
           }
           {
             fieldId: "28e86c72-9961-4d0f-9fd1-9479ba148611"
-            stringValue: "the museum"
+            locationNameValue: "the museum"
+            locationAddressValue: "One Museum Street"
           }
-          { fieldId: "7071f2d9-85e8-430f-9f10-f94614cfb311", intValue: 8 }
+          {
+            fieldId: "7071f2d9-85e8-430f-9f10-f94614cfb311"
+            minValue: 4
+            maxValue: 10
+          }
           {
             fieldId: "3aaf4489-9ce1-409d-b656-a576ff4de011"
             stringValue: "we'll do some stuff"
@@ -77,6 +81,7 @@ const query = gql`
       createdAt
       updatedAt
       responses {
+        id
         field {
           id
           type
@@ -93,28 +98,30 @@ const query = gql`
             dt: value
             duration
           }
+          ... on RangeFieldValue {
+            min
+            max
+          }
+          ... on LocationFieldValue {
+            name
+            address
+          }
         }
       }
+      formattedResponse
     }
   }
 `;
 
 describe('submission', () => {
   it('can post a submission and then retrieve it', async () => {
-    const when = ZonedDateTime.now()
-      .plusDays(4)
-      .withFixedOffsetZone();
-
     const {
       data: {
         submitTemplate: {
           submission: { id },
         },
       },
-    } = await client.mutate({
-      mutation: submit,
-      variables: { when: when.toString() },
-    });
+    } = await client.mutate({ mutation: submit });
 
     const {
       data: { submission },
@@ -138,11 +145,24 @@ describe('submission', () => {
 
     const { responses } = submission;
     expect(responses).toHaveLength(7);
+    [
+      'StringFieldValue',
+      'DateTimeFieldValue',
+      'RangeFieldValue',
+      'LocationFieldValue',
+    ].forEach(fieldType => {
+      expect(responses).toContainEqual(
+        expect.objectContaining({
+          value: expect.objectContaining({ __typename: fieldType }),
+        })
+      );
+    });
     responses.forEach(response => {
       expect(response).toHaveProperty(
         'field.type',
         expect.stringMatching(/^Text|NumberRange|Location|DateTimeDuration$/)
       );
+      expect(response.id).toEqual(expect.any(String));
       // eslint-disable-next-line no-underscore-dangle
       switch (response.value.__typename) {
         case 'DateTimeFieldValue':
@@ -160,9 +180,20 @@ describe('submission', () => {
           expect(response.value.i).toEqual(expect.any(Number));
           break;
 
+        case 'RangeFieldValue':
+          expect(response.value.min).toEqual(4);
+          expect(response.value.max).toEqual(10);
+          break;
+
+        case 'LocationFieldValue':
+          expect(response.value.name).toEqual('the museum');
+          expect(response.value.address).toEqual('One Museum Street');
+          break;
+
         default:
           expect(true).toBe(false); // shouldn't happen!
       }
     });
+    expect(submission.formattedResponse).toMatchSnapshot();
   });
 });
