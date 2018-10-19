@@ -52,6 +52,7 @@ const communityQuery = gql`
     community(id: $id) {
       id
       name
+      isPublic
     }
   }
 `;
@@ -109,6 +110,7 @@ describe('Community', () => {
     expect(data.community).toMatchObject({
       id: community.id,
       name: `${community.name}`,
+      isPublic: false,
     });
   });
 

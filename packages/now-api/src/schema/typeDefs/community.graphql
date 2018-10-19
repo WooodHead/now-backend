@@ -21,6 +21,7 @@ type Community implements Node {
   name: String
   users(input: AdminInput): CommunityUsersConnection! @admin
   events: CommunityEventsConnection!
+  isPublic: Boolean!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
 }

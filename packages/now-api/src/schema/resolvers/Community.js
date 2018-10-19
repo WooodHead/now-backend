@@ -6,6 +6,7 @@ import {
 import { Community, Membership } from '../../db/repos';
 import { genRandomUuid, now } from '../../db/sql';
 import { isAdmin } from '../AdminDirective';
+import { GLOBAL_COMMUNITY_ID } from '../../db/constants';
 
 const allCommunities = (root, { input, orderBy = 'id' }) =>
   sqlPaginatify(orderBy, Community.all({}), input);
@@ -76,7 +77,9 @@ const users = ({ id: communityId }, { input = {} }, context) =>
     }),
   });
 
-export const resolvers = { users };
+const isPublic = ({ id }) => id === GLOBAL_COMMUNITY_ID;
+
+export const resolvers = { users, isPublic };
 
 // utility function for other resolvers to make sure a community exists and
 // is visible
