@@ -14,6 +14,7 @@ This README covers:
 ### Installing dependencies
 
 1. Install [yarn](https://yarnpkg.com/en/docs/install#mac-stable).
+1. Install API dependencies: `cd now-api; yarn`. 
 1. Install [asdf](https://github.com/asdf-vm/asdf).
 1. Install the [asdf node plugin](https://github.com/asdf-vm/asdf-nodejs).
 
@@ -43,6 +44,8 @@ _**On Ubuntu**_
 _**On MacOS and Ubuntu**_
 - `yarn migrate:test`
 - `yarn migrate:development`
+
+> **NOTE:** If you get mysterious messages about postgis when you try to run migrations, there's a troubleshooting guide [here]().
 
 ### Setting up admin
 
