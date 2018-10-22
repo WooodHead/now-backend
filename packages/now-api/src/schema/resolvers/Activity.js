@@ -6,6 +6,7 @@ import { Activity, Event } from '../../db/repos';
 import sql from '../../db/sql';
 import { notifyEventChange } from './Event';
 import { setActivityHeaderPhoto } from './Photo';
+import { categoryQuery } from './Category';
 
 export const NYC_TZ = ZoneId.of('America/New_York');
 
@@ -44,6 +45,13 @@ const getHeaderPhoto = ({ headerPhotoId, headerPhotoPreview }, args, ctx) => {
   return null;
 };
 
+const getCategory = ({ categoryId }) => {
+  if (categoryId) {
+    return categoryQuery(categoryId);
+  }
+  return null;
+};
+
 const getGenerallyAvailableAt = () =>
   LocalDateTime.now(NYC_TZ)
     .toLocalDate()
@@ -53,6 +61,7 @@ const getGenerallyAvailableAt = () =>
 export const resolvers = {
   header: getHeaderPhoto,
   events: getEvents,
+  category: getCategory,
   generallyAvailableAt: getGenerallyAvailableAt,
 };
 
@@ -66,6 +75,7 @@ const createActivity = async (
       emoji,
       pushNotification,
       header,
+      categoryId,
     },
   },
   { loaders }
@@ -77,6 +87,7 @@ const createActivity = async (
     pushNotification,
     description,
     activityDate: activityDate.toString(),
+    categoryId,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
     emoji,
@@ -106,6 +117,7 @@ const updateActivity = async (
       emoji,
       pushNotification,
       header,
+      categoryId,
     },
   },
   { loaders }
@@ -118,6 +130,7 @@ const updateActivity = async (
     activityDate: activityDate.toString(),
     updatedAt: sql.raw('now()'),
     emoji,
+    categoryId,
   };
 
   loaders.activities.clear(id);

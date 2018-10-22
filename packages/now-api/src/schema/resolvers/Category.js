@@ -62,9 +62,11 @@ const tempCategories = {
   },
 };
 
-const getCategories = () => Object.values(tempCategories);
+export const categoryQuery = id => tempCategories[id];
 
-const getCategory = (root, { id }) => tempCategories[id];
+const getCategory = (root, { id }) => categoryQuery(id);
+
+const getCategories = () => Object.values(tempCategories);
 
 export const queries = { category: getCategory, categories: getCategories };
 
