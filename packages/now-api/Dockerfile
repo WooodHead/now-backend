@@ -1,12 +1,9 @@
-FROM node:8.9.4-alpine
-# For sharp image library
-# http://sharp.pixelplumbing.com/en/stable/install/#alpine-linux
-# https://github.com/gliderlabs/docker-alpine/blob/master/docs/usage.md#disabling-cache
+FROM node:8.12.0-alpine
 WORKDIR /build
 COPY package.json .
 COPY yarn.lock .
 COPY . .
-RUN apk --no-cache add vips-dev fftw-dev curl --update-cache --repository https://dl-3.alpinelinux.org/alpine/edge/testing/ \
+RUN apk --no-cache add curl --update-cache \
   && apk --no-cache add  --virtual .build-dependencies g++ git make python2 \
   && yarn install \
   && yarn build:prod \
