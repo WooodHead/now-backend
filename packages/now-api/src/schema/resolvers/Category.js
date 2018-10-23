@@ -1,4 +1,5 @@
 import { tempTemplates } from './Template';
+import { buildEdge } from '../../schema/util';
 
 const tempCategories = {
   'd2ec5baa-638e-44f1-88d3-a67af0e1e9d0': {
@@ -68,7 +69,25 @@ const getCategory = (root, { id }) => categoryQuery(id);
 
 const getCategories = () => Object.values(tempCategories);
 
-export const queries = { category: getCategory, categories: getCategories };
+const getAllCategories = (root, { orderBy = 'title' }) => {
+  const data = Object.values(tempCategories).sort(
+    (a, b) => a[orderBy] > b[orderBy]
+  );
+  return {
+    pageInfo: {
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    count: data.length,
+    edges: data.map(d => buildEdge(orderBy, d)),
+  };
+};
+
+export const queries = {
+  category: getCategory,
+  categories: getCategories,
+  allCategories: getAllCategories,
+};
 
 const templates = ({ templateIds }) => templateIds.map(id => tempTemplates[id]);
 

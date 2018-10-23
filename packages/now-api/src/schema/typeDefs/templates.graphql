@@ -2,6 +2,10 @@ type Query {
   template(id: ID): Template
   category(id: ID): Category
   categories: [Category!]!
+  allCategories(
+    input: AdminInput
+    orderBy: CategoryOrder
+  ): RootCategoryConnection! @admin
   submission(id: ID): Submission
   allSubmissions(
     input: AdminInput
@@ -35,7 +39,7 @@ type SubmitTemplatePayload {
   submission: Submission
 }
 
-type Category {
+type Category implements Node {
   id: ID!
   title: String
   description: String
@@ -43,6 +47,17 @@ type Category {
   templates: [Template!]!
   createdAt: ZonedDateTime
   updatedAt: ZonedDateTime
+}
+
+type RootCategoryConnection implements Connection {
+  pageInfo: PageInfo!
+  count: Int!
+  edges: [RootCategoryEdge!]!
+}
+
+type RootCategoryEdge implements Edge {
+  cursor: String!
+  node: Category!
 }
 
 type Template {
@@ -135,4 +150,9 @@ enum SubmissionOrder {
   id
   createdAt
   updatedAt
+}
+
+enum CategoryOrder {
+  id
+  title
 }
