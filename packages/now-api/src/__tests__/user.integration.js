@@ -6,7 +6,7 @@ import { ZonedDateTime } from 'js-joda';
 
 import { USER_ID, client, newUserClient, setAdmin } from '../db/mock';
 import factory from '../db/factory';
-import { Invitation, User, Membership } from '../db/repos';
+import { CommunityWhitelist, Invitation, User, Membership } from '../db/repos';
 import sql from '../db/sql';
 import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import { mutations as InviteMutations } from '../schema/resolvers/Invitation';
@@ -142,6 +142,65 @@ describe('user', () => {
     expect(dbInvititation.code).toEqual(invitationCode);
     expect(dbInvititation.usedAt).toBeTruthy();
     expect(dbInvititation.inviteeId).toEqual(dbUser.id);
+  });
+
+  it('creates a user whitelisted for a private community', async () => {
+    const authId = uuid();
+    const userClient = newUserClient(authId);
+    const newUser = factory.build('user');
+    const { email, firstName, lastName, bio, location } = newUser;
+
+    const privateCommunityId = uuid();
+    await CommunityWhitelist.insert({ email, communityId: privateCommunityId });
+    const invitationCodeResult = await InviteMutations.createAppInvitation(
+      {},
+      { input: { notes: 'test', expiresAt: ZonedDateTime.now().plusHours(1) } },
+      { user: { id: '00000000-0000-0000-0000-000000000000' } }
+    );
+    const invitation = await invitationCodeResult.invitation;
+    const { code: invitationCode } = invitation;
+
+    const res = await userClient.mutate({
+      mutation: gql`
+        mutation create($input: CreateUserInput) {
+          createUser(input: $input) {
+            user {
+              id
+            }
+          }
+        }
+      `,
+      variables: {
+        input: {
+          email,
+          firstName,
+          lastName,
+          bio,
+          location,
+          invitationCode,
+        },
+      },
+    });
+
+    const {
+      data: {
+        createUser: {
+          user: { id },
+        },
+      },
+    } = res;
+
+    const dbMemberships = await Membership.all({
+      userId: id,
+    });
+
+    expect(dbMemberships).toHaveLength(2);
+    expect(dbMemberships).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ communityId: GLOBAL_COMMUNITY_ID }),
+        expect.objectContaining({ communityId: privateCommunityId }),
+      ])
+    );
   });
 
   it('change user photo', async () => {

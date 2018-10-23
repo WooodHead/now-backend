@@ -3,10 +3,16 @@ import {
   sqlPaginatify,
   userIdFromContext,
 } from '../util';
-import { Community, Membership } from '../../db/repos';
+import {
+  Community,
+  CommunityWhitelist,
+  Membership,
+  User,
+} from '../../db/repos';
 import { genRandomUuid, now } from '../../db/sql';
 import { isAdmin } from '../AdminDirective';
 import { GLOBAL_COMMUNITY_ID } from '../../db/constants';
+import { createMembership } from './Membership';
 
 const allCommunities = (root, { input, orderBy = 'id' }) =>
   sqlPaginatify(orderBy, Community.all({}), input);
@@ -90,3 +96,19 @@ export const verifyCommunity = (communityId, context) =>
     }
     return true;
   });
+
+export const addUserToWhitelistedCommunities = async (userId, trx) => {
+  const user = await User.byId(userId).transacting(trx);
+
+  // TODO: Check that user is verified
+
+  const whitelists = await CommunityWhitelist.all({
+    email: user.email,
+  }).transacting(trx);
+
+  const memberships = whitelists.map(({ communityId }) =>
+    createMembership(userId, communityId, trx, false)
+  );
+
+  return Promise.all(memberships);
+};

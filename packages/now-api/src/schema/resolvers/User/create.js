@@ -16,6 +16,7 @@ import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../../../db/constants';
 import { updatePref as updateFcmPref } from '../../../fcm';
 import { notifyEventChange } from '../Event';
 import { createMembership } from '../Membership';
+import { addUserToWhitelistedCommunities } from '../Community';
 import { syncIntercomUser } from '../../../jobs';
 import { createRsvp } from '../Rsvp';
 import logger from '../../../logger';
@@ -93,7 +94,19 @@ export const createUserMutation = async (
       }).transacting(trx);
 
       // All users are members of the global community
-      await createMembership(newUserId, GLOBAL_COMMUNITY_ID, trx, false);
+      const globalMembership = createMembership(
+        newUserId,
+        GLOBAL_COMMUNITY_ID,
+        trx,
+        false
+      );
+
+      const whitelistedMemberships = addUserToWhitelistedCommunities(
+        newUserId,
+        trx
+      );
+
+      await Promise.all([globalMembership, whitelistedMemberships]);
 
       if (type === EVENT_INVITE_TYPE) {
         notifyEventId = eventId;

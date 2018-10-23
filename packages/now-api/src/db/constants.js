@@ -3,6 +3,7 @@ import { LocalTime } from 'js-joda';
 export const SQL_TABLES = {
   USERS: 'users',
   COMMUNITIES: 'communities',
+  COMMUNITY_WHITELISTS: 'communityWhitelist',
   MEMBERSHIPS: 'memberships',
   MEMBERSHIP_LOG: 'membershipLog',
   BLOCKED_USERS: 'blockedUsers',
