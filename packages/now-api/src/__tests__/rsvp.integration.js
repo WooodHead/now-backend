@@ -114,7 +114,7 @@ describe('Rsvp', () => {
             isHosting: false,
             messages: {
               edges: [
-                { node: { text: `👋 ${user.firstName} joined this Meetup` } },
+                { node: { text: `👋 ${user.firstName} joined this activity` } },
               ],
             },
           },
@@ -297,7 +297,7 @@ describe('Rsvp', () => {
           messages: {
             edges: [
               {
-                node: { text: `${user.firstName} left this Meetup` },
+                node: { text: `${user.firstName} left this activity` },
               },
             ],
           },
@@ -447,7 +447,7 @@ describe('Rsvp', () => {
     });
   });
 
-  it('you are no longer first if you leave a meetup', async () => {
+  it('you are no longer first if you leave an activity', async () => {
     const rsvp = factory.build('rsvp', {
       action: 'remove',
       eventId: event.id,

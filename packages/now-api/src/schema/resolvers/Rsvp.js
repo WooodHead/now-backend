@@ -109,7 +109,7 @@ export const createRsvp = async (
       sendBotMessage(
         {
           eventId,
-          text: `👋 ${rsvpUser.firstName} joined this Meetup`,
+          text: `👋 ${rsvpUser.firstName} joined this activity`,
         },
         false,
         trx
@@ -120,7 +120,7 @@ export const createRsvp = async (
       sendBotMessage(
         {
           eventId,
-          text: `${rsvpUser.firstName} left this Meetup`,
+          text: `${rsvpUser.firstName} left this activity`,
         },
         false,
         trx
