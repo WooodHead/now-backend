@@ -19,6 +19,12 @@ jest.mock('../s3', () => ({
   },
 }));
 
+const MACOS_PHOTO =
+  'data:image/jpeg;base64,/9j/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAoACgDASIAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAABAAFAwYB/8QAMRAAAgEDAwMCAgkFAAAAAAAAAQIDAAQRBRIhEzFRQWEGoRQVIiQycYHB0SMzUpGx/8QAGQEAAgMBAAAAAAAAAAAAAAAAAwQAAgUB/8QAHREAAgMAAwEBAAAAAAAAAAAAAQIAAxEEIUESIv/aAAwDAQACEQMRAD8ATLf3utlrfTYMQMdryvwp9s+v5D/YpFroH1bch7oGWRP7bYG1fTgDgH5jzWxMptNOnvBD/QtE3ED7Pb0FY7/FOmTzwxJFLD1NxYsoxuzySR/2oSAw0y6qzIfkTSjaISgzbhGOTt7n2r5ql2rXIS1jUQx4Ge5bdyMUe9fpWzyjt+FB/kx7fpR9Gs5pI5LW5md53XerHz4/TjigXW9/nyN8bjjNs9ihLtYg8EHBqo05wgZ2w4+yy+cev7VUaqwOuxW+k1P8+QmqfFGozrNpEfSisF3fSJWjJZhngZzx28V5NI4zbS3jzR7CSUYPyOf4Hzpl5GlwD9Ma6k3SMHiijwJCPcDjPijXdnbKI727kgxEu1LdOSh8Nx3/AIoBOzRRQg6nvZLaMadbQDCxm3xGG5G7AA+RNcenLpumxsuFunkLon4sZzx57YFZnwvq+sPpe90hkjhxtLjDqDnH51oWkF1d6vbahczqSquWjHCxkHH7GlipEZDbDLqK6tJF9ymhkJ2uzoV2HwfNVMth90RSDumusx54JAOSR7d6qZoAw9TP5hIYdzN0i3tr281COSNspMGUq5U7SuPQ+1Ok+F7Y2zxRNgMxbEq78E+ueD86qqIgBUQFjsrnDOlppAsIn6cnWlkI37+FYAYCgegFdUsbl4nitFjsxJy7El2J8VVVVkUmdXkWAZsbZ6W0UvVmm60uNoO3aqDwo9KqqqsOhggmYsdM/9k=';
+
+const LINUX_PHOTO =
+  'data:image/jpeg;base64,/9j/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAoACgDASIAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAABAAFAwYB/8QAMRAAAgEDAwMCAgkFAAAAAAAAAQIDAAQRBRIhEzFRQWEGoRQVIiQycYHB0SMzUpGx/8QAGQEAAgMBAAAAAAAAAAAAAAAAAwQAAgUB/8QAHREAAgMAAwEBAAAAAAAAAAAAAQIAAxEEIUESIv/aAAwDAQACEQMRAD8ATLf3utlrfTYMQMdryvwp9s+v5D/YpFroH1bch7oGWRP7bYG1fTgDgH5jzWxMptNOnvBD/QtE3ED7Pb0FY7/FOmTzwxJFLD1NxYsoxuzySR/2oSAw0y6qzIfkTSjaISgzbhGOTt7n2r5ql2rXIS1jUQx4Ge5bdyMUe9fpWzyjt+FB/kx7fpR9Gs5pI5LW5md53XerHz4/TjigXW9/nyN8bjjNs9EUJdrEHgg4NVGnOEDO2HH2WXzj1/aqjVWB12K30mp/nyE1T4o1GdZtIj6UVgu76RK0ZLMM8DOeO3ivJpHGbaW8eaPYSSjB+Rz/AAPnTLyNLgH6Y11JukYPFFHgSEe4HGfFGu7O2UR3t3JBiJdqW6clD4bjv/FAJ2aKKEHU97JbRjTraAYWM2+Iw3I3YAHyJrj05dN02Nlwt08hdE/FjOePPbArM+F9X1h9L3ukMkcONpcYdQc4/OtC0gurvV7bULmdSVVy0Y4WMg4/Y0sVIjIbYZdRXVpIvuU0MhO12dCuw+D5qplsPuiKQd011mPPBIBySPbvVTNAGHqZ/MJDDuZukW9te3moRyRtlJgylXKnaVx6H2p0nwvbG2eKJsBmLYlXfgn1zwfnVVREAKiAsdlc4Z0tNIFhE/Tk60shG/fwrADAUD0ArqljcvE8VosdmJOXYkuxPiqqqtWpnV5FgGbG2eltFL1ZputLjaDt2qg8KPSqqqrDoYIJmLHTP//Z';
+
 const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.USERS).truncate(),
@@ -236,10 +242,16 @@ describe('user', () => {
       },
     } = res;
 
-    expect(pick(returnedPhoto, ['preview', '__typename'])).toMatchSnapshot();
+    // NOTE: Upgrading sharp made the images stop working on Andy's mac, this fixes it. It shouldn't have to.
+    expect(
+      [MACOS_PHOTO, LINUX_PHOTO].map(preview => ({
+        preview,
+        __typename: 'Photo',
+      }))
+    ).toContainEqual(pick(returnedPhoto, ['preview', '__typename']));
 
     const dbUser = await User.byId(id);
-    expect(pick(dbUser, ['photoPreview'])).toMatchSnapshot();
+    expect([MACOS_PHOTO, LINUX_PHOTO]).toContain(dbUser.photoPreview);
   });
 
   it.each([

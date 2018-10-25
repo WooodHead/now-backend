@@ -2,7 +2,11 @@ import { ChronoUnit, Instant, ZoneId, LocalDateTime } from 'js-joda';
 import uuid from 'uuid/v4';
 import { toNumber, isInteger } from 'lodash';
 
-import { userIdFromContext, sqlPaginatify } from '../util';
+import {
+  userIdFromContext,
+  sqlPaginatify,
+  buildEdgeWithCursorIdSubstring,
+} from '../util';
 import { getEventRsvps, userDidRsvp } from './Rsvp';
 import { NYC_TZ } from './Activity';
 import { getMessages, notifyMessagesRead } from './Message';
@@ -178,7 +182,11 @@ const eventsQuery = (root, { input, orderBy = 'time' }, ctx) =>
   sqlPaginatify(
     `events.${orderBy}`,
     visibleEventsQuery(userIdFromContext(ctx)),
-    { ...input, select: 'events.*' }
+    {
+      ...input,
+      select: 'events.*',
+      edgeBuilder: buildEdgeWithCursorIdSubstring(7), // Because we're passing in `events.*` here we need to extract the proper path when extracting the cursor
+    }
   );
 
 export const queries = {

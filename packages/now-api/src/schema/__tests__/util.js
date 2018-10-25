@@ -38,6 +38,30 @@ describe('sql paginaitify', () => {
         .slice(0, 20)
     );
   });
+  it('treat null as undefined', async () => {
+    const builder = User.all();
+
+    const results = await sqlPaginatify('id', builder, {
+      first: null,
+    });
+    results.count = await results.count();
+    results.edges = await results.edges();
+    results.pageInfo = await results.pageInfo();
+    expect(results).toMatchObject({
+      count: userCount,
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: true,
+      },
+      edges: expect.anything(),
+    });
+
+    expect(results.edges.map(({ node }) => node.id)).toEqual(
+      sortBy(users, 'id')
+        .map(({ id }) => id)
+        .slice(0, 20)
+    );
+  });
   it('reversable', async () => {
     const builder = User.all();
 

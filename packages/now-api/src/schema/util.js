@@ -16,6 +16,16 @@ export const buildEdge = (cursorId, node) => ({
   node,
 });
 
+export const buildEdgeWithCursorIdSubstring = (indexStart, indexEnd) => (
+  cursorId,
+  node
+) => ({
+  cursor: Buffer.from(
+    String(node[cursorId.substring(indexStart, indexEnd)])
+  ).toString('base64'),
+  node,
+});
+
 export const sqlPaginatify = async (
   cursorId,
   builder,
@@ -44,7 +54,10 @@ export const sqlPaginatify = async (
     };
     const pagedQuery = builder.clone().select(select);
 
-    if (first !== undefined && last !== undefined) {
+    const firstUnset = first === undefined || first === null;
+    const lastUnset = last === undefined || last === null;
+
+    if (!firstUnset && !lastUnset) {
       throw new Error('Use first or last, but not both together');
     }
 
@@ -72,9 +85,9 @@ export const sqlPaginatify = async (
     let actualFirst = first;
     let actualLast = last;
 
-    if (before && last === undefined) {
+    if (before && lastUnset) {
       actualLast = DEFAULT_PAGE_SIZE;
-    } else if (first === undefined && last === undefined) {
+    } else if (firstUnset && lastUnset) {
       actualFirst = DEFAULT_PAGE_SIZE;
     }
 

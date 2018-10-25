@@ -378,6 +378,83 @@ describe('Rsvp', () => {
     });
   });
 
+  it('pages user rsvps', async () => {
+    const events = factory.buildList('event', 25);
+    await sql(SQL_TABLES.EVENTS).insert(events);
+    await Rsvp.insert(
+      events.map(e =>
+        factory.build('rsvp', {
+          eventId: e.id,
+          userId: USER_ID,
+        })
+      )
+    );
+
+    const firstPage = await client.query({
+      query: gql`
+        query userWithRsvps($id: ID!) {
+          user(id: $id) {
+            id
+            rsvps {
+              count
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+              edges {
+                cursor
+              }
+            }
+          }
+        }
+      `,
+      variables: { id: USER_ID },
+    });
+
+    const {
+      data: {
+        user: { rsvps },
+      },
+    } = firstPage;
+
+    expect(rsvps.count).toBe(25);
+    expect(rsvps.edges).toHaveLength(20);
+    expect(rsvps.pageInfo.hasNextPage).toBe(true);
+    expect(rsvps.pageInfo.hasPreviousPage).toBe(false);
+
+    const secondPage = await client.query({
+      query: gql`
+        query userWithRsvps($id: ID!, $after: String) {
+          user(id: $id) {
+            id
+            rsvps(after: $after, first: 20) {
+              count
+              pageInfo {
+                hasNextPage
+                hasPreviousPage
+              }
+              edges {
+                cursor
+              }
+            }
+          }
+        }
+      `,
+      variables: { id: USER_ID, after: rsvps.edges[19].cursor },
+    });
+
+    const {
+      data: {
+        user: { rsvps: secondRsvps },
+      },
+    } = secondPage;
+
+    expect(secondRsvps.count).toBe(25);
+    expect(secondRsvps.edges).toHaveLength(5);
+    expect(secondRsvps.pageInfo.hasNextPage).toBe(false);
+    expect(secondRsvps.pageInfo.hasPreviousPage).toBe(false);
+  });
+
   it('event rsvps resolves invites', async () => {
     const invite = factory.build('eventInvite', {
       eventId: event.id,

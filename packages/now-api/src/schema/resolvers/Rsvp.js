@@ -1,6 +1,11 @@
 import uuid from 'uuid/v4';
 
-import { userIdFromContext, sqlPaginatify, buildEdge } from '../util';
+import {
+  userIdFromContext,
+  sqlPaginatify,
+  buildEdge,
+  buildEdgeWithCursorIdSubstring,
+} from '../util';
 import { Event, Rsvp, RsvpLog, User } from '../../db/repos';
 import sql from '../../db/sql';
 import { userQuery } from './User';
@@ -251,7 +256,8 @@ export const getUserRsvps = ({ userId, first, last, after, before }) =>
       after,
       before,
       reverse: true,
-      select: 'rsvps.*',
+      select: ['rsvps.*', 'events.time'],
+      edgeBuilder: buildEdgeWithCursorIdSubstring(7), // Because we're passing in `events.time` here we need to extract the proper path when extracting the cursor
     }
   );
 
