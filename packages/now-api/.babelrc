@@ -1,4 +1,20 @@
 {
-  "plugins": ["transform-runtime", "transform-unicode-property-regex"],
-  "presets": [["env", { "targets": { "node": "current" } }], "stage-0", "flow"]
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-proposal-unicode-property-regex",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-export-default-from",
+    "import-graphql"
+  ],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/preset-flow"
+  ]
 }

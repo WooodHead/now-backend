@@ -11,7 +11,7 @@ RUN apk --no-cache add curl --update-cache \
   && yarn cache clean \
   && apk del .build-dependencies
 
-RUN cp dist/server.js ..
+RUN mv dist ..
 WORKDIR /
 COPY package.json .
 COPY knexfile.js .
@@ -19,6 +19,7 @@ COPY migrations migrations
 COPY public public
 COPY bin/start.sh .
 COPY cron.yaml .
+COPY meetupnow-google.json .
 
 RUN rm -rf build
 USER node

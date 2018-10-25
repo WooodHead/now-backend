@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import express from 'express';
 import expressWinston from 'express-winston';
 import 'js-joda-timezone';
