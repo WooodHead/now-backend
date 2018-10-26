@@ -4,9 +4,15 @@ import { userIdFromContext } from '../util';
 import logger from '../../logger';
 
 const createReport = (root, { input: { data } }, context) => {
-  snsPublish(`${userIdFromContext(context)}: ${JSON.stringify(data)}`, {
-    arn:
-      'arn:aws:sns:us-east-1:212646169882:nowreport:9c304f43-d848-4a7c-82e7-f4ffe81b7a42',
+  let messageText = `Reported by: ${userIdFromContext(context)} \n`;
+  if (data.eventId) {
+    messageText += `\nEvent admin: https://now.meetup.com/admin#/Event/${
+      data.eventId
+    }/show \n`;
+  }
+  messageText += `\n${JSON.stringify(data)}`;
+  snsPublish(messageText, {
+    arn: 'arn:aws:sns:us-east-1:212646169882:nowreport',
   }).catch(logger.error);
 
   return { data: 'OK' };
