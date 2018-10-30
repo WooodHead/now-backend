@@ -1,14 +1,16 @@
 import uuid from 'uuid/v4';
 import { Geometry, Point } from 'wkx';
 
-import { now } from '../../../db/sql';
+import { now, prefixSearch } from '../../../db/sql';
 import { Location } from '../../../db/repos';
 import { sqlPaginatify } from '../../util';
 import { syncWeworkMarket, weworkMarkets } from './wework';
 
 // Queries
-const allLocations = (root, { input, orderBy = 'id' }) =>
-  sqlPaginatify(orderBy, Location.all({}), input);
+const allLocations = (root, { input, orderBy = 'id', prefix }) => {
+  const args = prefix ? prefixSearch('name', prefix, true) : [];
+  return sqlPaginatify(orderBy, Location.all(...args), input);
+};
 
 const manyLocations = (root, { ids }, { loaders }) =>
   loaders.locations.loadMany(ids);

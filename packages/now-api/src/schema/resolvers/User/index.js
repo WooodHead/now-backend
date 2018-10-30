@@ -11,7 +11,7 @@ import {
   NOTIFICATION_PREFERENCE_NEW_EVENT,
   NOTIFICATION_PREFERENCE_REMINDERS,
 } from '../../../db/constants';
-import sql from '../../../db/sql';
+import sql, { prefixSearch } from '../../../db/sql';
 import { User } from '../../../db/repos';
 import { putInOrder } from '../../../util';
 import { createUserMutation as createUser, updateCurrentUser } from './create';
@@ -44,13 +44,7 @@ export const unblockUser = (blockerId: string, blockedId: string) =>
 /* Queries */
 const allUsers = (root, { input, orderBy = 'id', prefix }) => {
   const args =
-    prefix && prefix.length >= 1
-      ? [
-          fullName(),
-          'like',
-          sql.raw('lower(?)', `${prefix.replace(/[\\%_]/g, '')}%`),
-        ]
-      : [];
+    prefix && prefix.length >= 1 ? prefixSearch(fullName(), prefix) : [];
   const order = orderBy === 'firstName' ? fullName() : orderBy;
   return sqlPaginatify(order, User.all(...args), input);
 };

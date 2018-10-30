@@ -4,6 +4,7 @@ type Query {
   allLocations(
     input: AdminInput
     orderBy: LocationOrder
+    prefix: String
   ): RootLocationsConnection! @admin
   weworkMarkets(type: String): [String!] @admin
 }

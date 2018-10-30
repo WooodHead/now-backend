@@ -13,3 +13,11 @@ export const connection = config.connection; // eslint-disable-line prefer-destr
 export const genRandomUuid = () => sql.raw('gen_random_uuid()');
 export const makepoint = (x, y) => sql.raw('st_makepoint(?, ?)', [x, y]);
 export const now = () => sql.raw('now()');
+export const prefixSearch = (column, prefix, ilike = false) => {
+  const safePrefix = `${prefix.replace(/[\\%_]/g, '')}%`;
+  return [
+    column,
+    ilike ? 'ilike' : 'like',
+    ilike ? safePrefix : sql.raw('lower(?)', safePrefix),
+  ];
+};
