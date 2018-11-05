@@ -10,9 +10,15 @@ setPgTypes(sql);
 export default sql;
 export const connection = config.connection; // eslint-disable-line prefer-destructuring
 
+// Facilitates date mocking for tests
+let nowReturn = sql.raw('now()');
+export const changeNow = newNow => {
+  nowReturn = newNow;
+};
+
 export const genRandomUuid = () => sql.raw('gen_random_uuid()');
 export const makepoint = (x, y) => sql.raw('st_makepoint(?, ?)', [x, y]);
-export const now = () => sql.raw('now()');
+export const now = () => nowReturn;
 export const prefixSearch = (column, prefix, ilike = false) => {
   const safePrefix = `${prefix.replace(/[\\%_]/g, '')}%`;
   return [

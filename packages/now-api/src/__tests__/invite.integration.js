@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { LocalDate, LocalDateTime, ZoneId } from 'js-joda';
 import uuid from 'uuid/v4';
 
-import { client, USER_ID } from '../db/mock';
+import { client, USER_ID, newUserClient } from '../db/mock';
 import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import sql from '../db/sql';
 import factory from '../db/factory';
@@ -60,6 +60,7 @@ const truncateTables = () =>
   Promise.all([
     sql(SQL_TABLES.ACTIVITIES).truncate(),
     sql(SQL_TABLES.INVITATIONS).truncate(),
+    sql(SQL_TABLES.INVITATION_LOG).truncate(),
     sql(SQL_TABLES.LOCATIONS).truncate(),
     sql(SQL_TABLES.EVENTS).truncate(),
     sql(SQL_TABLES.RSVPS).truncate(),
@@ -190,6 +191,120 @@ describe('Invitations', () => {
       const { data: secondInvite } = await createEventInvite(eventTomorrow.id);
 
       expect(secondInvite).toEqual(firstInvite);
+    });
+
+    it('users that join with same invite code have separate invite.usedAt dates', async () => {
+      const inviteDate1 = LocalDate.now()
+        .atTime(12, 1)
+        .atZone(Activity.NYC_TZ)
+        .withFixedOffsetZone();
+      const inviteDate1UTC = inviteDate1
+        .withZoneSameInstant(ZoneId.UTC)
+        .toString();
+
+      mockNow(inviteDate1.toString());
+      const authId = uuid();
+      const authId2 = uuid();
+      const userClient = newUserClient(authId);
+      const user2Client = newUserClient(authId2);
+      const newUser = factory.build('user');
+      const { email, firstName, lastName } = newUser;
+
+      const eventTomorrow = await buildEventTomorrow();
+
+      const results = await createEventInvite(eventTomorrow.id);
+
+      const { data } = results;
+      const { invitation } = data.createEventInvitation;
+
+      const { code: invitationCode } = invitation;
+
+      await userClient.mutate({
+        mutation: gql`
+          mutation create($input: CreateUserInput) {
+            createUser(input: $input) {
+              user {
+                id
+                preferences
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            email,
+            firstName,
+            lastName,
+            invitationCode,
+          },
+        },
+      });
+
+      const inviteDate2 = LocalDate.now()
+        .atTime(12, 15)
+        .atZone(Activity.NYC_TZ)
+        .withFixedOffsetZone();
+      const inviteDate2UTC = inviteDate2
+        .withZoneSameInstant(ZoneId.UTC)
+        .toString();
+
+      mockNow(inviteDate2.toString());
+
+      await user2Client.mutate({
+        mutation: gql`
+          mutation create($input: CreateUserInput) {
+            createUser(input: $input) {
+              user {
+                id
+                preferences
+              }
+            }
+          }
+        `,
+        variables: {
+          input: {
+            email,
+            firstName,
+            lastName,
+            invitationCode,
+          },
+        },
+      });
+
+      const {
+        data: {
+          event: {
+            rsvps: { edges: rsvps },
+          },
+        },
+      } = await client.query({
+        query: gql`
+          query eventRsvps($eventId: ID) {
+            event(id: $eventId) {
+              rsvps {
+                edges {
+                  node {
+                    invite {
+                      usedAt
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: { eventId: eventTomorrow.id },
+      });
+
+      expect(
+        rsvps.map(
+          ({
+            node: {
+              invite: { usedAt },
+            },
+          }) => usedAt
+        )
+      ).toEqual(expect.arrayContaining([inviteDate1UTC, inviteDate2UTC]));
     });
   });
 });

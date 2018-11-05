@@ -5,7 +5,7 @@ import { getUser } from './index';
 import { CURRENT_TOS_VERSION } from './tos';
 import RunTimeFlags from '../../../RunTimeFlags';
 import { InvitationLog } from '../../../db/repos';
-import sql from '../../../db/sql';
+import sql, { now } from '../../../db/sql';
 import {
   consumeInvitation,
   findValidCode,
@@ -91,6 +91,7 @@ export const createUserMutation = async (
       await InvitationLog.insert({
         inviteeId: newUserId,
         inviteId,
+        createdAt: now(),
       }).transacting(trx);
 
       // All users are members of the global community

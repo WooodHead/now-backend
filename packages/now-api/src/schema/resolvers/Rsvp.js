@@ -14,8 +14,10 @@ import { notifyUserMessageCountChanged, sendBotMessage } from './Message';
 import { isAdmin } from '../AdminDirective';
 
 const event = ({ eventId }, args, { loaders }) => loaders.events.load(eventId);
-const invite = ({ inviteId }, args, { loaders }) =>
-  inviteId ? loaders.invitations.load(inviteId) : null;
+const invite = ({ inviteId, userId }, args, { loaders }) =>
+  inviteId
+    ? loaders.invitations.load(inviteId).then(log => ({ ...log, userId }))
+    : null;
 
 const user = (rsvp, args, context) =>
   userQuery(rsvp, { id: rsvp.userId }, context);

@@ -30,6 +30,7 @@ const truncateTables = () =>
     sql(SQL_TABLES.USERS).truncate(),
     sql(SQL_TABLES.MEMBERSHIPS).truncate(),
     sql(SQL_TABLES.INVITATIONS).truncate(),
+    sql(SQL_TABLES.INVITATION_LOG).truncate(),
   ]);
 
 const user = factory.build('user', { id: USER_ID });

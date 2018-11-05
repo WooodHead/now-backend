@@ -5,7 +5,7 @@ import randomNumber from 'random-number-csprng';
 import uuid from 'uuid/v4';
 
 import sql from '../../db/sql';
-import { Invitation } from '../../db/repos';
+import { Invitation, InvitationLog } from '../../db/repos';
 import { userQuery } from './User';
 import { sqlPaginatify, userIdFromContext } from '../util';
 import { joinableEventsQuery } from './Event';
@@ -33,10 +33,21 @@ const resolveInviter = (invitation, args, context) =>
 const resolveEvent = ({ eventId }, args, { loaders }) =>
   loaders.events.load(eventId);
 
+const usedAtResolver = ({ id, userId, usedAt }) => {
+  if (!userId) {
+    return null;
+  }
+
+  return InvitationLog.get({ inviteId: id, inviteeId: userId }).then(
+    invitationLog => (invitationLog ? invitationLog.createdAt : usedAt)
+  );
+};
+
 export const resolvers = {
   __resolveType: resolveType,
   inviter: resolveInviter,
   event: resolveEvent,
+  usedAt: usedAtResolver,
 };
 
 const invitationQuery = (root, { code, id, eventId }, ctx) => {
