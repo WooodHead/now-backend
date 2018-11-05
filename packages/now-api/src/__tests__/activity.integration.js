@@ -100,6 +100,37 @@ describe('activity', () => {
     );
   });
 
+  it('gets single activity', async () => {
+    const res = client.query({
+      query: gql`
+        query getActivity($id: ID!) {
+          activity(id: $id) {
+            id
+            title
+            emoji
+            description
+            activityDate
+            generallyAvailableAt
+            header {
+              id
+            }
+          }
+        }
+      `,
+      variables: { id: activities[0].id },
+    });
+
+    const { data } = await res;
+    expect(data).toMatchObject({
+      activity: {
+        __typename: 'Activity',
+        [Symbol('id')]: `Activity:${activities[0].id}`,
+        ...activities[0],
+        header: null,
+      },
+    });
+  });
+
   it('creates an activity', async () => {
     const activity = factory.build('activity');
     const { title, description, activityDate, emoji } = activity;
