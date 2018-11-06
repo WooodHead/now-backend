@@ -122,7 +122,7 @@ export const newUserClient = (currentUserAuth0Id, currentUserId) =>
       context: {
         ...defaultContext(),
         currentUserAuth0Id,
-        user: undefined,
+        user: currentUserId ? { id: currentUserId } : undefined,
         loaders: loaders({ currentUserId }),
       },
     }),

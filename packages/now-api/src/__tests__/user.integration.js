@@ -11,6 +11,13 @@ import sql from '../db/sql';
 import { SQL_TABLES, GLOBAL_COMMUNITY_ID } from '../db/constants';
 import { mutations as InviteMutations } from '../schema/resolvers/Invitation';
 
+jest.mock('../auth0', () => ({ deleteUser: () => Promise.resolve() }));
+
+jest.mock('../jobs', () => ({
+  deleteIntercomUser: () => Promise.resolve(),
+  syncIntercomUser: () => Promise.resolve(),
+}));
+
 jest.mock('../s3', () => ({
   s3: {
     putObject: () => ({
@@ -42,20 +49,39 @@ beforeEach(() =>
   ));
 afterEach(() => truncateTables());
 
+const getUserQuery = gql`
+  query getUser($id: ID!) {
+    user(id: $id) {
+      id
+      firstName
+      lastName
+      bio
+      location
+    }
+  }
+`;
+
+const createMutation = gql`
+  mutation create($input: CreateUserInput) {
+    createUser(input: $input) {
+      user {
+        id
+        preferences
+      }
+    }
+  }
+`;
+
+const deleteMutation = gql`
+  mutation deleteCurrentUser {
+    deleteCurrentUser
+  }
+`;
+
 describe('user', () => {
   it('returns the current user', async () => {
     const results = client.query({
-      query: gql`
-        query getUser($id: ID!) {
-          user(id: $id) {
-            id
-            firstName
-            lastName
-            bio
-            location
-          }
-        }
-      `,
+      query: getUserQuery,
       variables: { id: user.id },
     });
 
@@ -94,16 +120,7 @@ describe('user', () => {
       },
     };
     const res = await userClient.mutate({
-      mutation: gql`
-        mutation create($input: CreateUserInput) {
-          createUser(input: $input) {
-            user {
-              id
-              preferences
-            }
-          }
-        }
-      `,
+      mutation: createMutation,
       variables: {
         input: {
           email,
@@ -168,15 +185,7 @@ describe('user', () => {
     const { code: invitationCode } = invitation;
 
     const res = await userClient.mutate({
-      mutation: gql`
-        mutation create($input: CreateUserInput) {
-          createUser(input: $input) {
-            user {
-              id
-            }
-          }
-        }
-      `,
+      mutation: createMutation,
       variables: {
         input: {
           email,
@@ -275,13 +284,7 @@ describe('user', () => {
       await sql(SQL_TABLES.USERS).insert(bioUser);
 
       const results = await client.query({
-        query: gql`
-          query getUser($id: ID!) {
-            user(id: $id) {
-              bio
-            }
-          }
-        `,
+        query: getUserQuery,
         variables: { id: userId },
       });
 
@@ -363,5 +366,49 @@ describe('allUsers', () => {
     });
     expect(data.allUsers.count).toEqual(1);
     expect(data.allUsers.edges[0].node.firstName).toEqual(user.firstName);
+  });
+});
+
+describe('deleteCurrentUser', () => {
+  it('works', async () => {
+    const authId = uuid();
+    let userClient = newUserClient(authId);
+    const newUser = factory.build('user');
+    const { email, firstName, lastName, bio, location } = newUser;
+    const invitationCodeResult = await InviteMutations.createAppInvitation(
+      {},
+      { input: { notes: 'test', expiresAt: ZonedDateTime.now().plusHours(1) } },
+      { user: { id: uuid() } }
+    );
+    const invitation = await invitationCodeResult.invitation;
+    const { code: invitationCode } = invitation;
+    const {
+      data: {
+        createUser: {
+          user: { id: userId },
+        },
+      },
+    } = await userClient.mutate({
+      mutation: createMutation,
+      variables: {
+        input: {
+          email,
+          firstName,
+          lastName,
+          bio,
+          location,
+          invitationCode,
+        },
+      },
+    });
+
+    userClient = newUserClient(authId, userId);
+
+    await userClient.mutate({
+      mutation: deleteMutation,
+    });
+
+    const dbUsers = await User.all({ id: userId });
+    expect(dbUsers).toHaveLength(0);
   });
 });

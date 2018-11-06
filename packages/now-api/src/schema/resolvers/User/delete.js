@@ -39,6 +39,13 @@ const cleanUpEvents = async (trx, userId) => {
   return rsvps.map(({ eventId }) => eventId);
 };
 
+const getInvitationIds = (trx, userId) =>
+  trx(SQL_TABLES.INVITATIONS)
+    .where({ inviterId: userId })
+    .select(['id'])
+    .forUpdate()
+    .then(rows => rows.map(({ id }) => id));
+
 export const deleteCurrentUser = (root, { id: inputId }, context) => {
   const userId = userIdFromContext(context);
   if (inputId && inputId !== userId) {
@@ -52,7 +59,11 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
       .then(() =>
         sql.transaction(async trx => {
           await Device.withTransaction(trx).delete({ userId });
-          const eventIds = await cleanUpEvents(trx, userId);
+          const [eventIds, invitationIds] = await Promise.all([
+            cleanUpEvents(trx, userId),
+            getInvitationIds(trx, userId),
+          ]);
+
           await Promise.all([
             EventUserMetadata.withTransaction(trx).delete({ userId }),
             Rsvp.withTransaction(trx).delete({ userId }),
@@ -71,9 +82,15 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
               .orWhere({ blockedId: userId })
               .del(),
             trx(SQL_TABLES.INVITATIONS)
-              .where({ inviterId: userId })
+              .whereIn('id', invitationIds)
+              .del(),
+            trx(SQL_TABLES.INVITATION_LOG)
+              .whereIn('id', invitationIds)
               .orWhere({ inviteeId: userId })
               .del(),
+            trx(SQL_TABLES.RSVPS)
+              .whereIn('inviteId', invitationIds)
+              .update({ inviteId: null }),
           ]);
           await User.delete({ id: userId });
           await trx.commit();
