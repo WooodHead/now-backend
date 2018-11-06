@@ -43,11 +43,25 @@ const usedAtResolver = ({ id, userId, usedAt }) => {
   );
 };
 
+const idResolver = ({ id, userId }) => {
+  if (!userId) {
+    return id;
+  }
+
+  return InvitationLog.get({ inviteId: id, inviteeId: userId }).then(
+    invitationLog =>
+      invitationLog && invitationLog.createdAt
+        ? id + invitationLog.createdAt.toString()
+        : id
+  );
+};
+
 export const resolvers = {
   __resolveType: resolveType,
   inviter: resolveInviter,
   event: resolveEvent,
   usedAt: usedAtResolver,
+  id: idResolver,
 };
 
 const invitationQuery = (root, { code, id, eventId }, ctx) => {
