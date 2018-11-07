@@ -85,7 +85,7 @@ export const deleteCurrentUser = (root, { id: inputId }, context) => {
               .whereIn('id', invitationIds)
               .del(),
             trx(SQL_TABLES.INVITATION_LOG)
-              .whereIn('id', invitationIds)
+              .whereIn('inviteId', invitationIds)
               .orWhere({ inviteeId: userId })
               .del(),
             trx(SQL_TABLES.RSVPS)
