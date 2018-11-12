@@ -1,12 +1,9 @@
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloEngine } from 'apollo-engine';
-import { get } from 'lodash';
 import { createServer } from 'http';
 import jwt from 'express-jwt';
 import 'js-joda-timezone';
 import jwksRsa from 'jwks-rsa';
-import { resolveGraphiQLString } from 'apollo-server-module-graphiql';
-import url from 'url';
 
 import schema from './schema';
 import buildUserForContext from './buildContext';
@@ -27,22 +24,6 @@ const checkJwt = jwt({
   issuer: `${auth0Endpoint}/`,
   algorithms: ['RS256'],
 });
-
-const graphiqlExpress = options => {
-  const graphiqlHandler = (req, res, next) => {
-    const query = req.url && url.parse(req.url, true).query;
-    resolveGraphiQLString(query, options, req).then(
-      graphiqlString => {
-        res.setHeader('Content-Type', 'text/html');
-        res.write(graphiqlString);
-        res.end();
-      },
-      error => next(error)
-    );
-  };
-
-  return graphiqlHandler;
-};
 
 export default app => {
   const server = new ApolloServer({
@@ -110,25 +91,6 @@ export default app => {
     },
     playground: false,
   });
-
-  app.get(
-    '/graphiql',
-    graphiqlExpress(req => {
-      const token = get(req, ['query', 'token']);
-      return {
-        endpointURL: '/graphql',
-        passHeader: `'Authorization': 'Bearer ${token}'`,
-        subscriptionsEndpoint: url.format({
-          host: `//${req.get('host')}`,
-          protocol: req.protocol === 'https' ? 'wss' : 'ws',
-          pathname: '/subscriptions',
-        }),
-        websocketConnectionParams: {
-          token,
-        },
-      };
-    })
-  );
 
   server.applyMiddleware({ app });
   const httpServer = createServer(app);
