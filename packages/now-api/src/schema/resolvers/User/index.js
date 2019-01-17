@@ -104,6 +104,17 @@ export const getByAuth0Id = auth0Id =>
       );
     });
 
+export const getByMeetupId = meetupId =>
+  sql(SQL_TABLES.USERS)
+    .where({ meetupId })
+    .then(items => {
+      if (items.length === 0) return null;
+      else if (items.length === 1) return items[0];
+      return Promise.reject(
+        new Error(`unexpectedly got ${items.length} users from db`)
+      );
+    });
+
 const currentUser = (root, vars, context) => {
   const id = userIdFromContext(context);
   return context.loaders.members.load(id);

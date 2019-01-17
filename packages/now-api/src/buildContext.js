@@ -1,26 +1,28 @@
-import { get } from 'lodash';
-import { filterAttributes, getByAuth0Id } from './schema/resolvers/User';
+import { filterAttributes, getByMeetupId } from './schema/resolvers/User';
 import loaders from './db/loaders';
 import { processUserAgent } from './util';
 
 const loaderContext = options => loaders(options);
 
-export default (req, otherContext = {}) => {
-  const currentUserAuth0Id = get(req, ['user', 'sub']);
-  const scope = get(req, ['user', 'scope']) || '';
+export default (
+  { currentUserId, userAgent = 'Not Set', protocol, host, scope = '' },
+  otherContext = {}
+) => {
   const context = {
-    userAgent: processUserAgent(req && req.get('User-Agent')),
+    userAgent: processUserAgent(userAgent),
     ...otherContext,
-    currentUserAuth0Id,
+    currentUserId,
     user: undefined,
     loaders: loaderContext({ currentUserId: null }),
     scopes: [],
-    imageUrl: `${req.protocol}://${req.get('host')}/images`,
+    imageUrl: `${protocol}://${host}/images`,
   };
-  if (!currentUserAuth0Id) {
+
+  if (!currentUserId) {
     return Promise.resolve(context);
   }
-  return getByAuth0Id(currentUserAuth0Id).then(user => {
+
+  return getByMeetupId(currentUserId).then(user => {
     if (user) {
       const loadersWithContext = loaderContext({ currentUserId: user.id });
       loadersWithContext.members.prime(

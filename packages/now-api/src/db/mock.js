@@ -114,14 +114,14 @@ export const client = new ApolloClient({
   defaultOptions: noCache,
 });
 
-export const newUserClient = (currentUserAuth0Id, currentUserId) =>
+export const newUserClient = (meetupId, currentUserId) =>
   new ApolloClient({
     cache: apolloCache,
     link: new SchemaLink({
       schema,
       context: {
         ...defaultContext(),
-        currentUserAuth0Id,
+        meetupId,
         user: currentUserId ? { id: currentUserId } : undefined,
         loaders: loaders({ currentUserId }),
       },

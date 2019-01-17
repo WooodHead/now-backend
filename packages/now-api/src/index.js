@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 import express from 'express';
 import expressWinston from 'express-winston';
+import cookieParser from 'cookie-parser';
 import 'js-joda-timezone';
 import sharp from 'sharp';
 
@@ -17,6 +18,8 @@ const isDev = process.env.NODE_ENV === 'development';
 sharp.cache(false);
 
 const app = express();
+// parse cookies so we can read them as an object
+app.use(cookieParser());
 
 // We're behind a proxy and it will read the right data
 app.enable('trust proxy');

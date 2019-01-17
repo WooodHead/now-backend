@@ -2,31 +2,56 @@ import { ApolloServer } from 'apollo-server-express';
 import { ApolloEngine } from 'apollo-engine';
 import { get } from 'lodash';
 import { createServer } from 'http';
-import jwt from 'express-jwt';
+import { createServer as createSecureServer } from 'https';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import rp from 'request-promise-native';
 import 'js-joda-timezone';
-import jwksRsa from 'jwks-rsa';
 import { resolveGraphiQLString } from 'apollo-server-module-graphiql';
 import url from 'url';
+import cookieParser from 'cookie-parser';
 
 import schema from './schema';
 import buildUserForContext from './buildContext';
-import { endpoint as auth0Endpoint } from './auth0';
 import logger from './logger';
 
 const isDev = process.env.NODE_ENV === 'development';
+const MEETUP_SELF_QUERY = 'https://api.meetup.com/members/self';
 
-const checkJwt = jwt({
-  secret: jwksRsa.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: `${auth0Endpoint}/.well-known/jwks.json`,
-  }),
-  credentialsRequired: true,
-  audience: 'https://now.meetup.com/graphql',
-  issuer: `${auth0Endpoint}/`,
-  algorithms: ['RS256'],
-});
+const checkMeetupAuth = async req => {
+  const { cookies, protocol } = req;
+  // TODO: work with oauth tokens again
+  // rebuild a cookie header string from the parsed `cookies` object
+  const cookie = ['MEETUP_MEMBER', 'MEETUP_CSRF']
+    .map(name => `${name}=${cookies[name]}`)
+    .join('; ');
+
+  let meetupUser = null;
+  if (cookies.MEETUP_CSRF && cookies.MEETUP_MEMBER) {
+    try {
+      meetupUser = await rp(MEETUP_SELF_QUERY, {
+        headers: {
+          cookie,
+          'csrf-token': cookies.MEETUP_CSRF,
+        },
+        json: true,
+      });
+    } catch (e) {
+      logger.info('Meetup auth failed', e);
+    }
+  }
+
+  return buildUserForContext(
+    {
+      currentUserId: meetupUser ? String(meetupUser.id) : null,
+      userAgent: req.get('User-Agent'),
+      protocol,
+      host: req.get('host'),
+    },
+    { http: true }
+  );
+};
 
 const graphiqlExpress = options => {
   const graphiqlHandler = (req, res, next) => {
@@ -51,16 +76,7 @@ export default app => {
       if (!req) {
         return connection.context;
       }
-      return new Promise((resolve, reject) => {
-        checkJwt(req, res, err => {
-          if (err) {
-            res.send(401);
-            reject(new Error('error authorizing http'));
-          } else {
-            resolve(buildUserForContext(req, { http: true }));
-          }
-        });
-      });
+      return checkMeetupAuth(req, res);
     },
     debug: isDev,
     tracing: true,
@@ -86,26 +102,18 @@ export default app => {
       return error;
     },
     subscriptions: {
-      onConnect: ({ token }) =>
-        new Promise((resolve, reject) => {
-          const req = {
-            headers: { authorization: `Bearer ${token}` },
-            get: option => {
-              if (option === 'host') {
-                return 'now.meetup.com';
-              }
-              return '';
-            },
-            protocol: 'https',
-          };
-          checkJwt(req, null, err => {
-            if (err) {
-              reject(new Error('error authorizing websocket'));
-            } else {
-              resolve(buildUserForContext(req, { websocket: true }));
-            }
-          });
-        }),
+      onConnect: (params, ws, { request }) => {
+        cookieParser()(request, {}, () => {});
+
+        request.get = option => {
+          if (option === 'host') {
+            return 'now.meetup.com';
+          }
+          return '';
+        };
+
+        return checkMeetupAuth(request);
+      },
       path: '/subscriptions',
     },
     playground: false,
@@ -133,7 +141,32 @@ export default app => {
   }
 
   server.applyMiddleware({ app });
-  const httpServer = createServer(app);
+
+  let httpServer;
+
+  if (isDev) {
+    const httpKey = path.resolve(
+      os.homedir(),
+      '.certs',
+      'star.dev.meetup.com.key'
+    );
+    const httpCrt = path.resolve(
+      os.homedir(),
+      '.certs',
+      'star.dev.meetup.com.crt'
+    );
+
+    httpServer = createSecureServer(
+      {
+        key: fs.readFileSync(httpKey),
+        cert: fs.readFileSync(httpCrt),
+      },
+      app
+    );
+  } else {
+    httpServer = createServer(app);
+  }
+
   server.installSubscriptionHandlers(httpServer);
   const PORT = 3000;
 
