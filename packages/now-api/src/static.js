@@ -36,7 +36,10 @@ export default app => {
   });
 
   if (isDev) {
-    const ADMIN_ROOT = path.join(process.cwd(), '../now-admin/dist');
+    const ADMIN_ROOT = path.join(
+      process.cwd(),
+      '../now-app/packages/now-admin/dist'
+    );
     logger.info(`Serving admin from ${ADMIN_ROOT}`);
     app.use('/admin', express.static(ADMIN_ROOT));
   } else {

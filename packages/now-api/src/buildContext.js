@@ -5,7 +5,7 @@ import { processUserAgent } from './util';
 const loaderContext = options => loaders(options);
 
 export default (
-  { currentUserId, userAgent = 'Not Set', protocol, host, scope = '' },
+  { currentUserId, userAgent = 'Not Set', protocol, host },
   otherContext = {}
 ) => {
   const context = {
@@ -33,7 +33,7 @@ export default (
         ...context,
         user,
         loaders: loadersWithContext,
-        scopes: scope.split(' '),
+        scopes: user.scope.split(' '),
       };
     }
     return context;
