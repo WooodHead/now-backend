@@ -11,7 +11,7 @@ import {
 } from './repos';
 
 const maxBatchSize = 100;
-export default ({ currentUserId }) => ({
+export default ({ currentUserId } = {}) => ({
   members: new DataLoader(ids => getUserBatch(ids, currentUserId), {
     maxBatchSize,
   }),

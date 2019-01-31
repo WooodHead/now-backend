@@ -36,37 +36,17 @@ const putUser = ({ id, ...otherFields }) =>
     .where({ id })
     .update(otherFields);
 
-export const createUserMutation = async (
-  root,
-  {
-    input: {
-      email,
-      firstName,
-      lastName,
-      bio,
-      location,
-      preferences = {},
-      invitationCode,
-    },
-  },
-  context
-) => {
-  if (context.currentUserAuth0Id === PRE_LOGGED_IN_AUTH0_ID) {
-    throw new Error('No.');
-  }
-  if (userIdFromContext(context)) {
-    throw new Error('User has already been created.');
-  }
-
-  const invitation = invitationCode
-    ? await findValidCode(invitationCode)
-    : null;
-  if (!invitation) {
-    const required = await RunTimeFlags.get('require-invite');
-    if (required) {
-      throw new Error('A valid invitation code is required.');
-    }
-  }
+export const createUser = async ({
+  email,
+  firstName,
+  lastName,
+  bio,
+  location,
+  meetupId,
+  preferences = {},
+  invitation,
+  loaders,
+}) => {
   const newUserId = uuid();
   const newUser = {
     id: newUserId,
@@ -76,7 +56,7 @@ export const createUserMutation = async (
     bio,
     location,
     preferences,
-    auth0Id: context.currentUserAuth0Id,
+    meetupId,
     createdAt: sql.raw('now()'),
     updatedAt: sql.raw('now()'),
     tosVersion: CURRENT_TOS_VERSION,
@@ -117,7 +97,7 @@ export const createUserMutation = async (
             trx,
             { eventId: invitation.eventId, inviteId, userId: newUserId },
             'add',
-            context.loaders
+            loaders
           );
         } catch (e) {
           logger.error(`Unable to RSVP invited user: ${e}`);
@@ -132,7 +112,55 @@ export const createUserMutation = async (
 
   maybeUpdateFcm(preferences, newUserId, true);
   await syncIntercomUser(newUserId);
-  return { user: getUser(newUserId, newUserId) };
+
+  return newUser;
+};
+
+export const createUserMutation = async (
+  root,
+  {
+    input: {
+      email,
+      firstName,
+      lastName,
+      bio,
+      location,
+      preferences = {},
+      invitationCode,
+    },
+  },
+  context
+) => {
+  if (context.currentUserAuth0Id === PRE_LOGGED_IN_AUTH0_ID) {
+    throw new Error('No.');
+  }
+  if (userIdFromContext(context)) {
+    throw new Error('User has already been created.');
+  }
+
+  const invitation = invitationCode
+    ? await findValidCode(invitationCode)
+    : null;
+  if (!invitation) {
+    const required = await RunTimeFlags.get('require-invite');
+    if (required) {
+      throw new Error('A valid invitation code is required.');
+    }
+  }
+
+  const newUser = await createUser({
+    email,
+    firstName,
+    lastName,
+    bio,
+    location,
+    preferences,
+    meetupId: context.meetupUserId,
+    invitation,
+    loaders: context.loaders,
+  });
+
+  return { user: getUser(newUser.id, newUser.id) };
 };
 
 export const updateCurrentUser = (root, { input }, context) => {

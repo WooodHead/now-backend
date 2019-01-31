@@ -1,41 +1,50 @@
 import { filterAttributes, getByMeetupId } from './schema/resolvers/User';
+import { createUser } from './schema/resolvers/User/create';
 import loaders from './db/loaders';
 import { processUserAgent } from './util';
 
 const loaderContext = options => loaders(options);
 
-export default (
-  { currentUserId, userAgent = 'Not Set', protocol, host },
+export default async (
+  { meetupUser, userAgent = 'Not Set', protocol, host },
   otherContext = {}
 ) => {
-  const context = {
+  const meetupUserId = meetupUser ? meetupUser.id : null;
+
+  let context = {
     userAgent: processUserAgent(userAgent),
     ...otherContext,
-    currentUserId,
+    meetupUserId,
     user: undefined,
     loaders: loaderContext({ currentUserId: null }),
     scopes: [],
     imageUrl: `${protocol}://${host}/images`,
   };
 
-  if (!currentUserId) {
-    return Promise.resolve(context);
+  if (meetupUserId) {
+    let user = await getByMeetupId(meetupUserId);
+
+    if (!user) {
+      // create user
+      await createUser({
+        email: meetupUser.email,
+        firstName: meetupUser.name, // TODO spliut it later maybe?
+        bio: meetupUser.bio,
+        meetupId: meetupUser.id,
+        loaders: loaders(),
+      });
+      user = await getByMeetupId(meetupUserId);
+    }
+
+    const loadersWithContext = loaderContext({ currentUserId: user.id });
+    loadersWithContext.members.prime(user.id, filterAttributes(user.id)(user));
+    context = {
+      ...context,
+      user,
+      loaders: loadersWithContext,
+      scopes: user.scope ? user.scope.split(' ') : [],
+    };
   }
 
-  return getByMeetupId(currentUserId).then(user => {
-    if (user) {
-      const loadersWithContext = loaderContext({ currentUserId: user.id });
-      loadersWithContext.members.prime(
-        user.id,
-        filterAttributes(user.id)(user)
-      );
-      return {
-        ...context,
-        user,
-        loaders: loadersWithContext,
-        scopes: user.scope.split(' '),
-      };
-    }
-    return context;
-  });
+  return Promise.resolve(context);
 };

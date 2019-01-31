@@ -131,6 +131,7 @@
     "eslint-scope": "3.7.1"
   },
   "jest": {
+    "testEnvironment": "node",
     "transform": {
       "\\.(gql|graphql)$": "jest-transform-graphql",
       ".*": "babel-jest"

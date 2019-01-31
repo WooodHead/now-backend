@@ -44,7 +44,7 @@ const checkMeetupAuth = async req => {
 
   return buildUserForContext(
     {
-      currentUserId: meetupUser ? String(meetupUser.id) : null,
+      meetupUser,
       userAgent: req.get('User-Agent'),
       protocol,
       host: req.get('host'),
