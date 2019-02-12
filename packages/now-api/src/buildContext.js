@@ -28,7 +28,7 @@ export default async (
       // create user
       await createUser({
         email: meetupUser.email,
-        firstName: meetupUser.name, // TODO spliut it later maybe?
+        firstName: meetupUser.name, // TODO split it later maybe?
         bio: meetupUser.bio,
         meetupId: meetupUser.id,
         loaders: loaders(),
