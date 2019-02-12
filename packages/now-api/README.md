@@ -65,10 +65,12 @@ If you install [Meetup Now Admin](https://github.com/meetup/now-admin) in the sa
 
 ### Running the API
 
+> **NOTE:** To run the API, you'll need to have a valid `star.dev.meetup.com.key` and `star.dev.meetup.com.crt` credentials in your `~/.certs/` folder. If you've developed on mup-web, you probably already have these. If you need to get them, follow step 3 of the instructions [here](https://meetup.atlassian.net/wiki/spaces/WEG/pages/237732138/Setup+for+Meetup+Web+Platform+mup-web+pro-web+development), under the section entititled _Setting up for *-web development_.
+
 - `yarn build`
 - `yarn server`
 
-The API is now running at http://localhost:3000/graphiql.
+The API is now running at `https://*.dev.meetup.com`, where you can use any `.dev.meetup.com` URL that you have mapped to localhost in your `/etc/hosts`.
 
 If you installed admin, it is now running at http://localhost:3000/admin.
 
