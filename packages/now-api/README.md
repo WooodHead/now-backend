@@ -25,9 +25,12 @@ This README covers:
 ### Setting up Postgres
 
 _**On MacOS**_
-- `brew install postgresql@9.6`
-- `brew services start postgresql@9.6`
-- `echo 'export PATH="/usr/local/opt/postgresql@9.6/bin:$PATH"' >> ~/.bash_profile`
+
+On MacOS, `postgres` will be installed as a dependency of `postgis`, so installing that should be sufficient.
+
+- `brew install postgis`
+- `brew services start postgresql`
+- `echo 'export PATH="/usr/local/opt/postgresql/bin:$PATH"' >> ~/.bash_profile`
 - `createdb meetup_now`
 - `createdb meetup_now_test`
 
