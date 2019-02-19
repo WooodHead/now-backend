@@ -131,7 +131,7 @@ describe('activity', () => {
     });
   });
 
-  it('creates an activity', async () => {
+  it.skip('creates an activity', async () => {
     const activity = factory.build('activity');
     const { title, description, activityDate, emoji } = activity;
 

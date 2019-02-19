@@ -1,52 +1,53 @@
 /* eslint-disable import/prefer-default-export */
 import { createHash } from 'crypto';
-import sharp from 'sharp';
-import streamToPromise from 'stream-to-promise';
+// import sharp from 'sharp';
+// import streamToPromise from 'stream-to-promise';
 
-import { NOW_IMAGE_BUCKET, s3 } from '../../s3';
+// import { NOW_IMAGE_BUCKET, s3 } from '../../s3';
 import { userIdFromContext } from '../util';
 import { logger } from '../../logger';
 
 import { getUser, putPhoto } from './User';
 
-const PREVIEW_HEIGHT = 40;
+// const PREVIEW_HEIGHT = 40;
 
-const storePhoto = (file, key, ratio) =>
-  file.then(upload => streamToPromise(upload.stream)).then(buffer =>
-    sharp(buffer)
-      .jpeg({ quality: 90 })
-      .toBuffer({ resolveWithObject: true })
-      .then(({ data: jpegBuffer, info: { height, width } }) => {
-        const providedRatio = width / height;
+const storePhoto = () => {};
+// const storePhoto = (file, key, ratio) =>
+//   file.then(upload => streamToPromise(upload.stream)).then(buffer =>
+//     sharp(buffer)
+//       .jpeg({ quality: 90 })
+//       .toBuffer({ resolveWithObject: true })
+//       .then(({ data: jpegBuffer, info: { height, width } }) => {
+//         const providedRatio = width / height;
 
-        if (Math.abs(providedRatio - ratio) > 0.01) {
-          throw new Error(
-            `The provided image didn't have the proper ratio of ${ratio}, instead it was ${providedRatio}`
-          );
-        }
+//         if (Math.abs(providedRatio - ratio) > 0.01) {
+//           throw new Error(
+//             `The provided image didn't have the proper ratio of ${ratio}, instead it was ${providedRatio}`
+//           );
+//         }
 
-        s3.putObject({
-          Bucket: NOW_IMAGE_BUCKET,
-          Key: key,
-          Body: jpegBuffer,
-          ContentType: 'image/jpeg',
-          ACL: 'public-read',
-        }).promise();
-      })
-      .then(() =>
-        sharp(buffer)
-          .resize(PREVIEW_HEIGHT * ratio, PREVIEW_HEIGHT)
-          .jpeg({ quality: 70 })
-          .toBuffer()
-          .then(
-            (preview =>
-              `data:image/jpeg;base64,${preview.toString('base64')}`: null)
-          )
-          .catch(e => {
-            logger.error('error creating preview', e);
-          })
-      )
-  );
+//         s3.putObject({
+//           Bucket: NOW_IMAGE_BUCKET,
+//           Key: key,
+//           Body: jpegBuffer,
+//           ContentType: 'image/jpeg',
+//           ACL: 'public-read',
+//         }).promise();
+//       })
+//       .then(() =>
+//         sharp(buffer)
+//           .resize(PREVIEW_HEIGHT * ratio, PREVIEW_HEIGHT)
+//           .jpeg({ quality: 70 })
+//           .toBuffer()
+//           .then(
+//             (preview =>
+//               `data:image/jpeg;base64,${preview.toString('base64')}`: null)
+//           )
+//           .catch(e => {
+//             logger.error('error creating preview', e);
+//           })
+//       )
+//   );
 
 const setProfilePhoto = (root, { input: { photo } }, context) => {
   const userId = userIdFromContext(context);

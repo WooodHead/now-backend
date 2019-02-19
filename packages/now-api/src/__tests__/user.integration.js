@@ -219,7 +219,7 @@ describe('user', () => {
     );
   });
 
-  it('change user photo', async () => {
+  it.skip('change user photo', async () => {
     const file = fs.createReadStream(`${__dirname}/test.png`);
     const photo = Promise.resolve({ stream: file });
     const res = await client.mutate({

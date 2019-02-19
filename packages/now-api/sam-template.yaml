@@ -1,0 +1,344 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  now-backend
+
+  Let's try to get GraphQL lambdafied!
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    MemorySize: 256
+    Timeout: 30
+    # Enabling X-ray tracing for all lambda functions
+    Tracing: Active # May either be `Active` or `PassThrough`: https://docs.aws.amazon.com/lambda/latest/dg/API_TracingConfig.html
+  # Api:
+  #   Cors: "'*''"
+
+Parameters:
+  Stage:
+    Description: The stage of the deployment
+    Type: String
+
+  DomainName:
+    Type: String
+    Description: E.g. example.dev.meetuphq.io
+    Default: now.meetup.com
+
+  CertificateArn:
+    Type: String
+    Description: ARN of the ACM certificate to be used by CloudFront
+    Default: arn:aws:acm:us-east-1:388712777998:certificate/ae83e390-3a35-4a85-9472-be4ea27a1fe5
+
+  # We use this, and not HostedZoneName, since name may be ambiguous due to separate public and private zones
+  HostedZoneId:
+    Type: String
+    Description: The ID (e.g. Z2COHKSDO82M26) of the Hosted Zone managing the parent domain of the DomainName parameter
+    Default: Z196GLUG1B40RT
+
+  ContentBucket:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+    Default: meetup-now-static
+
+Resources:
+  # -----------------------------------------
+  # S H A R E D  R E S O U R C E S
+  # -----------------------------------------
+  RecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        # TODO - Add AAAA record here too
+        - Name: !Ref DomainName
+          Type: A
+          AliasTarget:
+            DNSName: !GetAtt CloudFrontDistribution.DomainName
+            HostedZoneId: Z2FDTNDATAQYW2 # Universal CloudFront Hosted Zone ID
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: domain test
+        Origins:
+          - Id: GraphqlOrigin
+            DomainName: !Sub "${NowApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: "/Prod"
+            CustomOriginConfig:
+              HTTPPort: 443
+              OriginProtocolPolicy: https-only
+          - Id: StaticOrigin
+            DomainName: !Sub '${ContentBucket}.s3.amazonaws.com'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginAccessIdentity}
+        Aliases:
+          - !Ref DomainName
+        Enabled: "true"
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          TargetOriginId: StaticOrigin
+          Compress: true
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - AllowedMethods: ["GET", "HEAD", "DELETE", "OPTIONS", "PATCH", "POST", "PUT"]
+            TargetOriginId: GraphqlOrigin
+            Compress: true
+            ForwardedValues:
+              QueryString: true
+              Headers: #define explicit headers, since API Gateway doesn't work otherwise
+                - Accept
+                - Referer
+                - Athorization
+                - Content-Type
+            ViewerProtocolPolicy: redirect-to-https
+            PathPattern: "/api/*"
+            DefaultTTL: 1
+
+        # Take this out for prod use
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.1_2016
+
+  OriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Access identity between CloudFront and S3 bucket
+
+  CloudFrontS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref ContentBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt OriginAccessIdentity.S3CanonicalUserId
+            Action: "s3:GetObject"
+            Resource: !Sub 'arn:aws:s3:::${ContentBucket}/*'
+
+  NowApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      EndpointConfiguration: REGIONAL
+      DefinitionBody:
+        openapi: "3.0.1"
+        info:
+          title: !Sub "${AWS::StackName}"
+          version: "1.0"
+        paths:
+          /graphql:
+            get:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GraphQLFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                # This has to be POST for all Lambda integration, even though the resource is a GET
+                httpMethod: "POST"
+                type: "aws_proxy"
+          /playground:
+            get:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PlaygroundGraphiQLFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                # This has to be POST for all Lambda integration, even though the resource is a GET
+                httpMethod: "POST"
+                type: "aws_proxy"
+
+  StaticS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ContentBucket
+
+  # -----------------------------------------
+  # S N S  T O P I C S
+  #
+  # We publish results from alarms to these topics
+
+  #------ ErrorsTopic ------
+  # Alarms publish to this topic when an alarm is active
+  ErrorsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-alerts-alarm'
+      # Uncomment to enable integration with pager duty.
+      # To determine your service's integration key:
+      # 1.) Find your service's integration key here: https://meetup.pagerduty.com/services/<service id>/integrations
+      # 2.) If you do not have an Amazon CloudWatch integration, add it to your service.
+      # 3.) Copy the integration key to the url below and uncomment.
+      #Subscription:
+      #  - Protocol: https
+      #    Endpoint: https://events.pagerduty.com/integration/${pagerDutyIntegrationKey}/enqueue
+
+  #------ OkTopic ------
+  # Alarms publish to this topic when an alarm is no longer active
+  OkTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-alerts-ok'
+      #Subscription:
+      #  - Protocol: https
+      #    Endpoint: https://events.pagerduty.com/integration/${pagerDutyIntegrationKey}/enqueue
+
+  # -----------------------------------------
+  # L A M B D A S
+  # - AWS::Serverless::Function - the function definition
+  # - AWS::Logs::LogGroup - an explicit log group for the lambda, so that it can be referenced elsewhere.
+  # - AWS::Logs::MetricFilter - a custom metric filter needed for alarms based on `log.error` being called.
+  # - AWS::CloudWatch::Alarm - for functions resulting in errors (non 2xx, 3xx responses)
+  # - AWS::CloudWatch::Alarm - for function executions resulting in `log.error` being called.
+  # -----------------------------------------
+
+  #------ GraphQLFunction Lambda ------
+  # A simple function. See src/hello.js for more details about its behaviors.
+  GraphQLFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-graphql
+      CodeUri: ./dist
+      Handler: src/hello.handler
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          VERBOSE: true
+          NODE_ENV: production
+          DB_CONNECTION: 'postgresql://{{resolve:secretsmanager:prod/db/meetup_now:SecretString:username}}:{{resolve:secretsmanager:prod/db/meetup_now:SecretString:password}}@{{resolve:secretsmanager:prod/db/meetup_now:SecretString:host}}/meetup_now'
+      Policies:
+        - VPCAccessPolicy: {}
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-0408fb2a995bc9b1a
+        SubnetIds:
+          - subnet-0eedb9d5189e93675
+          - subnet-0fd7800e19e030239
+          - subnet-0b311a896a94ad299
+      Events:
+        NowApiGateway:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NowApiGateway
+            Path: /graphql
+            Method: ANY
+
+  # Lambda functions create Log Groups implicitly, but we need to create this resource so that
+  # the metric filter below can reference the log group.
+  # If we just reference the LogGroupName directly in the MetricFilter that will fail if there is no data
+  # (e.g. at stack creation time)
+  GraphQLFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: [GraphQLFunction]
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GraphQLFunction}
+      # By default Log Groups have unlimited retention. If you want to limit this, add the below
+      RetentionInDays: 60
+
+  # Posting metrics to CloudWatch Metrics directly from a Lambda function is a bad idea (see the Production Readiness Checklist)
+  # Instead we can use Metric Filters, as below.
+  # Our example functions already use structured logging, so extracting data with the Metric Filter is fairly simple.
+  # This example is used as a counter for events, hence the MetricValue of 1, but you can capture actual values too,
+  # see the documentation at https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-logs-metricfilter-metrictransformation.html
+  GraphQLFunctionLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref GraphQLFunctionLogGroup
+      FilterPattern: '{$._logLevel=error}'
+      MetricTransformations:
+        - MetricValue: '1'
+          # Set this to whatever you want - this is an example namespace
+          MetricNamespace: !Sub /meetup/${Stage}/${GraphQLFunction}
+          MetricName: 'GraphQLFunctionLogErrorCount'
+
+  # Putting an alarm for Errors on any function that shouldn't error is a great, simple, monitoring tool
+  # In this example we hook up an alarm to a function that will always error when it's called (at /deliberate-error)
+  # (Future opportunity) Create a cross-Meetup macro for this
+  GraphQLFunctionFunctionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Lambda Errors Alarm Example
+      Namespace: 'AWS/Lambda'
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          # Reference to Lambda function we care about.
+          Value: !Ref GraphQLFunction
+      # The below lines mean "raise alarm when there is any error in a 1 minute period"
+      # You can modify this as you see fit.
+      # Also for other metrics (e.g. Duration) you may want to use Average or Maximum
+      Statistic: Sum
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 1
+      Period: 60
+      EvaluationPeriods: 1
+      # This means that the alarm will reset to OK after a period without any error
+      TreatMissingData: 'notBreaching'
+      # For this example we send notifications to SNS. SNS can be used as a bridge to Slack, Email, etc.
+      ActionsEnabled: True
+      AlarmActions:
+        - !Ref ErrorsTopic
+      OKActions:
+        - !Ref OkTopic
+
+  GraphQLFunctionLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Lambda Log Errors Alarm Example
+      Namespace: !Sub /meetup/${Stage}/${GraphQLFunction}
+      MetricName: GraphQLFunctionLogErrorCount
+      # The below lines mean "raise alarm when there is any error in a 1 minute period"
+      # You can modify this as you see fit.
+      # Also for other metrics (e.g. Duration) you may want to use Average or Maximum
+      Statistic: Sum
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 1
+      Period: 60
+      EvaluationPeriods: 1
+      # This means that the alarm will reset to OK after a period without any error
+      TreatMissingData: 'notBreaching'
+      # For this example we send notifications to SNS. SNS can be used as a bridge to Slack, Email, etc.
+      ActionsEnabled: True
+      AlarmActions:
+        - !Ref ErrorsTopic
+      OKActions:
+        - !Ref OkTopic
+
+  #------ PlaygroundGraphiQL Lambda ------
+  # A simple function. See src/hello.js for more details about its behaviors.
+  PlaygroundGraphiQLFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-playground-graphiql
+      CodeUri: ./dist
+      Handler: src/playground.playgroundHandler
+      Events:
+        NowApiGateway:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NowApiGateway
+            Path: /playground
+            Method: ANY
+
+Outputs:
+  GraphQLApi:
+    Description: 'API Gateway endpoint URL for Prod stage functions'
+    # NOTE: ServerlessRestApi is defined for us by SAM. See: https://awslabs.github.io/serverless-application-model/internals/generated_resources.html#aws-serverless-api
+    Value: !Sub 'https://${NowApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+
+  GraphQLFunction:
+    Description: 'GraphQL Lambda Function ARN'
+    Value: !GetAtt GraphQLFunction.Arn
+
+  GraphQLFunctionIamRole:
+    Description: 'Implicit IAM Role created for GraphQL function'
+    Value: !GetAtt GraphQLFunctionRole.Arn
