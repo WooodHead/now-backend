@@ -95,11 +95,8 @@ Resources:
             Compress: true
             ForwardedValues:
               QueryString: true
-              Headers: #define explicit headers, since API Gateway doesn't work otherwise
-                - Accept
-                - Referer
-                - Authorization
-                - Content-Type
+              Cookies:
+                Forward: all
             ViewerProtocolPolicy: redirect-to-https
             PathPattern: "/api/*"
             DefaultTTL: 1
