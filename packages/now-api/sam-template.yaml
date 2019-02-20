@@ -98,7 +98,7 @@ Resources:
               Headers: #define explicit headers, since API Gateway doesn't work otherwise
                 - Accept
                 - Referer
-                - Athorization
+                - Authorization
                 - Content-Type
             ViewerProtocolPolicy: redirect-to-https
             PathPattern: "/api/*"
