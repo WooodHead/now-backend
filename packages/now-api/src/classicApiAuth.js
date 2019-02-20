@@ -1,3 +1,4 @@
+import { mapKeys } from 'lodash';
 import rp from 'request-promise-native';
 import { parse as parseCookie } from 'cookie';
 import buildUserForContext from './buildContext';
@@ -39,12 +40,15 @@ const checkMeetupAuth = async ({ cookies, host, protocol, userAgent }) => {
 
 // lambda
 
-const getAuthInputsFromLambdaRequest = headers => ({
-  cookies: parseCookie(headers.cookie),
-  host: headers.Host,
-  protocol: headers['X-Forwarded-Proto'],
-  userAgent: headers['User-Agent'],
-});
+const getAuthInputsFromLambdaRequest = headers => {
+  const lcase = mapKeys(headers, (i, k) => k.toLowerCase());
+  return {
+    cookies: parseCookie(lcase.cookie || ''),
+    host: lcase.host,
+    protocol: lcase['x-forwarded-proto'],
+    userAgent: lcase['user-agent'],
+  };
+};
 
 const checkMeetupAuthLambda = async headers => {
   const authInputs = getAuthInputsFromLambdaRequest(headers);
