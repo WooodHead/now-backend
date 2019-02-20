@@ -149,6 +149,13 @@ Resources:
                 # This has to be POST for all Lambda integration, even though the resource is a GET
                 httpMethod: "POST"
                 type: "aws_proxy"
+            post:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GraphQLFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                # This has to be POST for all Lambda integration, even though the resource is a GET
+                httpMethod: "POST"
+                type: "aws_proxy"
           /api/playground:
             get:
               x-amazon-apigateway-integration:

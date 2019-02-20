@@ -6,52 +6,16 @@ import { createServer as createSecureServer } from 'https';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import rp from 'request-promise-native';
 import 'js-joda-timezone';
 import { resolveGraphiQLString } from 'apollo-server-module-graphiql';
 import url from 'url';
 import cookieParser from 'cookie-parser';
 
-import schema from './schema';
-import buildUserForContext from './buildContext';
+import { checkMeetupAuthExpress } from './classicApiAuth';
 import logger from './logger';
+import schema from './schema';
 
 const isDev = process.env.NODE_ENV === 'development';
-const MEETUP_SELF_QUERY = 'https://api.meetup.com/members/self';
-
-const checkMeetupAuth = async req => {
-  const { cookies, protocol } = req;
-  // TODO: work with oauth tokens again
-  // rebuild a cookie header string from the parsed `cookies` object
-  const cookie = ['MEETUP_MEMBER', 'MEETUP_CSRF']
-    .map(name => `${name}=${cookies[name]}`)
-    .join('; ');
-
-  let meetupUser = null;
-  if (cookies.MEETUP_CSRF && cookies.MEETUP_MEMBER) {
-    try {
-      meetupUser = await rp(MEETUP_SELF_QUERY, {
-        headers: {
-          cookie,
-          'csrf-token': cookies.MEETUP_CSRF,
-        },
-        json: true,
-      });
-    } catch (e) {
-      logger.info('Meetup auth failed', e);
-    }
-  }
-
-  return buildUserForContext(
-    {
-      meetupUser,
-      userAgent: req.get('User-Agent'),
-      protocol,
-      host: req.get('host'),
-    },
-    { http: true }
-  );
-};
 
 const graphiqlExpress = options => {
   const graphiqlHandler = (req, res, next) => {
@@ -76,7 +40,7 @@ export default app => {
       if (!req) {
         return connection.context;
       }
-      return checkMeetupAuth(req, res);
+      return checkMeetupAuthExpress(req, res);
     },
     debug: isDev,
     tracing: true,
@@ -112,7 +76,7 @@ export default app => {
           return '';
         };
 
-        return checkMeetupAuth(request);
+        return checkMeetupAuthExpress(request);
       },
       path: '/subscriptions',
     },
