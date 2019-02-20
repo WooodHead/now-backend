@@ -141,7 +141,7 @@ Resources:
           title: !Sub "${AWS::StackName}"
           version: "1.0"
         paths:
-          /graphql:
+          /api/graphql:
             get:
               x-amazon-apigateway-integration:
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GraphQLFunction.Arn}/invocations"
@@ -149,7 +149,7 @@ Resources:
                 # This has to be POST for all Lambda integration, even though the resource is a GET
                 httpMethod: "POST"
                 type: "aws_proxy"
-          /playground:
+          /api/playground:
             get:
               x-amazon-apigateway-integration:
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PlaygroundGraphiQLFunction.Arn}/invocations"
